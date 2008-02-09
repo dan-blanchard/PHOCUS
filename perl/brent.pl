@@ -3,14 +3,15 @@
 # Dan Blanchard
 # MBDP Implementation
 
-# usage: ./brent.pl [-v] FILE
+# usage: ./brent.pl [-v -n -p -w WINDOW_SIZE] FILE
 
 
 use Math::Trig;
 use strict;
 use Getopt::Std;
 
-our ($opt_v, $opt_n);
+our ($opt_v, $opt_n, $opt_w, $opt_p);
+my $window = 1;
 my @segmentation;
 my @bestProduct;
 my @bestStart;
@@ -32,8 +33,12 @@ $lexicon{"\$"} = 0;
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
-getopts('vn');
+getopts('vnpw:');
 
+if ($opt_w > 1)
+{
+	$window = $opt_w;
+}
 #	open(CORPUS,"cat $corpus | tr 'A-Z' 'a-z' | tr '\-' ' ' | tr -cd '.a-z\n '|");	
 
 while (<>)
@@ -102,18 +107,37 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
-		for (my $i = 0; $i < length($word); $i++)
+		if ($opt_p)
 		{
-			$phoneme = substr($word,$i,1);
-			if (exists $phonemeCounts{$phoneme})
+			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 			{
-				$phonemeCounts{$phoneme} += 1; 	
+				$phoneme = substr($word,$i,$window);
+				if (exists $phonemeCounts{$phoneme})
+				{
+					$phonemeCounts{$phoneme} += 1; 	
+				}
+				else
+				{
+					$phonemeCounts{$phoneme} = 1;					
+				}	
+				$totalPhonemes += 1;				
 			}
-			else
+		}
+		else
+		{
+			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 			{
-				$phonemeCounts{$phoneme} = 1;					
-			}	
-			$totalPhonemes += 1;				
+				$phoneme = substr($word,$i,$window);
+				if (exists $phonemeCounts{$phoneme})
+				{
+					$phonemeCounts{$phoneme} += 1; 	
+				}
+				else
+				{
+					$phonemeCounts{$phoneme} = 1;					
+				}	
+				$totalPhonemes += 1;				
+			}			
 		}
 	}
 	$totalWords++;
@@ -131,7 +155,7 @@ sub R
 	# wordTypes is only used for novel words so the new word cancels out the subtraction
 	%wordPhonemeCounts = ();
 	$wordTotalPhonemes = 0;
-	my $wordTypes = scalar(keys %lexicon) ;
+	my $wordTypes = scalar(keys %lexicon);
 	my $score = 0;
 	my $phonemeScore;
 	my $word = @_[0];
@@ -151,11 +175,19 @@ sub R
 	else
 	{
 		# get adjusted phoneme counts
-		my $wordWithBoundary = $word . $delimiter;
-		my $phoneme;
-		for (my $i = 0; $i <= length($wordWithBoundary); $i++)
+		my $wordWithBoundary;
+		if ($window > 1)
 		{
-			$phoneme = substr($wordWithBoundary,$i,1);
+			$wordWithBoundary = $delimiter . $word . $delimiter;
+		} 
+		else
+		{
+			$wordWithBoundary = $word . $delimiter;
+		}
+		my $phoneme;
+		for (my $i = 0; $i <= length($wordWithBoundary) - ($window - 1); $i++) # this was <= for some reason
+		{
+			$phoneme = substr($wordWithBoundary,$i,$window);
 			if (exists $wordPhonemeCounts{$phoneme})
 			{
 				$wordPhonemeCounts{$phoneme} += 1;
@@ -219,13 +251,22 @@ sub R
 
 sub ProbPhonemes
 {
-	my $word = @_[0] . $delimiter;
+	my $word;
 	my $phonemeScore;
 	my $phoneme;
-	$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));
-	for (my $i = 0; $i < length($word); $i++)
+	if ($window > 1)
 	{
-		$phoneme = substr($word,$i,1);
+		$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));		
+		$word = $delimiter . @_[0] . $delimiter;		
+	}
+	else
+	{
+		$phonemeScore = 1;
+		$word = @_[0] . $delimiter;		
+	}
+	for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+	{
+		$phoneme = substr($word,$i,$window);
 		if (exists $wordPhonemeCounts{$phoneme})
 		{
 			$phonemeScore *= $wordPhonemeCounts{$phoneme} / $wordTotalPhonemes;
@@ -236,4 +277,9 @@ sub ProbPhonemes
 		}
 	}
 	return $phonemeScore;
+}
+
+sub extractPrecedence
+{
+	
 }
