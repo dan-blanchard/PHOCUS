@@ -185,7 +185,7 @@ sub R
 			$wordWithBoundary = $word . $delimiter;
 		}
 		my $phoneme;
-		for (my $i = 0; $i <= length($wordWithBoundary) - ($window - 1); $i++) # this was <= for some reason
+		for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
 		{
 			$phoneme = substr($wordWithBoundary,$i,$window);
 			if (exists $wordPhonemeCounts{$phoneme})
@@ -201,7 +201,7 @@ sub R
 				$wordPhonemeCounts{$phoneme} = 1;
 			}				
 		}
-		$wordTotalPhonemes = $totalPhonemes + length($wordWithBoundary);
+		$wordTotalPhonemes = $totalPhonemes + (length($wordWithBoundary) - ($window - 1));
 		if ($opt_v)
 		{
 			print "First term: " . 6 / (pi**2) . "\n";			
@@ -256,12 +256,12 @@ sub ProbPhonemes
 	my $phoneme;
 	if ($window > 1)
 	{
-		$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));		
+		$phonemeScore = 1;
 		$word = $delimiter . @_[0] . $delimiter;		
 	}
 	else
 	{
-		$phonemeScore = 1;
+		$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));
 		$word = @_[0] . $delimiter;		
 	}
 	for (my $i = 0; $i < length($word) - ($window - 1); $i++)
@@ -277,9 +277,4 @@ sub ProbPhonemes
 		}
 	}
 	return $phonemeScore;
-}
-
-sub extractPrecedence
-{
-	
 }
