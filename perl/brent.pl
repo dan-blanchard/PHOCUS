@@ -3,14 +3,14 @@
 # Dan Blanchard
 # MBDP Implementation
 
-# usage: ./brent.pl [-v -n -p -w WINDOW_SIZE] FILE
+# usage: ./brent.pl [-v -n -w WINDOW_SIZE] FILE
 
 
 use Math::Trig;
 use strict;
 use Getopt::Std;
 
-our ($opt_v, $opt_n, $opt_w, $opt_p);
+our ($opt_v, $opt_n, $opt_w);
 my $window = 1;
 my @segmentation;
 my @bestProduct;
@@ -107,38 +107,19 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
-		if ($opt_p)
+		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 		{
-			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+			$phoneme = substr($word,$i,$window);
+			if (exists $phonemeCounts{$phoneme})
 			{
-				$phoneme = substr($word,$i,$window);
-				if (exists $phonemeCounts{$phoneme})
-				{
-					$phonemeCounts{$phoneme} += 1; 	
-				}
-				else
-				{
-					$phonemeCounts{$phoneme} = 1;					
-				}	
-				$totalPhonemes += 1;				
+				$phonemeCounts{$phoneme} += 1; 	
 			}
-		}
-		else
-		{
-			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+			else
 			{
-				$phoneme = substr($word,$i,$window);
-				if (exists $phonemeCounts{$phoneme})
-				{
-					$phonemeCounts{$phoneme} += 1; 	
-				}
-				else
-				{
-					$phonemeCounts{$phoneme} = 1;					
-				}	
-				$totalPhonemes += 1;				
-			}			
-		}
+				$phonemeCounts{$phoneme} = 1;					
+			}	
+			$totalPhonemes += 1;				
+		}			
 	}
 	$totalWords++;
 	$lexicon{"\$"} += 1;
