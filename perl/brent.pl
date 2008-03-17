@@ -10,6 +10,7 @@ use Math::Trig;
 use strict;
 use Getopt::Std;
 use FeatureChart;
+use List::Util qw(first max maxstr min minstr reduce shuffle sum);
 
 our ($opt_v, $opt_n, $opt_w, $opt_f);
 my $window = 1;
@@ -141,25 +142,24 @@ while (<>)
 		}
 		else
 		{
+			@phoneFeatures = ();		
+			# Get all feature bundles for current word	
+			for (my $i = 0; $i < length($word); $i++)
+			{
+				$phoneme = substr($word,$i,1);
+				push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
+			}			
 			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 			{
-				@phoneFeatures = ();
-				$subword = substr($word,$i,$window);
-				for (my $j = 0; $j < length($subword); $j++)
+				my $allBundleCombos = reduce {$a->cartesian_product($b)} @phoneFeatures[$i,$i + $window - 1];
+				map 
 				{
-					$phoneme = substr($subword,$j,1);
-					push(@phoneFeatures, $featureChart->featuresForPhone($phoneme)->members)
-				}
-				# if (exists $phonemeCounts{$subword})
-				# {
-				# 	$phonemeCounts{$subword} += 1; 	
-				# }
-				# else
-				# {
-				# 	$phonemeCounts{$subword} = 1;					
-				# }
-				# $totalPhonemes += 1;
-			}			
+					print @{$_};
+					print "window: $window\n";
+					
+				} $allBundleCombos->members;
+			}
+			exit;
 		}
 	}
 	$totalWords++;
