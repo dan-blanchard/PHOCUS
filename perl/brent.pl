@@ -11,7 +11,7 @@ use strict;
 use Getopt::Std;
 use FeatureChart;
 
-our ($opt_v, $opt_n, $opt_w);
+our ($opt_v, $opt_n, $opt_w, $opt_f);
 my $window = 1;
 my @segmentation;
 my @bestProduct;
@@ -28,19 +28,33 @@ my @words;
 my $firstChar;
 my @segmentation;
 my $segmentedSentence;
+my %featureCounts = ();
+my $totalFeatures = 0;
 my %wordPhonemeCounts = ();		# Phoneme counts for novel word
 my $wordTotalPhonemes = 0;		# Total phonemes for novel word
+my $featureChart;
+my @phoneFeatures;
 $lexicon{"\$"} = 0;
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
-getopts('vnpw:');
+getopts('vnpw:f:');
+
+#	open(CORPUS,"cat $corpus | tr 'A-Z' 'a-z' | tr '\-' ' ' | tr -cd '.a-z\n '|");	
+
+# Check for feature chart file
+if ($opt_f)
+{
+	$featureChart = FeatureChart->new();
+	$featureChart->read_file($opt_f);
+	$window = 2;
+#	print $featureChart;
+}
 
 if ($opt_w > 1)
 {
 	$window = $opt_w;
 }
-#	open(CORPUS,"cat $corpus | tr 'A-Z' 'a-z' | tr '\-' ' ' | tr -cd '.a-z\n '|");	
 
 while (<>)
 {
@@ -85,6 +99,7 @@ while (<>)
 	push(@segmentation,length($sentence));
 	my $word;
 	my $phoneme;
+	my $subword;
 	if ($opt_v)
 	{
 		print "\nSegmented utterance: ";		
@@ -108,19 +123,44 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
-		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+		if (!$opt_f)
+		{			
+			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+			{
+				$phoneme = substr($word,$i,$window);
+				if (exists $phonemeCounts{$phoneme})
+				{
+					$phonemeCounts{$phoneme} += 1; 	
+				}
+				else
+				{
+					$phonemeCounts{$phoneme} = 1;					
+				}
+				$totalPhonemes += 1;
+			}			
+		}
+		else
 		{
-			$phoneme = substr($word,$i,$window);
-			if (exists $phonemeCounts{$phoneme})
+			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 			{
-				$phonemeCounts{$phoneme} += 1; 	
-			}
-			else
-			{
-				$phonemeCounts{$phoneme} = 1;					
-			}	
-			$totalPhonemes += 1;				
-		}			
+				@phoneFeatures = ();
+				$subword = substr($word,$i,$window);
+				for (my $j = 0; $j < length($subword); $j++)
+				{
+					$phoneme = substr($subword,$j,1);
+					push(@phoneFeatures, $featureChart->featuresForPhone($phoneme)->members)
+				}
+				# if (exists $phonemeCounts{$subword})
+				# {
+				# 	$phonemeCounts{$subword} += 1; 	
+				# }
+				# else
+				# {
+				# 	$phonemeCounts{$subword} = 1;					
+				# }
+				# $totalPhonemes += 1;
+			}			
+		}
 	}
 	$totalWords++;
 	$lexicon{"\$"} += 1;
