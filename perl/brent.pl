@@ -3,12 +3,13 @@
 # Dan Blanchard
 # MBDP Implementation
 
-# usage: ./brent.pl [-v -n -w WINDOW_SIZE] FILE
+# usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE] [-f FEATURE_CHART] FILE
 
 
 use Math::Trig;
 use strict;
 use Getopt::Std;
+use FeatureChart;
 
 our ($opt_v, $opt_n, $opt_w);
 my $window = 1;
