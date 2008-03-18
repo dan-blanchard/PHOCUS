@@ -20,22 +20,20 @@ my @bestStart;
 my $wordScore;
 my $scoreProduct;
 my $segmentedSentence;
-my $delimiter = " ";
+my $delimiter = " ";			# word delimiter
 my %lexicon = ();
-my %phonemeCounts = ();
+my %phonemeCounts = ();			# This stores phoneme counts (be they phonemes, phoneme n-grams, or feature n-grams)
 my $totalWords = 0;
 my $totalPhonemes = 0;
 my @words;
 my $firstChar;
 my @segmentation;
 my $segmentedSentence;
-my %featureCounts = ();
-my $totalFeatures = 0;
 my %wordPhonemeCounts = ();		# Phoneme counts for novel word
 my $wordTotalPhonemes = 0;		# Total phonemes for novel word
 my $featureChart;
 my @phoneFeatures;
-$lexicon{"\$"} = 0;
+$lexicon{"\$"} = 0;				# end of utterance symbol added to lexicon with count 0
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
@@ -48,6 +46,7 @@ if ($opt_f)
 {
 	$featureChart = FeatureChart->new();
 	$featureChart->read_file($opt_f);
+	# consider adding code to automatically add word boundary symbol to feature chart with unique feature... currently done by hand
 	$window = 2;
 #	print $featureChart;
 }
@@ -124,6 +123,15 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
+		# NOT SURE IF THIS IS NECESSARY.  ADDED POST-NGRAM STUFF
+		if ($window > 1)
+		{
+			$word = $delimiter . $word . $delimiter;
+		} 
+		else # This didn't happen before, but it seems like it should
+		{
+			$word = $word . $delimiter;
+		}		
 		if (!$opt_f)
 		{			
 			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
@@ -164,14 +172,15 @@ while (<>)
 				}
 				while (defined(my $featureGram = $currentSet->each))
 				{
-					if (exists $featureCounts{$featureGram})
+					if (exists $phonemeCounts{$featureGram})
 					{
-						$featureCounts{$featureGram} += 1; 	
+						$phonemeCounts{$featureGram} += 1; 	
 					}
 					else
 					{
-						$featureCounts{$featureGram} = 1;					
+						$phonemeCounts{$featureGram} = 1;					
 					}
+					$totalPhonemes += 1;
 				}					
 			}
 		}
@@ -221,23 +230,63 @@ sub R
 			$wordWithBoundary = $word . $delimiter;
 		}
 		my $phoneme;
-		for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
-		{
-			$phoneme = substr($wordWithBoundary,$i,$window);
-			if (exists $wordPhonemeCounts{$phoneme})
+		if (!$opt_f)
+		{			
+			for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
 			{
-				$wordPhonemeCounts{$phoneme} += 1;
+				$phoneme = substr($wordWithBoundary,$i,$window);
+				if (exists $wordPhonemeCounts{$phoneme})
+				{
+					$wordPhonemeCounts{$phoneme} += 1;
+				}
+				elsif (exists $phonemeCounts{$phoneme})
+				{
+					$wordPhonemeCounts{$phoneme} = $phonemeCounts{$phoneme} + 1;
+				}
+				else
+				{
+					$wordPhonemeCounts{$phoneme} = 1;
+				}				
 			}
-			elsif (exists $phonemeCounts{$phoneme})
-			{
-				$wordPhonemeCounts{$phoneme} = $phonemeCounts{$phoneme} + 1;
-			}
-			else
-			{
-				$wordPhonemeCounts{$phoneme} = 1;
-			}				
+			$wordTotalPhonemes = $totalPhonemes + (length($wordWithBoundary) - ($window - 1));			
 		}
-		$wordTotalPhonemes = $totalPhonemes + (length($wordWithBoundary) - ($window - 1));
+		else
+		{
+			$wordTotalPhonemes = $totalPhonemes;
+			@phoneFeatures = ();		
+			# Get all feature bundles for current word	
+			for (my $i = 0; $i < length($wordWithBoundary); $i++)
+			{
+				$phoneme = substr($wordWithBoundary,$i,1);
+				push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
+			}			
+			for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
+			{
+				my @subList = @phoneFeatures[$i..$i + $window - 1];
+				my $currentSet = $subList[0];
+				for (my $j = 1; $j < $window; $j++)
+				{
+					$currentSet = $currentSet->cartesian_product($subList[$j]);
+					my @concatenatedResults = map {join "#", @{$_}} $currentSet->members;
+					# print "\n\n";
+					$currentSet->clear;
+					# map {print "$_ ";} @concatenatedResults;
+					$currentSet->insert(@concatenatedResults);
+				}
+				while (defined(my $featureGram = $currentSet->each))
+				{
+					if (exists $wordPhonemeCounts{$featureGram})
+					{
+						$wordPhonemeCounts{$featureGram} += 1; 	
+					}
+					else
+					{
+						$wordPhonemeCounts{$featureGram} = 1;					
+					}
+					$wordTotalPhonemes++;
+				}					
+			}
+		}
 		if ($opt_v)
 		{
 			print "First term: " . 6 / (pi**2) . "\n";			
@@ -300,16 +349,54 @@ sub ProbPhonemes
 		$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));
 		$word = @_[0] . $delimiter;		
 	}
-	for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+	if (!$opt_f)
 	{
-		$phoneme = substr($word,$i,$window);
-		if (exists $wordPhonemeCounts{$phoneme})
+		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 		{
-			$phonemeScore *= $wordPhonemeCounts{$phoneme} / $wordTotalPhonemes;
-		}
-		else
+			$phoneme = substr($word,$i,$window);
+			if (exists $wordPhonemeCounts{$phoneme})
+			{
+				$phonemeScore *= $wordPhonemeCounts{$phoneme} / $wordTotalPhonemes;
+			}
+			else
+			{
+				$phonemeScore *= $phonemeCounts{$phoneme} / $wordTotalPhonemes;
+			}
+		}		
+	}
+	else
+	{
+		@phoneFeatures = ();		
+		# Get all feature bundles for current word	
+		for (my $i = 0; $i < length($word); $i++)
 		{
-			$phonemeScore *= $phonemeCounts{$phoneme} / $wordTotalPhonemes;
+			$phoneme = substr($word,$i,1);
+			push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
+		}			
+		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+		{
+			my @subList = @phoneFeatures[$i..$i + $window - 1];
+			my $currentSet = $subList[0];
+			for (my $j = 1; $j < $window; $j++)
+			{
+				$currentSet = $currentSet->cartesian_product($subList[$j]);
+				my @concatenatedResults = map {join "#", @{$_}} $currentSet->members;
+				# print "\n\n";
+				$currentSet->clear;
+				# map {print "$_ ";} @concatenatedResults;
+				$currentSet->insert(@concatenatedResults);
+			}
+			while (defined(my $featureGram = $currentSet->each))
+			{
+				if (exists $wordPhonemeCounts{$featureGram})
+				{
+					$phonemeScore *= $wordPhonemeCounts{$featureGram} / $wordTotalPhonemes;
+				}
+				else
+				{
+					$phonemeScore *= $phonemeCounts{$featureGram} / $wordTotalPhonemes;
+				}
+			}					
 		}
 	}
 	return $phonemeScore;
