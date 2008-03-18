@@ -151,15 +151,29 @@ while (<>)
 			}			
 			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 			{
-				my $allBundleCombos = reduce {$a->cartesian_product($b)} @phoneFeatures[$i,$i + $window - 1];
-				map 
+				my @subList = @phoneFeatures[$i..$i + $window - 1];
+				my $currentSet = $subList[0];
+				for (my $j = 1; $j < $window; $j++)
 				{
-					print @{$_};
-					print "window: $window\n";
-					
-				} $allBundleCombos->members;
+					$currentSet = $currentSet->cartesian_product($subList[$j]);
+					my @concatenatedResults = map {join "#", @{$_}} $currentSet->members;
+					# print "\n\n";
+					$currentSet->clear;
+					# map {print "$_ ";} @concatenatedResults;
+					$currentSet->insert(@concatenatedResults);
+				}
+				while (defined(my $featureGram = $currentSet->each))
+				{
+					if (exists $featureCounts{$featureGram})
+					{
+						$featureCounts{$featureGram} += 1; 	
+					}
+					else
+					{
+						$featureCounts{$featureGram} = 1;					
+					}
+				}					
 			}
-			exit;
 		}
 	}
 	$totalWords++;
