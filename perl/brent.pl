@@ -33,6 +33,11 @@ my %wordPhonemeCounts = ();		# Phoneme counts for novel word
 my $wordTotalPhonemes = 0;		# Total phonemes for novel word
 my $featureChart;
 my @phoneFeatures;
+my %productCache = ();
+my @subList;
+my @concatenatedResults;
+my $subword;
+my $currentSet;
 $lexicon{"\$"} = 0;				# end of utterance symbol added to lexicon with count 0
 $phonemeCounts{$delimiter} = 0;
 
@@ -159,16 +164,25 @@ while (<>)
 			}			
 			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 			{
-				my @subList = @phoneFeatures[$i..$i + $window - 1];
-				my $currentSet = $subList[0];
+				@subList = @phoneFeatures[$i..$i + $window - 1];
+				$currentSet = $subList[0];
 				for (my $j = 1; $j < $window; $j++)
 				{
-					$currentSet = $currentSet->cartesian_product($subList[$j]);
-					my @concatenatedResults = map {join "#", @{$_}} $currentSet->members;
-					# print "\n\n";
-					$currentSet->clear;
-					# map {print "$_ ";} @concatenatedResults;
-					$currentSet->insert(@concatenatedResults);
+					$subword = substr($word,$i,$j+1);
+					if (exists $productCache{$subword})
+					{
+						$currentSet = $productCache{$subword};
+					}
+					else
+					{
+						$currentSet = $currentSet->cartesian_product($subList[$j]);
+						@concatenatedResults = map {join "#", @{$_}} $currentSet->members;
+						# print "\n\n";
+						$currentSet->clear;
+						# map {print "$_ ";} @concatenatedResults;
+						$currentSet->insert(@concatenatedResults);
+						$productCache{$subword} = $currentSet;
+					}
 				}
 				while (defined(my $featureGram = $currentSet->each))
 				{
@@ -262,16 +276,25 @@ sub R
 			}			
 			for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
 			{
-				my @subList = @phoneFeatures[$i..$i + $window - 1];
-				my $currentSet = $subList[0];
+				@subList = @phoneFeatures[$i..$i + $window - 1];
+				$currentSet = $subList[0];
 				for (my $j = 1; $j < $window; $j++)
 				{
-					$currentSet = $currentSet->cartesian_product($subList[$j]);
-					my @concatenatedResults = map {join "#", @{$_}} $currentSet->members;
-					# print "\n\n";
-					$currentSet->clear;
-					# map {print "$_ ";} @concatenatedResults;
-					$currentSet->insert(@concatenatedResults);
+					$subword = substr($word,$i,$j+1);
+					if (exists $productCache{$subword})
+					{
+						$currentSet = $productCache{$subword};
+					}
+					else
+					{
+						$currentSet = $currentSet->cartesian_product($subList[$j]);
+						@concatenatedResults = map {join "#", @{$_}} $currentSet->members;
+						# print "\n\n";
+						$currentSet->clear;
+						# map {print "$_ ";} @concatenatedResults;
+						$currentSet->insert(@concatenatedResults);
+						$productCache{$subword} = $currentSet;
+					}
 				}
 				while (defined(my $featureGram = $currentSet->each))
 				{
@@ -339,6 +362,10 @@ sub ProbPhonemes
 	my $word;
 	my $phonemeScore;
 	my $phoneme;
+	my $currentSet;
+	my @subList;
+	my $subword;
+	my @concatenatedResults;
 	if ($window > 1)
 	{
 		$phonemeScore = 1;
@@ -375,16 +402,25 @@ sub ProbPhonemes
 		}			
 		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
 		{
-			my @subList = @phoneFeatures[$i..$i + $window - 1];
-			my $currentSet = $subList[0];
+			@subList = @phoneFeatures[$i..$i + $window - 1];
+			$currentSet = $subList[0];
 			for (my $j = 1; $j < $window; $j++)
 			{
-				$currentSet = $currentSet->cartesian_product($subList[$j]);
-				my @concatenatedResults = map {join "#", @{$_}} $currentSet->members;
-				# print "\n\n";
-				$currentSet->clear;
-				# map {print "$_ ";} @concatenatedResults;
-				$currentSet->insert(@concatenatedResults);
+				$subword = substr($word,$i,$j+1);
+				if (exists $productCache{$subword})
+				{
+					$currentSet = $productCache{$subword};
+				}
+				else
+				{
+					$currentSet = $currentSet->cartesian_product($subList[$j]);
+					@concatenatedResults = map {join "#", @{$_}} $currentSet->members;
+					# print "\n\n";
+					$currentSet->clear;
+					# map {print "$_ ";} @concatenatedResults;
+					$currentSet->insert(@concatenatedResults);
+					$productCache{$subword} = $currentSet;
+				}
 			}
 			while (defined(my $featureGram = $currentSet->each))
 			{
