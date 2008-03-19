@@ -129,15 +129,6 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
-		# NOT SURE IF THIS IS NECESSARY.  ADDED POST-NGRAM STUFF
-		if ($window > 1)
-		{
-			$word = $delimiter . $word . $delimiter;
-		} 
-		else # This didn't happen before, but it seems like it should
-		{
-			$word = $word . $delimiter;
-		}		
 		if (!$opt_f)
 		{			
 			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
