@@ -6,6 +6,7 @@
 # usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE] [-f FEATURE_CHART] FILE
 
 
+
 use Math::Trig;
 use strict;
 use Getopt::Std;
