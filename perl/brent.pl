@@ -5,6 +5,7 @@
 
 # usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE] [-f FEATURE_CHART] FILE
 
+# TODO Add flag for enabling/disabling backoff
 
 
 use Math::Trig;
@@ -12,6 +13,11 @@ use strict;
 use Getopt::Std;
 use FeatureChart;
 use List::Util qw(first max maxstr min minstr reduce shuffle sum);
+use Readonly;
+
+# Constants
+Readonly::Scalar my $delimiter => " ";			# word delimiter
+Readonly::Scalar my $utteranceDelimiter => "\$";
 
 our ($opt_v, $opt_n, $opt_w, $opt_f);
 my $window = 1;
@@ -21,7 +27,6 @@ my @bestStart;
 my $wordScore;
 my $scoreProduct;
 my $segmentedSentence;
-my $delimiter = " ";			# word delimiter
 my %lexicon = ();
 my %phonemeCounts = ();			# This stores phoneme counts (be they phonemes, phoneme n-grams, or feature n-grams)
 my $totalWords = 0;
@@ -39,7 +44,7 @@ my @subList;
 my @concatenatedResults;
 my $subword;
 my $currentSet;
-$lexicon{"\$"} = 0;				# end of utterance symbol added to lexicon with count 0
+$lexicon{$utteranceDelimiter} = 0;				# end of utterance symbol added to lexicon with count 0
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
@@ -114,7 +119,7 @@ while (<>)
 	}
 	if ($opt_n)
 	{
-		print $lexicon{"\$"} + 1 . ": ";
+		print $lexicon{$utteranceDelimiter} + 1 . ": ";
 	}
 	for (my $i = 0; $i < scalar(@segmentation) - 1; $i++)
 	{
@@ -207,13 +212,13 @@ while (<>)
 		}
 	}
 	$totalWords++;
-	$lexicon{"\$"} += 1;
-	print "\$\n";
+	$lexicon{$utteranceDelimiter} += 1;
+	print "$utteranceDelimiter\n";
 	if ($opt_v)
 	{
 		"\n";
 	}
-#	if ($lexicon{"\$"} > 105)
+#	if ($lexicon{$utteranceDelimiter} > 105)
 #	{
 #		last;
 #	}
@@ -336,7 +341,7 @@ sub R
 		$phonemeScore = 0;
 		foreach my $key (keys %lexicon)
 		{
-			if (!($key eq "\$"))
+			if (!($key eq $utteranceDelimiter))
 			{
 				$phonemeScore += ProbPhonemes($key);				
 			}
