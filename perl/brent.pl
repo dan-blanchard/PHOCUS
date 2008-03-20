@@ -106,6 +106,8 @@ while (<>)
 	my $word;
 	my $phoneme;
 	my $subword;
+	my $wordWindow = $window;
+	my $wordWithBoundary;
 	if ($opt_v)
 	{
 		print "\nSegmented utterance: ";		
@@ -119,7 +121,6 @@ while (<>)
 		$totalWords++;
 		$word = substr($sentence, $segmentation[$i], $segmentation[$i+1] - $segmentation[$i]);
 		print $word . $delimiter;
-		$phonemeCounts{$delimiter} += 1; 	
 		$totalPhonemes += 1;
 		if (exists $lexicon{$word})
 		{
@@ -129,11 +130,25 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
+		# Backoff for words shorter than n
+		if (($wordWindow > 1) && length($word > 1))
+		{
+			$wordWithBoundary = $delimiter . $word . $delimiter;
+			$phonemeCounts{$delimiter} += 1; 	
+		} 
+		else
+		{
+			$wordWithBoundary = $word . $delimiter;
+		}		
+		if (length($word) < $window)
+		{
+			$wordWindow = length($word);
+		}
 		if (!$opt_f)
 		{			
-			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
-				$phoneme = substr($word,$i,$window);
+				$phoneme = substr($wordWithBoundary,$i,$wordWindow);
 				if (exists $phonemeCounts{$phoneme})
 				{
 					$phonemeCounts{$phoneme} += 1; 	
@@ -149,18 +164,18 @@ while (<>)
 		{
 			@phoneFeatures = ();		
 			# Get all feature bundles for current word	
-			for (my $i = 0; $i < length($word); $i++)
+			for (my $i = 0; $i < length($wordWithBoundary); $i++)
 			{
-				$phoneme = substr($word,$i,1);
+				$phoneme = substr($wordWithBoundary,$i,1);
 				push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
 			}			
-			for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
-				@subList = @phoneFeatures[$i..$i + $window - 1];
+				@subList = @phoneFeatures[$i..$i + $wordWindow - 1];
 				$currentSet = $subList[0];
-				for (my $j = 1; $j < $window; $j++)
+				for (my $j = 1; $j < $wordWindow; $j++)
 				{
-					$subword = substr($word,$i,$j+1);
+					$subword = substr($wordWithBoundary,$i,$j+1);
 					if (exists $productCache{$subword})
 					{
 						$currentSet = $productCache{$subword};
@@ -193,7 +208,11 @@ while (<>)
 	}
 	$totalWords++;
 	$lexicon{"\$"} += 1;
-	print "\$\n\n";
+	print "\$\n";
+	if ($opt_v)
+	{
+		"\n";
+	}
 #	if ($lexicon{"\$"} > 105)
 #	{
 #		last;
@@ -210,7 +229,9 @@ sub R
 	my $score = 0;
 	my $phonemeScore;
 	my $word = @_[0];
+	my $wordWindow = $window;
 	my $temp;
+	my $phoneme;
 
 	if ($opt_v)
 	{
@@ -227,7 +248,7 @@ sub R
 	{
 		# get adjusted phoneme counts
 		my $wordWithBoundary;
-		if ($window > 1)
+		if (($wordWindow > 1) && length($word > 1))
 		{
 			$wordWithBoundary = $delimiter . $word . $delimiter;
 		} 
@@ -235,12 +256,15 @@ sub R
 		{
 			$wordWithBoundary = $word . $delimiter;
 		}
-		my $phoneme;
+		if (length($wordWithBoundary) < $window)
+		{
+			$wordWindow = length($wordWithBoundary);
+		}
 		if (!$opt_f)
 		{			
-			for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
+			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
-				$phoneme = substr($wordWithBoundary,$i,$window);
+				$phoneme = substr($wordWithBoundary,$i,$wordWindow);
 				if (exists $wordPhonemeCounts{$phoneme})
 				{
 					$wordPhonemeCounts{$phoneme} += 1;
@@ -254,7 +278,7 @@ sub R
 					$wordPhonemeCounts{$phoneme} = 1;
 				}				
 			}
-			$wordTotalPhonemes = $totalPhonemes + (length($wordWithBoundary) - ($window - 1));			
+			$wordTotalPhonemes = $totalPhonemes + (length($wordWithBoundary) - ($wordWindow - 1));			
 		}
 		else
 		{
@@ -266,11 +290,11 @@ sub R
 				$phoneme = substr($wordWithBoundary,$i,1);
 				push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
 			}			
-			for (my $i = 0; $i < length($wordWithBoundary) - ($window - 1); $i++)
+			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
-				@subList = @phoneFeatures[$i..$i + $window - 1];
+				@subList = @phoneFeatures[$i..$i + $wordWindow - 1];
 				$currentSet = $subList[0];
-				for (my $j = 1; $j < $window; $j++)
+				for (my $j = 1; $j < $wordWindow; $j++)
 				{
 					$subword = substr($word,$i,$j+1);
 					if (exists $productCache{$subword})
@@ -358,7 +382,8 @@ sub ProbPhonemes
 	my @subList;
 	my $subword;
 	my @concatenatedResults;
-	if ($window > 1)
+	my $wordWindow = $window;
+	if (($wordWindow > 1) && length($word > 1))
 	{
 		$phonemeScore = 1;
 		$word = $delimiter . @_[0] . $delimiter;		
@@ -368,11 +393,15 @@ sub ProbPhonemes
 		$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));
 		$word = @_[0] . $delimiter;		
 	}
+	if (length($word) < $window)
+	{
+		$wordWindow = length($word);
+	}	
 	if (!$opt_f)
 	{
-		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+		for (my $i = 0; $i < length($word) - ($wordWindow - 1); $i++)
 		{
-			$phoneme = substr($word,$i,$window);
+			$phoneme = substr($word,$i,$wordWindow);
 			if (exists $wordPhonemeCounts{$phoneme})
 			{
 				$phonemeScore *= $wordPhonemeCounts{$phoneme} / $wordTotalPhonemes;
@@ -392,11 +421,11 @@ sub ProbPhonemes
 			$phoneme = substr($word,$i,1);
 			push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
 		}			
-		for (my $i = 0; $i < length($word) - ($window - 1); $i++)
+		for (my $i = 0; $i < length($word) - ($wordWindow - 1); $i++)
 		{
-			@subList = @phoneFeatures[$i..$i + $window - 1];
+			@subList = @phoneFeatures[$i..$i + $wordWindow - 1];
 			$currentSet = $subList[0];
-			for (my $j = 1; $j < $window; $j++)
+			for (my $j = 1; $j < $wordWindow; $j++)
 			{
 				$subword = substr($word,$i,$j+1);
 				if (exists $productCache{$subword})
