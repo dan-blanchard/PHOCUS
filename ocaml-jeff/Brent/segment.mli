@@ -22,7 +22,7 @@
 (** {2 Invocation} *)
 
  (** Like other OCaML executables, the program is run by typing [./segment] or
-     [ocamlrun segmet] at the command prompt.  Generally it is invoked as follows
+     [ocamlrun segment] at the command prompt.  Generally it is invoked as follows
      (The [./] prefix is omitted for readability).
 
      [segment] {i options} {i file}

@@ -77,6 +77,7 @@ end
 module Make
   (Seg:X.X_TYPE)
   (Seg_D:Delim.DELIM_TYPE)
-  (Word_D:Delim.DELIM_TYPE) :  BRENT_TYPE
+  (Word_D:Delim.DELIM_TYPE) 
+  (Utt_D:Delim.DELIM_TYPE) :  BRENT_TYPE
 
 

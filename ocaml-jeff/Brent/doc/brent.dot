@@ -1,0 +1,11 @@
+digraph G {
+  size="10,7.5";
+  ratio="fill";
+  rotate=90;
+  fontsize="12pt";
+  rankdir = TB ;
+"S" [style=filled, color=darkturquoise];
+"Brent" [style=filled, color=darkturquoise];
+"Segment" [style=filled, color=darkturquoise];
+"Check" [style=filled, color=darkturquoise];
+}

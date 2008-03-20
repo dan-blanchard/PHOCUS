@@ -15,10 +15,11 @@ let cmd_list = List.tl (Array.to_list Sys.argv);;
    5 - records whether there was an error
 *)
 
-let a_size = 6;;
+let a_size = 7;;
 
 let seg_pos = 0;;
 let wrd_pos = 1;;
+let utt_pos = 6;;
 let lex_pos = 2;;
 let msg_pos = 3;;
 let fle_pos = 4;;
@@ -26,7 +27,8 @@ let err_pos = 5;;
 
 
 let cmd_array = Array.make a_size "";;
-Array.set cmd_array wrd_pos " ";;
+Array.set cmd_array wrd_pos " ";; (* default word delimiter is space *)
+Array.set cmd_array utt_pos "$";; (* default utterance boundary is $ *)
 
 let rec process_args list = 
   match list with
@@ -36,6 +38,9 @@ let rec process_args list =
 	  
     | "-wd"::(wd_delim::t) ->
 	Array.set cmd_array wrd_pos wd_delim; process_args t
+
+    | "-ub"::(ub_delim::t) ->
+	Array.set cmd_array utt_pos ub_delim; process_args t
 	  
     | "-l"::(lexfile::t) ->
 	Array.set cmd_array lex_pos lexfile; process_args t
@@ -50,12 +55,14 @@ let rec process_args list =
 
 process_args cmd_list;;
 
-let seg_delim = Array.get cmd_array seg_pos;;
-let wd_delim = Array.get cmd_array wrd_pos;;
+let seg_delim = Array.get cmd_array seg_pos;; (*delimits segments within a word*)
+let wd_delim = Array.get cmd_array wrd_pos;; (*delimits words from each other*)
+let ub_delim = Array.get cmd_array utt_pos;; (*delimits utterances from each other*)
 
 module Seg_D = struct let lb = "" let rb = "" let delim = seg_delim end;;
 module Word_D = struct let lb = "" let rb = "" let delim = wd_delim end;;
-module B = Brent.Make(S)(Seg_D)(Word_D);;
+module Utt_D = struct let lb = "" let rb = "" let delim = ub_delim end;;
+module B = Brent.Make(S)(Seg_D)(Word_D)(Utt_D);;
 
 let main () =
   if Array.get cmd_array err_pos = "true" 
