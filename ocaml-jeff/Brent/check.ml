@@ -13,10 +13,11 @@ let cmd_list = List.tl (Array.to_list Sys.argv);;
    3 - contains the testfile
    4 - contains the goldfile
    5 - contains the blocksize over which to compute precision and recall
-   6 - records whether there was an error
+   6 - contains the value mod of which is printed out
+   7 - records whether there was an error
 *)
 
-let a_size = 7;;
+let a_size = 8;;
 
 let seg_pos = 0;;
 let wrd_pos = 1;;
@@ -24,13 +25,15 @@ let utt_pos = 2;;
 let tst_pos = 3;;
 let gld_pos = 4;;
 let blk_pos = 5;;
-let err_pos = 6;;
+let mod_pos = 6;;
+let err_pos = 7;;
 
 
 let cmd_array = Array.make a_size "";;
 Array.set cmd_array wrd_pos " ";; (* default word delimiter is space *)
 Array.set cmd_array utt_pos "$";; (* default utterance boundary is $ *)
 Array.set cmd_array blk_pos "500";; (* default blocksize is 500 *)
+Array.set cmd_array mod_pos "500";; (* default modvalue is 500 *)
 
 let rec process_args list = 
   match list with
@@ -47,6 +50,9 @@ let rec process_args list =
     | "-b"::(blocksize::t) ->
 	Array.set cmd_array blk_pos blocksize; process_args t
 
+    | "-m"::(modvalue::t) ->
+	Array.set cmd_array mod_pos modvalue; process_args t
+
     | testfile::(goldfile::[]) -> 
 	let () = Array.set cmd_array tst_pos testfile in
 	Array.set cmd_array gld_pos goldfile 
@@ -58,6 +64,7 @@ process_args cmd_list;;
 let seg_delim = Array.get cmd_array seg_pos;; (*delimits segments within a word*)
 let wd_delim = Array.get cmd_array wrd_pos;; (*delimits words from each other*)
 let ub_delim = Array.get cmd_array utt_pos;; (*delimits utterances from each other*)
+let modvalue = int_of_string (Array.get cmd_array mod_pos);; (* gets the mod value*)
 
 module Seg_D = struct let lb = "" let rb = "" let delim = seg_delim end;;
 module Word_D = struct let lb = "" let rb = "" let delim = wd_delim end;;
@@ -219,7 +226,10 @@ let update_tp_fp_fn blocksize test_string gold_string (tp,fp,fn,counter,array) =
     in
     let recl = recall (new_tp +. utterance_tp) (new_fn +. utterance_fn)
     in
-    let () = print_endline ((string_of_int counter)^"\t"^(string_of_float prec)^"\t"^(string_of_float recl))
+    let () = 
+      if (counter mod modvalue = 0) 
+      then print_endline ((string_of_int counter)^"\t"^(string_of_float prec)^"\t"^(string_of_float recl))
+      else ()
     in
     (new_tp +. utterance_tp, new_fp +. utterance_fp, new_fn +. utterance_fn, counter+1, array)
   else
