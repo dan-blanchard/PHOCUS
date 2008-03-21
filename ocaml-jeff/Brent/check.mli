@@ -40,7 +40,7 @@
      [ocamlrun segment] at the command prompt.  Generally it is invoked as follows
      (The [./] prefix is omitted for readability).
 
-     [check] {i options} {i testfile} {i goldfile}
+     [check] {i options testfile goldfile}
 
      The [testfile] is the algorithmically segmented text. The [goldfile] is
      the target segmented text. By default, precision and recall are computed
@@ -53,11 +53,17 @@
 
 (** {2 Options} *)
 
-(** There are three options.  
+(** There are four options.  
     - [-sd segment_delimiter] allows you to specify
       how the segments are delimited. The default is the empty string [""].  
     - [-wd segment_delimiter] allows you to specify how the words are
       delimited. The default is a single space [" "].  
     - [-b blocksize] allows you to specify the size of the chunks of the file
-    which are evaluated for precision and recall.
+    (= number of lines) which are evaluated for precision and recall. The
+    default is 500.
+    - [-m modvalue] allows you to specify which lines should be printed to
+    stdout. For example, if set to 500, then if the line number mod 500 = 0,
+    it will be printed to [stdout]. So if set to 500, then lines 500, 1000,
+    1500, etc.  are printed. The default is 500.
+
 *)
