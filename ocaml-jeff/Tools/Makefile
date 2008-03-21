@@ -22,7 +22,7 @@ all:	$(CMOFILES) $(CMIFILES)
 	$(OCAMLC) -a $(OCAMLFLAGS) $(STD_LIBS) $(ML_SOURCES) -o $(LIB).cma
 
 opt:	$(CMXFILES) $(CMIFILES)
-#	$(OCAMLOPT) -cclib -lunix.cmxa -cclib -lstr.cmxa -a $(OCAMLOPTFLAGS) -o $(LIB).cmxa unix.a str.a $(CMXFILES)
+	$(OCAMLOPT) -cclib -lunix.cmxa -cclib -lstr.cmxa -a $(OCAMLOPTFLAGS) -o $(LIB).cmxa unix.a str.a $(CMXFILES)
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .mly .mll
 
