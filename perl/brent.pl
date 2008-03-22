@@ -223,7 +223,7 @@ while (<>)
 #		last;
 #	}
 }
-close(CORPUS);
+#close(CORPUS);
 
 sub R
 {
