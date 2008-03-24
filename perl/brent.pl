@@ -3,7 +3,7 @@
 # Dan Blanchard
 # MBDP Implementation
 
-# usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE] [-f FEATURE_CHART] FILE
+# usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE -b MIN_WINDOW_SIZE] [-f FEATURE_CHART] FILE
 
 # TODO Add flag for enabling/disabling backoff
 
@@ -19,7 +19,7 @@ use Readonly;
 Readonly::Scalar my $delimiter => " ";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
 
-our ($opt_v, $opt_n, $opt_w, $opt_f);
+our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b);
 my $window = 1;
 my @segmentation;
 my @bestProduct;
@@ -48,7 +48,7 @@ $lexicon{$utteranceDelimiter} = 0;				# end of utterance symbol added to lexicon
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
-getopts('vnpw:f:');
+getopts('vnpw:b:f:');
 
 #	open(CORPUS,"cat $corpus | tr 'A-Z' 'a-z' | tr '\-' ' ' | tr -cd '.a-z\n '|");	
 
@@ -135,8 +135,7 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
-		# Backoff for words shorter than n
-		if (($wordWindow > 1) && length($word > 1))
+		if (($wordWindow > 1) && (length($word) > 1))
 		{
 			$wordWithBoundary = $delimiter . $word . $delimiter;
 			$phonemeCounts{$delimiter} += 1; 	
@@ -145,10 +144,11 @@ while (<>)
 		{
 			$wordWithBoundary = $word . $delimiter;
 		}		
+		# Backoff for words shorter than n
 		if (length($word) < $window)
 		{
 			$wordWindow = length($word);
-		}
+		}			
 		if (!$opt_f)
 		{			
 			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
@@ -253,7 +253,7 @@ sub R
 	{
 		# get adjusted phoneme counts
 		my $wordWithBoundary;
-		if (($wordWindow > 1) && length($word > 1))
+		if (($wordWindow > 1) && (length($word) > 1))
 		{
 			$wordWithBoundary = $delimiter . $word . $delimiter;
 		} 
@@ -261,9 +261,16 @@ sub R
 		{
 			$wordWithBoundary = $word . $delimiter;
 		}
-		if (length($wordWithBoundary) < $window)
+		if (length($word) < $window)
 		{
-			$wordWindow = length($wordWithBoundary);
+			if ($opt_b && (length($wordWithBoundary) >= $opt_b))
+			{
+				$wordWindow = length($wordWithBoundary);
+			}			
+			else
+			{
+				return 0;
+			}
 		}
 		if (!$opt_f)
 		{			
@@ -388,7 +395,7 @@ sub ProbPhonemes
 	my $subword;
 	my @concatenatedResults;
 	my $wordWindow = $window;
-	if (($wordWindow > 1) && length($word > 1))
+	if (($wordWindow > 1) && (length($word) > 1))
 	{
 		$phonemeScore = 1;
 		$word = $delimiter . @_[0] . $delimiter;		
@@ -400,8 +407,15 @@ sub ProbPhonemes
 	}
 	if (length($word) < $window)
 	{
-		$wordWindow = length($word);
-	}	
+		if ($opt_b && (length($word) >= $opt_b))
+		{
+			$wordWindow = length($word);
+		}			
+		else
+		{
+			return 0;
+		}
+	}
 	if (!$opt_f)
 	{
 		for (my $i = 0; $i < length($word) - ($wordWindow - 1); $i++)
