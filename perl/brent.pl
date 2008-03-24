@@ -16,7 +16,7 @@ use List::Util qw(first max maxstr min minstr reduce shuffle sum);
 use Readonly;
 
 # Constants
-Readonly::Scalar my $delimiter => " ";			# word delimiter
+Readonly::Scalar my $delimiter => "#";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
 
 our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d);
@@ -133,19 +133,15 @@ while (<>)
 		{
 			$lexicon{$word} = 1;
 		}
-		if (($wordWindow > 1) && (length($word) > 1))
+		$wordWithBoundary = $word . $delimiter;
+		if ($wordWindow > 1)
 		{
-			$wordWithBoundary = $delimiter . $word . $delimiter;
-			$phonemeCounts{$delimiter} += 1; 	
+			$wordWithBoundary = $delimiter . $wordWithBoundary;
 		} 
-		else
-		{
-			$wordWithBoundary = $word . $delimiter;
-		}		
 		# Backoff for words shorter than n
-		if (length($word) < $window)
+		if (length($wordWithBoundary) < $window)
 		{
-			$wordWindow = length($word);
+			$wordWindow = length($wordWithBoundary);
 		}			
 		if (!$opt_f)
 		{			
@@ -216,7 +212,7 @@ while (<>)
 	{
 		"\n";
 	}
-	# if ($lexicon{$utteranceDelimiter} > 5)
+	# if ($lexicon{$utteranceDelimiter} > 500)
 	# {
 	# 	last;
 	# }
@@ -228,7 +224,7 @@ if ($opt_d)
 	open(NGRAMFILE, ">$opt_d");
 	foreach my $key (keys %phonemeCounts)
 	{
-		print NGRAMFILE $key . "\t" . ($phonemeCounts{$key} / $totalPhonemes) . "\n";
+		print NGRAMFILE $key . "\t" . $phonemeCounts{$key} . "\n";
 	}
 	close(NGRAMFILE);
 }
@@ -261,14 +257,11 @@ sub R
 	{
 		# get adjusted phoneme counts
 		my $wordWithBoundary;
-		if (($wordWindow > 1) && (length($word) > 1))
+		$wordWithBoundary = $word . $delimiter;
+		if ($wordWindow > 1)
 		{
-			$wordWithBoundary = $delimiter . $word . $delimiter;
+			$wordWithBoundary = $delimiter . $wordWithBoundary;
 		} 
-		else
-		{
-			$wordWithBoundary = $word . $delimiter;
-		}
 		if (length($word) < $window)
 		{
 			if ($opt_b && (length($wordWithBoundary) >= $opt_b))
@@ -395,23 +388,21 @@ sub R
 
 sub ProbPhonemes
 {
-	my $word;
-	my $phonemeScore;
+	my $word = @_[0] . $delimiter;
+	my $phonemeScore = 1;
 	my $phoneme;
 	my $currentSet;
 	my @subList;
 	my $subword;
 	my @concatenatedResults;
 	my $wordWindow = $window;
-	if (($wordWindow > 1) && (length($word) > 1))
+	if ($wordWindow > 1)
 	{
-		$phonemeScore = 1;
-		$word = $delimiter . @_[0] . $delimiter;		
+		$word = $delimiter . $word;		
 	}
 	else
 	{
 		$phonemeScore = (1 / (1 - ($wordPhonemeCounts{$delimiter}/ $wordTotalPhonemes)));
-		$word = @_[0] . $delimiter;		
 	}
 	if (length($word) < $window)
 	{
