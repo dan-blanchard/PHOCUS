@@ -3,7 +3,7 @@
 # Dan Blanchard
 # MBDP Implementation
 
-# usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE -b MIN_WINDOW_SIZE] [-f FEATURE_CHART] FILE
+# usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE -b MIN_WINDOW_SIZE -d NGRAMFILE] [-l LEXICON_OUT ][-f FEATURE_CHART] FILE
 
 # TODO Add flag for enabling/disabling backoff
 
@@ -19,7 +19,7 @@ use Readonly;
 Readonly::Scalar my $delimiter => " ";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
 
-our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b);
+our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d);
 my $window = 1;
 my @segmentation;
 my @bestProduct;
@@ -48,9 +48,7 @@ $lexicon{$utteranceDelimiter} = 0;				# end of utterance symbol added to lexicon
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
-getopts('vnpw:b:f:');
-
-#	open(CORPUS,"cat $corpus | tr 'A-Z' 'a-z' | tr '\-' ' ' | tr -cd '.a-z\n '|");	
+getopts('vnpw:b:d:l:f:');
 
 # Check for feature chart file
 if ($opt_f)
@@ -218,12 +216,22 @@ while (<>)
 	{
 		"\n";
 	}
-#	if ($lexicon{$utteranceDelimiter} > 105)
-#	{
-#		last;
-#	}
+	# if ($lexicon{$utteranceDelimiter} > 5)
+	# {
+	# 	last;
+	# }
 }
-#close(CORPUS);
+
+# dump ngram grammar to file if specified
+if ($opt_d)
+{
+	open(NGRAMFILE, ">$opt_d");
+	foreach my $key (keys %phonemeCounts)
+	{
+		print NGRAMFILE $key . "\t" . ($phonemeCounts{$key} / $totalPhonemes) . "\n";
+	}
+	close(NGRAMFILE);
+}
 
 sub R
 {
