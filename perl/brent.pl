@@ -18,6 +18,7 @@ use Readonly;
 # Constants
 Readonly::Scalar my $delimiter => "#";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
+Readonly::Scalar my $sixOverPiSquared => 6 / (pi**2);
 
 our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d, $opt_l);
 my $window = 1;
@@ -353,10 +354,10 @@ sub R
 		}
 		if ($opt_v)
 		{
-			print "First term: " . 6 / (pi**2) . "\n";			
+			print "First term: " . $sixOverPiSquared . "\n";			
 			print "Second term: " . ($wordTypes / ($totalWords + 1)) . "\n";
 		}
-		$score = 6 / (pi**2);
+		$score = $sixOverPiSquared;
 		$score *= ($wordTypes / ($totalWords + 1));
 		$phonemeScore = 0;
 		foreach my $key (keys %lexicon)
