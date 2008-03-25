@@ -273,6 +273,7 @@ sub R
 		{
 			$wordWithBoundary = $delimiter . $wordWithBoundary;
 		} 
+		# If this is set to length($wordWithBoundary) instead of length($word), the model drastically over-segments
 		if (length($word) < $window)
 		{
 			if ($opt_b && (length($wordWithBoundary) >= $opt_b))
