@@ -19,7 +19,7 @@ use Readonly;
 Readonly::Scalar my $delimiter => "#";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
 
-our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d);
+our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d, $opt_l);
 my $window = 1;
 my @segmentation;
 my @bestProduct;
@@ -227,6 +227,17 @@ if ($opt_d)
 		print NGRAMFILE $key . "\t" . $phonemeCounts{$key} . "\n";
 	}
 	close(NGRAMFILE);
+}
+
+# dump ngram grammar to file if specified
+if ($opt_l)
+{
+	open(LEXICON, ">$opt_l");
+	foreach my $key (keys %lexicon)
+	{
+		print LEXICON $key . "\t" . $lexicon{$key} . "\n";
+	}
+	close(LEXICON);
 }
 
 sub R
