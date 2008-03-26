@@ -9,6 +9,9 @@
 -export ([start/1]).
 -export ([start/3]).
 
+sixOverPiSquared() ->
+	6 / math:pow(math:pi(), 2).
+
 start(Input) ->
 	start(Input, "#", "$").
 
@@ -115,7 +118,7 @@ r(Word, WordDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) ->
 			WordTypes = length(Lexicon),
 			if
 				WordTypes > 0 ->
-					Score = 6 / math:pow(math:pi(), 2) * WordTypes / 
+					Score = sixOverPiSquared() * WordTypes / 
 							(TotalWords + 1) / (1 - ((WordTypes - 1) / WordTypes)) * math:pow(((WordTypes - 1) / WordTypes),2),
 					Pids = [prob_phonemes(self(), Key, WordDelimiter, PhonemeCounts, TotalPhonemes) || Key <- orddict:fetch_keys(Lexicon)],
 					PhonScore = lists:foldl(
