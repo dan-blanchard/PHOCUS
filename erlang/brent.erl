@@ -25,17 +25,18 @@ mdbp(Utterances, WordDelimiter, UtteranceDelimiter) ->
 	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, 0, 0).
 
 all_possible_words(Utterance) ->
-	LastCharSeq = lists:seq(1, length(Utterance),
+	UtteranceLength = length(Utterance),
+	FirstCharSeq = lists:seq(1, UtteranceLength),
 	lists:flatmap(
-				fun(LastChar) ->
-					FirstCharSeq = lists:seq(1,LastChar - 1),
+				fun(FirstChar) ->				
+					LastCharSeq = lists:seq(FirstChar,UtteranceLength),
 					lists:map(
-							fun(FirstChar) ->
-								string:substr(Utterance, FirstChar, LastChar - FirstChar + 1)
+							fun(LastChar) ->
+								string:sub_string(Utterance, FirstChar, LastChar)
 							end,
-							FirstCharSeq)
+							LastCharSeq)
 				end,
-				LastCharSeq).
+				FirstCharSeq).
 	
 % Loops through all utterances in list, running the various parts of the MBDP algorithm
 mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) when length(Utterances) > 0 ->
@@ -48,8 +49,8 @@ mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, T
 								end
 							end,
 							dict:new(),
-							Pids), 				
-	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
+							Pids),
+	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, RScores),
 	Segmentation = path_search(BestStart, length(First), []),
 	{NewTotalWords, NewTotalPhonemes} = lexicon_updater(lists:sort(Segmentation ++ [length(First) + 1]),
 																						First,
@@ -109,13 +110,13 @@ lexicon_updater(_Segmentation, _Utterance, _WordDelimiter, TotalWords, TotalPhon
 
 
 % MBDP outer loop
-mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
+mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, RScores) ->
 	LastCharSeq = lists:seq(1, length(Utterance)),
 	BestList = lists:foldl(
 		fun (LastChar, OldBestList) ->
 			SubUtterance = lists:sublist(Utterance, LastChar),
-			NewBestList = OldBestList ++ [{r(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes), 1}],
-			mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, NewBestList, 2, LastChar)
+			NewBestList = OldBestList ++ [{dict:fetch(SubUtterance, RScores), 1}],
+			mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, NewBestList, 2, LastChar, RScores)
 		end,
 		[],
 		LastCharSeq),
@@ -128,9 +129,9 @@ mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonem
 
 
 % MBDP inner loop
-mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, BestList, FirstChar, LastChar) when FirstChar =< LastChar -> 
+mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, BestList, FirstChar, LastChar, RScores) when FirstChar =< LastChar -> 
 	SubUtterance = [Second] ++ Rest,
-	WordScore = r(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
+	WordScore = dict:fetch(SubUtterance, RScores),
 	{OldBestProduct, _} = lists:nth(FirstChar - 1, BestList),
 	{LastCharBestProduct, _} = lists:nth(LastChar, BestList),
 	ScoreProduct = WordScore * OldBestProduct,
@@ -140,9 +141,9 @@ mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWord
 		true ->
 			NewBestList = BestList
 	end,
-	mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, NewBestList, FirstChar + 1, LastChar);
+	mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, NewBestList, FirstChar + 1, LastChar, RScores);
 
-mdbp_inner(_SubUtterance, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes, BestList, _FirstChar, _LastChar) ->
+mdbp_inner(_SubUtterance, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes, BestList, _FirstChar, _LastChar, _RScores) ->
 	BestList.
 
 
