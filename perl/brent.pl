@@ -212,10 +212,10 @@ while (<>)
 	{
 		"\n";
 	}
-	if ($lexicon{$utteranceDelimiter} > 2)
-	{
-		last;
-	}
+	# if ($lexicon{$utteranceDelimiter} > 2)
+	# {
+	# 	last;
+	# }
 }
 
 # dump ngram grammar to file if specified
