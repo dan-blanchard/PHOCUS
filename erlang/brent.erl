@@ -24,10 +24,31 @@ mdbp(Utterances, WordDelimiter, UtteranceDelimiter) ->
 	ets:insert(phoneme_counts, {WordDelimiter, 0}),
 	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, 0, 0).
 
+all_possible_words(Utterance) ->
+	LastCharSeq = lists:seq(1, length(Utterance),
+	lists:flatmap(
+				fun(LastChar) ->
+					FirstCharSeq = lists:seq(1,LastChar - 1),
+					lists:map(
+							fun(FirstChar) ->
+								string:substr(Utterance, FirstChar, LastChar - FirstChar + 1)
+							end,
+							FirstCharSeq)
+				end,
+				LastCharSeq).
 	
 % Loops through all utterances in list, running the various parts of the MBDP algorithm
 mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) when length(Utterances) > 0 ->
 	[First | Rest] = Utterances,
+	Pids = [r(self(), Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) || Word <- all_possible_words(First)],
+	RScores = lists:foldl(
+							fun (_Process, OldDict) ->
+								receive {PossWord, RScore} ->
+									dict:store(PossWord, RScore, OldDict)
+								end
+							end,
+							dict:new(),
+							Pids), 				
 	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
 	Segmentation = path_search(BestStart, length(First), []),
 	{NewTotalWords, NewTotalPhonemes} = lexicon_updater(lists:sort(Segmentation ++ [length(First) + 1]),
@@ -124,6 +145,14 @@ mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWord
 mdbp_inner(_SubUtterance, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes, BestList, _FirstChar, _LastChar) ->
 	BestList.
 
+
+% Finds R value for word as new process
+r(Parent, Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
+	spawn(
+		fun () ->
+			Score = r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
+			Parent ! {Word, Score}
+		end).
 
 % Finds R value for word
 r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
