@@ -125,7 +125,7 @@ while (<>)
 		$totalWords++;
 		$word = substr($sentence, $segmentation[$i], $segmentation[$i+1] - $segmentation[$i]);
 		print $word . $delimiter;
-		$totalPhonemes += 1;
+		$totalPhonemes++;
 		if (exists $lexicon{$word})
 		{
 			$lexicon{$word} += 1;
@@ -213,10 +213,10 @@ while (<>)
 	{
 		"\n";
 	}
-	# if ($lexicon{$utteranceDelimiter} > 500)
-	# {
-	# 	last;
-	# }
+	if ($lexicon{$utteranceDelimiter} > 2)
+	{
+		last;
+	}
 }
 
 # dump ngram grammar to file if specified
@@ -245,7 +245,7 @@ sub R
 {
 	# wordTypes is only used for novel words so the new word cancels out the subtraction
 	%wordPhonemeCounts = ();
-	$wordTotalPhonemes = 0;
+	$wordTotalPhonemes = $totalPhonemes;
 	my $wordTypes = scalar(keys %lexicon);
 	my $score = 0;
 	my $phonemeScore;
@@ -287,7 +287,8 @@ sub R
 			}
 		}
 		if (!$opt_f)
-		{			
+		{		
+			# Get adjusted phoneme counts for posited word
 			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
 				$phoneme = substr($wordWithBoundary,$i,$wordWindow);
@@ -302,13 +303,12 @@ sub R
 				else
 				{
 					$wordPhonemeCounts{$phoneme} = 1;
-				}				
+				}	
+				$wordTotalPhonemes++;			
 			}
-			$wordTotalPhonemes = $totalPhonemes + (length($wordWithBoundary) - ($wordWindow - 1));			
 		}
 		else
 		{
-			$wordTotalPhonemes = $totalPhonemes;
 			@phoneFeatures = ();		
 			# Get all feature bundles for current word	
 			for (my $i = 0; $i < length($wordWithBoundary); $i++)
@@ -343,6 +343,11 @@ sub R
 					if (exists $wordPhonemeCounts{$featureGram})
 					{
 						$wordPhonemeCounts{$featureGram} += 1; 	
+					}
+					# Added this elsif clause because i thought it was necessary, but unsure.  look over
+					elsif (exists $phonemeCounts{$featureGram})
+					{
+						$wordPhonemeCounts{$phoneme} = $phonemeCounts{$phoneme} + 1;
 					}
 					else
 					{
