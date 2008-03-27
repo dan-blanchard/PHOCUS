@@ -61,7 +61,7 @@ lexicon_updater(Segmentation, Utterance, WordDelimiter, Lexicon, TotalWords, Pho
 					orddict:update_counter(NewWord, 1, Lexicon), 
 					TotalWords + 1, 
 					orddict:update_counter(WordDelimiter, 1, NewPhonemeCounts), 
-					TotalPhonemes + length(NewWord));
+					TotalPhonemes + length(NewWord) + 1);
 
 lexicon_updater(_Segmentation, _Utterance, _WordDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) ->
 	{Lexicon, TotalWords, PhonemeCounts, TotalPhonemes}.
@@ -116,8 +116,9 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 														orddict:update_counter([Phoneme], 1, OldCounts)
 													end,
 													PhonemeCounts,
-													WordWithBoundary),
+													WordWithBoundary),														
 					WordTotalPhonemes = TotalPhonemes + length(WordWithBoundary),
+					% io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n",[TotalPhonemes,length(WordWithBoundary)]),
 					Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (orddict:fetch_keys(Lexicon) -- [UtteranceDelimiter])],
 					PhonScore = lists:foldl(
 											fun (_Process, Total) ->
@@ -135,8 +136,8 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 					ThirdBottom = 1 - ((WordTypes - 1) / WordTypes) * (CurrentWordScore + PhonScore),
 					ThirdTerm = ThirdTop / ThirdBottom,					
 					FourthTerm = math:pow(((WordTypes - 1) / WordTypes),2),
-					io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n",[WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
-					io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n",[Lexicon,PhonemeCounts, WordPhonemeCounts,WordTotalPhonemes,FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
+					% io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n",[WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
+					% io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n",[Lexicon,PhonemeCounts, WordPhonemeCounts,WordTotalPhonemes,FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
 					FirstTerm * SecondTerm * ThirdTerm * FourthTerm;
 				true ->
 					0
