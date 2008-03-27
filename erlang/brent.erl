@@ -5,8 +5,6 @@
 -export ([start/1]).
 -export ([start/3]).
 
-% Until I can figure out a way around it, use actual ascii values for # (35) and $ (36)
-
 % Main function used to run segmenter
 start(Input) ->
 	start(Input, "#", "$").
