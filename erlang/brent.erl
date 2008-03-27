@@ -123,22 +123,23 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 			if
 				WordTypes > 0 ->
 					WordWithBoundary = Word ++ WordDelimiter,
-					WordPhonemeCounts = 
-						lists:foldl(
-							fun (Phoneme, OldCounts) ->
-								NotIsKey = not dict:is_key([Phoneme], OldCounts),
-								IsPhonemeMember = ets:member(phoneme_counts, [Phoneme]),
-								if									
-									NotIsKey and IsPhonemeMember ->
-										dict:update_counter([Phoneme], ets:lookup_element(phoneme_counts, [Phoneme], 2), OldCounts);
-									true ->
-										dict:update_counter([Phoneme], 1, OldCounts)
-								end
-							end,
-							dict:new(),
-							WordWithBoundary), 					
+					WordPhonemeCounts = ets:new(word_phoneme_counts,[]),
+					lists:foreach(
+						fun (Phoneme) ->
+							IsPhonemeWordMember = ets:member(WordPhonemeCounts, [Phoneme]),
+							IsPhonemeMember = ets:member(phoneme_counts, [Phoneme]),
+							if									
+								IsPhonemeWordMember ->
+									ets:update_counter(WordPhonemeCounts, [Phoneme], 1);
+								IsPhonemeMember ->
+									ets:insert(WordPhonemeCounts, {[Phoneme], ets:lookup_element(phoneme_counts, [Phoneme], 2) + 1});
+								true ->
+									ets:insert(WordPhonemeCounts, {[Phoneme], 1})
+							end
+						end,
+						WordWithBoundary), 					
 					WordTotalPhonemes = TotalPhonemes + length(WordWithBoundary),
-					% io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n", [TotalPhonemes, length(WordWithBoundary)]),
+					io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n", [TotalPhonemes, length(WordWithBoundary)]),
 					Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (lists:map(
 																																fun ({Key,_Value}) ->
 																																	Key
@@ -161,8 +162,8 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 					ThirdBottom = 1 - ((WordTypes - 1) / WordTypes) * (CurrentWordScore + PhonScore),
 					ThirdTerm = ThirdTop / ThirdBottom, 					
 					FourthTerm = math:pow(((WordTypes - 1) / WordTypes), 2),
-					% io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n", [WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
-					% io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n", [Lexicon, PhonemeCounts, WordPhonemeCounts, WordTotalPhonemes, FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
+					io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n", [WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
+					io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n", [ets:tab2list(lexicon), ets:tab2list(phoneme_counts), ets:tab2list(WordPhonemeCounts), WordTotalPhonemes, FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
 					FirstTerm * SecondTerm * ThirdTerm * FourthTerm;
 				true ->
 					0
@@ -172,11 +173,11 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 phoneme_score(Parent, Phoneme, WordPhonemeCounts, TotalPhonemes) ->
 	spawn(
 		fun() ->
-			IsKey = dict:is_key([Phoneme], WordPhonemeCounts),
+			IsWordMember = ets:member(WordPhonemeCounts, [Phoneme]),
 			IsMember = ets:member(phoneme_counts, [Phoneme]),
 			if 
-				IsKey ->
-					Score = dict:fetch([Phoneme], WordPhonemeCounts) / TotalPhonemes;
+				IsWordMember ->
+					Score = ets:lookup_element(WordPhonemeCounts, [Phoneme], 2) / TotalPhonemes;
 				IsMember ->
 					Score = ets:lookup_element(phoneme_counts, [Phoneme], 2) / TotalPhonemes;
 				true ->
@@ -195,7 +196,7 @@ prob_phonemes(Parent, Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	if 
 		TotalPhonemes > 0 ->
-			Score = 1 / (1 - (dict:fetch(WordDelimiter, WordPhonemeCounts) / TotalPhonemes)),
+			Score = 1 / (1 - (ets:lookup_element(WordPhonemeCounts, WordDelimiter, 2) / TotalPhonemes)),
 			Me = self(),
 			Pids = [phoneme_score(Me, P, WordPhonemeCounts, TotalPhonemes) || P <- Word],
 			lists:foldl(
