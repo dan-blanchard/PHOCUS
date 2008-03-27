@@ -22,7 +22,9 @@ mdbp(Utterances, WordDelimiter, UtteranceDelimiter) ->
 	ets:new(lexicon, [named_table]),
 	ets:insert(lexicon, {UtteranceDelimiter, 0}),
 	ets:insert(phoneme_counts, {WordDelimiter, 0}),
-	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, 0, 0).
+	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, 0, 0),
+	ets:delete(lexicon),
+	ets:delete(phoneme_counts).
 
 all_possible_words(Utterance) ->
 	UtteranceLength = length(Utterance),
