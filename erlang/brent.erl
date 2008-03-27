@@ -16,25 +16,27 @@ start(Input, WordDelimiter, UtteranceDelimiter) ->
 	mdbp(Utterances, WordDelimiter, UtteranceDelimiter).
 	
 mdbp(Utterances, WordDelimiter, UtteranceDelimiter) ->
-	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, orddict:update_counter(UtteranceDelimiter,0,orddict:new()), 0, orddict:update_counter(WordDelimiter,0,orddict:new()), 0).
+	ets:new(phoneme_counts, [named_table]),
+	ets:new(lexicon, [named_table]),
+	ets:insert(lexicon, {UtteranceDelimiter, 0}),
+	ets:insert(phoneme_counts, {WordDelimiter, 0}),
+	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, 0, 0).
 		
-mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) when length(Utterances) > 0 ->
+mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) when length(Utterances) > 0 ->
 	[First | Rest] = Utterances,
-	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes),
+	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
 	Segmentation = path_search(BestStart, length(First), []),
-	{NewLexicon, NewTotalWords, NewPhonemeCounts, NewTotalPhonemes} = lexicon_updater(lists:sort(Segmentation ++ [length(First) + 1]), 
-																						First, 
+	{NewTotalWords, NewTotalPhonemes} = lexicon_updater(lists:sort(Segmentation ++ [length(First) + 1]),
+																						First,
 																						WordDelimiter,
-																						Lexicon, 
-																						TotalWords, 
-																						PhonemeCounts, 
+																						TotalWords,
 																						TotalPhonemes),
-	io:format("~s~n",[UtteranceDelimiter]),
-	mdbp_utterance_loop(Rest, WordDelimiter, UtteranceDelimiter, 
-						orddict:update_counter(UtteranceDelimiter,1,NewLexicon),
-						NewTotalWords + 1, NewPhonemeCounts, NewTotalPhonemes);
+	io:format("~s~n", [UtteranceDelimiter]),
+	ets:update_counter(lexicon, UtteranceDelimiter, 1),
+	mdbp_utterance_loop(Rest, WordDelimiter, UtteranceDelimiter,
+						NewTotalWords + 1, NewTotalPhonemes);
 	
-mdbp_utterance_loop(Utterances, _WordDelimiter, _UtteranceDelimiter, _Lexicon, _TotalWords, _PhonemeCounts, _TotalPhonemes) ->
+mdbp_utterance_loop(Utterances, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes) ->
 	Utterances.
 	
 path_search(BestStart, FirstChar, Path) when FirstChar > 1 ->
@@ -44,35 +46,45 @@ path_search(BestStart, FirstChar, Path) when FirstChar > 1 ->
 path_search(_BestStart, _FirstChar, Path) ->
 	Path.
 
-lexicon_updater(Segmentation, Utterance, WordDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) when length(Segmentation) > 1 ->
+lexicon_updater(Segmentation, Utterance, WordDelimiter, TotalWords, TotalPhonemes) when length(Segmentation) > 1 ->
 	[StartChar, EndChar | Rest] = Segmentation,
 	NewWord = lists:sublist(Utterance, StartChar, EndChar - StartChar),
-	io:format("~s",[NewWord ++ [WordDelimiter]]),	
-	NewPhonemeCounts = 
-		lists:foldl(
-			fun (Phoneme, OldCounts) ->
-				orddict:update_counter([Phoneme], 1, OldCounts) % need to make phoneme a list so it's considered a string
+	io:format("~s", [NewWord ++ [WordDelimiter]]), 	
+	lists:foreach(
+			fun (Phoneme) ->
+				IsMember = ets:member(phoneme_counts, [Phoneme]),
+				if 
+					IsMember ->
+						ets:update_counter(phoneme_counts, [Phoneme], 1); % need to make phoneme a list so it's considered a string
+					true ->
+						ets:insert(phoneme_counts, {[Phoneme], 1})
+				end
 			end,
-			PhonemeCounts,
 			NewWord),
-	lexicon_updater([EndChar] ++ Rest, 
-					Utterance, 
+	IsMember = ets:member(lexicon, NewWord),
+	if
+		IsMember ->
+			ets:update_counter(lexicon, NewWord, 1);
+		true ->
+			ets:insert(lexicon, {NewWord, 1})
+	end,
+	ets:update_counter(phoneme_counts, WordDelimiter, 1),
+	lexicon_updater([EndChar] ++ Rest,
+					Utterance,
 					WordDelimiter,
-					orddict:update_counter(NewWord, 1, Lexicon), 
-					TotalWords + 1, 
-					orddict:update_counter(WordDelimiter, 1, NewPhonemeCounts), 
+					TotalWords + 1,
 					TotalPhonemes + length(NewWord) + 1);
 
-lexicon_updater(_Segmentation, _Utterance, _WordDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) ->
-	{Lexicon, TotalWords, PhonemeCounts, TotalPhonemes}.
+lexicon_updater(_Segmentation, _Utterance, _WordDelimiter, TotalWords, TotalPhonemes) ->
+	{TotalWords, TotalPhonemes}.
 
-mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) ->
-	LastCharSeq = lists:seq(1,length(Utterance)),
+mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
+	LastCharSeq = lists:seq(1, length(Utterance)),
 	BestList = lists:foldl(
 		fun (LastChar, OldBestList) ->
 			SubUtterance = lists:sublist(Utterance, LastChar),
-			NewBestList = OldBestList ++ [{r(SubUtterance, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes), 1}],
-			mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes, NewBestList, 2, LastChar)
+			NewBestList = OldBestList ++ [{r(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes), 1}],
+			mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, NewBestList, 2, LastChar)
 		end,
 		[],
 		LastCharSeq),
@@ -83,9 +95,9 @@ mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, Ph
 		end,
 		BestList).
 
-mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes, BestList, FirstChar, LastChar) when FirstChar =< LastChar -> 
+mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, BestList, FirstChar, LastChar) when FirstChar =< LastChar -> 
 	SubUtterance = [Second] ++ Rest,
-	WordScore = r(SubUtterance, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes),
+	WordScore = r(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
 	{OldBestProduct, _} = lists:nth(FirstChar - 1, BestList),
 	{LastCharBestProduct, _} = lists:nth(LastChar, BestList),
 	ScoreProduct = WordScore * OldBestProduct,
@@ -95,31 +107,44 @@ mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, Lexicon, 
 		true ->
 			NewBestList = BestList
 	end,
-	mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes, NewBestList, FirstChar + 1, LastChar);
+	mdbp_inner(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, NewBestList, FirstChar + 1, LastChar);
 
-mdbp_inner(_SubUtterance, _WordDelimiter, _UtteranceDelimiter, _Lexicon, _TotalWords, _PhonemeCounts, _TotalPhonemes, BestList, _FirstChar, _LastChar) ->
+mdbp_inner(_SubUtterance, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes, BestList, _FirstChar, _LastChar) ->
 	BestList.
 
-r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) ->
-	IsKey = orddict:is_key(Word, Lexicon),
+r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
+	IsMember = ets:member(lexicon, Word),
 	if 
-		IsKey ->
-			WordCount = orddict:fetch(Word, Lexicon),
+		IsMember ->
+			WordCount = ets:lookup_element(lexicon, Word, 2),
  			(WordCount / (TotalWords + 1)) * math:pow(((WordCount - 1) - 1) / WordCount, 2);
 		true ->
-			WordTypes = length(Lexicon),
+			WordTypes = ets:info(lexicon, size),
 			if
 				WordTypes > 0 ->
 					WordWithBoundary = Word ++ WordDelimiter,
-					WordPhonemeCounts =	lists:foldl(
-													fun (Phoneme, OldCounts) ->
-														orddict:update_counter([Phoneme], 1, OldCounts)
-													end,
-													PhonemeCounts,
-													WordWithBoundary),														
+					WordPhonemeCounts = 
+						lists:foldl(
+							fun (Phoneme, OldCounts) ->
+								NotIsKey = not dict:is_key([Phoneme], OldCounts),
+								IsPhonemeMember = ets:member(phoneme_counts, [Phoneme]),
+								if									
+									NotIsKey and IsPhonemeMember ->
+										dict:update_counter([Phoneme], ets:lookup_element(phoneme_counts, [Phoneme], 2), OldCounts);
+									true ->
+										dict:update_counter([Phoneme], 1, OldCounts)
+								end
+							end,
+							dict:new(),
+							WordWithBoundary), 					
 					WordTotalPhonemes = TotalPhonemes + length(WordWithBoundary),
-					% io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n",[TotalPhonemes,length(WordWithBoundary)]),
-					Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (orddict:fetch_keys(Lexicon) -- [UtteranceDelimiter])],
+					% io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n", [TotalPhonemes, length(WordWithBoundary)]),
+					Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (lists:map(
+																																fun ({Key,_Value}) ->
+																																	Key
+																																end,
+						 																										ets:tab2list(lexicon)) 
+																													-- [UtteranceDelimiter])],
 					PhonScore = lists:foldl(
 											fun (_Process, Total) ->
 												receive WordScore ->
@@ -127,49 +152,52 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 												end
 											end,
 											0,
-											Pids),				
+											Pids), 				
 					CurrentWordScore = prob_phonemes(WordWithBoundary, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes),
 					%	0.607927101854027 = 6 / math:pow(math:pi(), 2) 
 					FirstTerm = 0.607927101854027,
 					SecondTerm = (WordTypes / (TotalWords + 1)),
 					ThirdTop = 	CurrentWordScore,
 					ThirdBottom = 1 - ((WordTypes - 1) / WordTypes) * (CurrentWordScore + PhonScore),
-					ThirdTerm = ThirdTop / ThirdBottom,					
-					FourthTerm = math:pow(((WordTypes - 1) / WordTypes),2),
-					% io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n",[WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
-					% io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n",[Lexicon,PhonemeCounts, WordPhonemeCounts,WordTotalPhonemes,FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
+					ThirdTerm = ThirdTop / ThirdBottom, 					
+					FourthTerm = math:pow(((WordTypes - 1) / WordTypes), 2),
+					% io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n", [WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
+					% io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n", [Lexicon, PhonemeCounts, WordPhonemeCounts, WordTotalPhonemes, FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
 					FirstTerm * SecondTerm * ThirdTerm * FourthTerm;
 				true ->
 					0
 			end
 	end.
 
-phoneme_score(Parent, Phoneme, PhonemeCounts, TotalPhonemes) ->
+phoneme_score(Parent, Phoneme, WordPhonemeCounts, TotalPhonemes) ->
 	spawn(
 		fun() ->
-			IsKey = orddict:is_key([Phoneme], PhonemeCounts),
+			IsKey = dict:is_key([Phoneme], WordPhonemeCounts),
+			IsMember = ets:member(phoneme_counts, [Phoneme]),
 			if 
 				IsKey ->
-					Score = orddict:fetch([Phoneme], PhonemeCounts) / TotalPhonemes;
+					Score = dict:fetch([Phoneme], WordPhonemeCounts) / TotalPhonemes;
+				IsMember ->
+					Score = ets:lookup_element(phoneme_counts, [Phoneme], 2) / TotalPhonemes;
 				true ->
 					Score = 0
 			end,
 			Parent ! Score				
 		end).
 
-prob_phonemes(Parent, Word, WordDelimiter, PhonemeCounts, TotalPhonemes) ->
+prob_phonemes(Parent, Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	spawn(
 		fun () ->
-			Score = prob_phonemes(Word, WordDelimiter, PhonemeCounts, TotalPhonemes),
+			Score = prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes),
 			Parent ! Score
 		end).
 
-prob_phonemes(Word, WordDelimiter, PhonemeCounts, TotalPhonemes) ->
+prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	if 
 		TotalPhonemes > 0 ->
-			Score = 1 / (1 - (orddict:fetch(WordDelimiter, PhonemeCounts) / TotalPhonemes)),
+			Score = 1 / (1 - (dict:fetch(WordDelimiter, WordPhonemeCounts) / TotalPhonemes)),
 			Me = self(),
-			Pids = [phoneme_score(Me, P, PhonemeCounts, TotalPhonemes) || P <- Word],
+			Pids = [phoneme_score(Me, P, WordPhonemeCounts, TotalPhonemes) || P <- Word],
 			lists:foldl(
 						fun (_Process, Total) ->
 							receive PhonScore ->
