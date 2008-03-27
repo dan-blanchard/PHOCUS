@@ -125,7 +125,6 @@ while (<>)
 		$totalWords++;
 		$word = substr($sentence, $segmentation[$i], $segmentation[$i+1] - $segmentation[$i]);
 		print $word . $delimiter;
-		$totalPhonemes++;
 		if (exists $lexicon{$word})
 		{
 			$lexicon{$word} += 1;
@@ -157,7 +156,7 @@ while (<>)
 				{
 					$phonemeCounts{$phoneme} = 1;					
 				}
-				$totalPhonemes += 1;
+				$totalPhonemes++;
 			}			
 		}
 		else
@@ -201,12 +200,12 @@ while (<>)
 					{
 						$phonemeCounts{$featureGram} = 1;					
 					}
-					$totalPhonemes += 1;
+					$totalPhonemes++;
 				}					
 			}
 		}
 	}
-	$totalWords++;
+	$totalWords++; # not sure this extra + 1 to total words is necessary.  appears to be for utteranceDelimiter
 	$lexicon{$utteranceDelimiter} += 1;
 	print "$utteranceDelimiter\n";
 	if ($opt_v)
