@@ -5,7 +5,7 @@
 -export ([start/1]).
 -export ([start/3]).
 
-
+% Until I can figure out a way around it, use actual ascii values for # (35) and $ (36)
 
 start(Input) ->
 	start(Input, "#", "$").
@@ -47,11 +47,11 @@ path_search(_BestStart, _FirstChar, Path) ->
 lexicon_updater(Segmentation, Utterance, WordDelimiter, Lexicon, TotalWords, PhonemeCounts, TotalPhonemes) when length(Segmentation) > 1 ->
 	[StartChar, EndChar | Rest] = Segmentation,
 	NewWord = lists:sublist(Utterance, StartChar, EndChar - StartChar),
-	io:format("~s",[NewWord ++ WordDelimiter]),	
+	io:format("~s",[NewWord ++ [WordDelimiter]]),	
 	NewPhonemeCounts = 
 		lists:foldl(
 			fun (Phoneme, OldCounts) ->
-				orddict:update_counter(Phoneme, 1, OldCounts)
+				orddict:update_counter([Phoneme], 1, OldCounts) % need to make phoneme a list so it's considered a string
 			end,
 			PhonemeCounts,
 			NewWord),
@@ -110,13 +110,14 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 			WordTypes = length(Lexicon),
 			if
 				WordTypes > 0 ->
+					WordWithBoundary = Word ++ WordDelimiter,
 					WordPhonemeCounts =	lists:foldl(
 													fun (Phoneme, OldCounts) ->
-														orddict:update_counter(Phoneme, 1, OldCounts)
+														orddict:update_counter([Phoneme], 1, OldCounts)
 													end,
 													PhonemeCounts,
-													Word ++ WordDelimiter),
-					WordTotalPhonemes = TotalPhonemes + length(Word) + 1,
+													WordWithBoundary),
+					WordTotalPhonemes = TotalPhonemes + length(WordWithBoundary),
 					Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (orddict:fetch_keys(Lexicon) -- [UtteranceDelimiter])],
 					PhonScore = lists:foldl(
 											fun (_Process, Total) ->
@@ -126,7 +127,7 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 											end,
 											0,
 											Pids),				
-					CurrentWordScore = prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes),
+					CurrentWordScore = prob_phonemes(WordWithBoundary, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes),
 					%	0.607927101854027 = 6 / math:pow(math:pi(), 2) 
 					FirstTerm = 0.607927101854027,
 					SecondTerm = (WordTypes / (TotalWords + 1)),
@@ -134,7 +135,7 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 					ThirdBottom = 1 - ((WordTypes - 1) / WordTypes) * (CurrentWordScore + PhonScore),
 					ThirdTerm = ThirdTop / ThirdBottom,					
 					FourthTerm = math:pow(((WordTypes - 1) / WordTypes),2),
-					io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n",[Word, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
+					io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n",[WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
 					io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n",[Lexicon,PhonemeCounts, WordPhonemeCounts,WordTotalPhonemes,FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
 					FirstTerm * SecondTerm * ThirdTerm * FourthTerm;
 				true ->
@@ -145,10 +146,10 @@ r(Word, WordDelimiter, UtteranceDelimiter, Lexicon, TotalWords, PhonemeCounts, T
 phoneme_score(Parent, Phoneme, PhonemeCounts, TotalPhonemes) ->
 	spawn(
 		fun() ->
-			IsKey = orddict:is_key(Phoneme, PhonemeCounts),
+			IsKey = orddict:is_key([Phoneme], PhonemeCounts),
 			if 
 				IsKey ->
-					Score = orddict:fetch(Phoneme, PhonemeCounts) / TotalPhonemes;
+					Score = orddict:fetch([Phoneme], PhonemeCounts) / TotalPhonemes;
 				true ->
 					Score = 0
 			end,
