@@ -7,21 +7,27 @@
 
 % Until I can figure out a way around it, use actual ascii values for # (35) and $ (36)
 
+% Main function used to run segmenter
 start(Input) ->
 	start(Input, "#", "$").
 
+% Main function used to run segmenter (with optional arguments)
 start(Input, WordDelimiter, UtteranceDelimiter) ->
 	{ok, Data} = file:read_file(Input),
 	Utterances = string:tokens(binary_to_list(Data), "\n"),
 	mdbp(Utterances, WordDelimiter, UtteranceDelimiter).
+
 	
+% Does the preliminary stuff and then runs the utterance loop
 mdbp(Utterances, WordDelimiter, UtteranceDelimiter) ->
 	ets:new(phoneme_counts, [named_table]),
 	ets:new(lexicon, [named_table]),
 	ets:insert(lexicon, {UtteranceDelimiter, 0}),
 	ets:insert(phoneme_counts, {WordDelimiter, 0}),
 	mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, 0, 0).
-		
+
+	
+% Loops through all utterances in list, running the various parts of the MBDP algorithm
 mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) when length(Utterances) > 0 ->
 	[First | Rest] = Utterances,
 	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
@@ -39,6 +45,8 @@ mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, T
 mdbp_utterance_loop(Utterances, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes) ->
 	Utterances.
 	
+	
+% Retrieves the segmentation from BestStart list
 path_search(BestStart, FirstChar, Path) when FirstChar > 1 ->
 	NewFirstChar = lists:nth(FirstChar - 1, BestStart),
 	path_search(BestStart, NewFirstChar, Path ++ [NewFirstChar]);
@@ -46,6 +54,8 @@ path_search(BestStart, FirstChar, Path) when FirstChar > 1 ->
 path_search(_BestStart, _FirstChar, Path) ->
 	Path.
 
+
+% Adds the new words to the lexicon, and updates phoneme counts
 lexicon_updater(Segmentation, Utterance, WordDelimiter, TotalWords, TotalPhonemes) when length(Segmentation) > 1 ->
 	[StartChar, EndChar | Rest] = Segmentation,
 	NewWord = lists:sublist(Utterance, StartChar, EndChar - StartChar),
@@ -78,6 +88,8 @@ lexicon_updater(Segmentation, Utterance, WordDelimiter, TotalWords, TotalPhoneme
 lexicon_updater(_Segmentation, _Utterance, _WordDelimiter, TotalWords, TotalPhonemes) ->
 	{TotalWords, TotalPhonemes}.
 
+
+% MBDP outer loop
 mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 	LastCharSeq = lists:seq(1, length(Utterance)),
 	BestList = lists:foldl(
@@ -95,6 +107,8 @@ mdbp_outer(Utterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonem
 		end,
 		BestList).
 
+
+% MBDP inner loop
 mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, BestList, FirstChar, LastChar) when FirstChar =< LastChar -> 
 	SubUtterance = [Second] ++ Rest,
 	WordScore = r(SubUtterance, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes),
@@ -112,6 +126,8 @@ mdbp_inner([_First, Second | Rest], WordDelimiter, UtteranceDelimiter, TotalWord
 mdbp_inner(_SubUtterance, _WordDelimiter, _UtteranceDelimiter, _TotalWords, _TotalPhonemes, BestList, _FirstChar, _LastChar) ->
 	BestList.
 
+
+% Finds R value for word
 r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 	IsMember = ets:member(lexicon, Word),
 	if 
@@ -171,6 +187,8 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 			end
 	end.
 
+
+% Calculates score for a single phoneme, as its own process
 phoneme_score(Parent, Phoneme, WordPhonemeCounts, TotalPhonemes) ->
 	spawn(
 		fun() ->
@@ -187,13 +205,16 @@ phoneme_score(Parent, Phoneme, WordPhonemeCounts, TotalPhonemes) ->
 			Parent ! Score				
 		end).
 
+
+% Calculates scores for all phonemes in a word, as a new process
 prob_phonemes(Parent, Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	spawn(
 		fun () ->
 			Score = prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes),
 			Parent ! Score
 		end).
-
+		
+% Calculates scores for all phonemes in a word
 prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	if 
 		TotalPhonemes > 0 ->
