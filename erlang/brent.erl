@@ -139,7 +139,7 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 						end,
 						WordWithBoundary), 					
 					WordTotalPhonemes = TotalPhonemes + length(WordWithBoundary),
-					io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n", [TotalPhonemes, length(WordWithBoundary)]),
+					% io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n", [TotalPhonemes, length(WordWithBoundary)]),
 					Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (lists:map(
 																																fun ({Key,_Value}) ->
 																																	Key
@@ -155,6 +155,7 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 											0,
 											Pids), 				
 					CurrentWordScore = prob_phonemes(WordWithBoundary, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes),
+					ets:delete(WordPhonemeCounts),
 					%	0.607927101854027 = 6 / math:pow(math:pi(), 2) 
 					FirstTerm = 0.607927101854027,
 					SecondTerm = (WordTypes / (TotalWords + 1)),
@@ -162,8 +163,8 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 					ThirdBottom = 1 - ((WordTypes - 1) / WordTypes) * (CurrentWordScore + PhonScore),
 					ThirdTerm = ThirdTop / ThirdBottom, 					
 					FourthTerm = math:pow(((WordTypes - 1) / WordTypes), 2),
-					io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n", [WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
-					io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n", [ets:tab2list(lexicon), ets:tab2list(phoneme_counts), ets:tab2list(WordPhonemeCounts), WordTotalPhonemes, FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
+					% io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n", [WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
+					% io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n", [ets:tab2list(lexicon), ets:tab2list(phoneme_counts), ets:tab2list(WordPhonemeCounts), WordTotalPhonemes, FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
 					FirstTerm * SecondTerm * ThirdTerm * FourthTerm;
 				true ->
 					0
