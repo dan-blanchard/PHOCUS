@@ -236,9 +236,9 @@ prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 							IsMember = ets:member(phoneme_counts, [Phoneme]),
 							if 
 								IsWordMember ->
-									Score * ets:lookup_element(WordPhonemeCounts, [Phoneme], 2) / TotalPhonemes;
+									Score * (ets:lookup_element(WordPhonemeCounts, [Phoneme], 2) / TotalPhonemes);
 								IsMember ->
-									Score * ets:lookup_element(phoneme_counts, [Phoneme], 2) / TotalPhonemes;
+									Score * (ets:lookup_element(phoneme_counts, [Phoneme], 2) / TotalPhonemes);
 								true ->
 									0
 							end
