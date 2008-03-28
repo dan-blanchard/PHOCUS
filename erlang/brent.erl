@@ -218,24 +218,6 @@ r(Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 	end.
 
 
-% Calculates score for a single phoneme, as its own process
-phoneme_score(Parent, Phoneme, WordPhonemeCounts, TotalPhonemes) ->
-	spawn(
-		fun() ->
-			IsWordMember = ets:member(WordPhonemeCounts, [Phoneme]),
-			IsMember = ets:member(phoneme_counts, [Phoneme]),
-			if 
-				IsWordMember ->
-					Score = ets:lookup_element(WordPhonemeCounts, [Phoneme], 2) / TotalPhonemes;
-				IsMember ->
-					Score = ets:lookup_element(phoneme_counts, [Phoneme], 2) / TotalPhonemes;
-				true ->
-					Score = 0
-			end,
-			Parent ! Score				
-		end).
-
-
 % Calculates scores for all phonemes in a word, as a new process
 prob_phonemes(Parent, Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	spawn(
@@ -248,17 +230,21 @@ prob_phonemes(Parent, Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	if 
 		TotalPhonemes > 0 ->
-			Score = 1 / (1 - (ets:lookup_element(WordPhonemeCounts, WordDelimiter, 2) / TotalPhonemes)),
-			Me = self(),
-			Pids = [phoneme_score(Me, P, WordPhonemeCounts, TotalPhonemes) || P <- Word],
 			lists:foldl(
-						fun (_Process, Total) ->
-							receive PhonScore ->
-								Total * PhonScore
+						fun(Phoneme, Score) ->
+							IsWordMember = ets:member(WordPhonemeCounts, [Phoneme]),
+							IsMember = ets:member(phoneme_counts, [Phoneme]),
+							if 
+								IsWordMember ->
+									Score * ets:lookup_element(WordPhonemeCounts, [Phoneme], 2) / TotalPhonemes;
+								IsMember ->
+									Score * ets:lookup_element(phoneme_counts, [Phoneme], 2) / TotalPhonemes;
+								true ->
+									0
 							end
 						end,
-						Score,
-						Pids);
+						1 / (1 - (ets:lookup_element(WordPhonemeCounts, WordDelimiter, 2) / TotalPhonemes)),
+						Word);
 		true ->
 			0
 	end.
