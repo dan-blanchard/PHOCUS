@@ -7,7 +7,7 @@ open ExtList
 
 let wordDelimiter = ' '
 let utteranceDelimiter = "$"
-let corpus = "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/br-phono.txt"
+let corpus = "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
 let sentenceList = ref []
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
@@ -66,22 +66,8 @@ let r word =
 				wordWithBoundary;
 			wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
 			score := (6.0 /. piSquared) *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
-			let phonemeScore = ref 0.0 in
-			Hashtbl.iter 
-				(fun key wordScore ->
-					if key <> utteranceDelimiter then
-						phonemeScore := !phonemeScore +. (prob_phonemes key wordPhonemeCounts !wordTotalPhonemes)
-					else
-						()
-				)
-				lexicon;
-			if !phonemeScore > 0.0 then
-				begin
-					let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
-					score := !score *. (wordPhonemeScore /. (1.0 -. ((wordTypesFloat -. 1.0) /. wordTypesFloat) *. (wordPhonemeScore +. !phonemeScore)))
-				end
-			else
-				score := 0.0;
+			let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
+			score := !score *. (wordPhonemeScore /. (1.0 -. ((wordTypesFloat -. 1.0) /. wordTypesFloat) *. wordPhonemeScore));
 			score := !score *. ((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0;
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
@@ -129,7 +115,7 @@ let mbdp_outer sentence =
 	let lastCharList = List.init ((String.length sentence) - 1) (fun a -> a) in
 	let bestList = List.fold_left
 		(fun oldBestList lastChar ->
-			let subUtterance = String.sub sentence 0 ((String.length sentence) - 1) in
+			let subUtterance = String.sub sentence 0 (lastChar + 1) in
 			let newBestList = oldBestList @ [((r subUtterance), 0)] in
 			mbdp_inner subUtterance 1 lastChar newBestList
 		)
@@ -196,13 +182,13 @@ List.iter
 		let bestStartList = mbdp_outer sentence in
 		(* let bestStartList = mbdp_imperative sentence in *)
 		let segmentation = (List.sort (find_segmentation bestStartList (List.length bestStartList) [])) @ [String.length sentence] in
-		(* printf "\nLexicon = ";
+		(* printf "\nLexicon = %s" "";
 		hashstrint_print lexicon;
-		printf "\nPhoneme counts = ";
+		printf "\nPhoneme counts = %s" "";
 		hashchart_print phonemeCounts; *)
 		(* printf "bestStartList = ";
 		List.iter (fun x -> printf "%d\t" x) bestStartList; *)
-		(* printf "\nsegmentation = ";
+		(* printf "\nsegmentation = %s" "";
 		List.iter (fun x -> printf "%d\t" x) segmentation; *)
 		printf "\n%d: " ((Hashtbl.find lexicon utteranceDelimiter) + 1);
 		lexicon_updater segmentation sentence; 
