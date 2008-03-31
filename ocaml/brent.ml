@@ -95,19 +95,18 @@ let r word =
 
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
-		let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
-		let wordScore = r newSubUtterance in
-		let oldBestProduct = fst (List.nth bestList (firstChar - 1)) in
-		let lastCharBestProduct = fst (List.nth bestList lastChar) in
-		let scoreProduct = wordScore *. oldBestProduct in
-		let newBestList = ref [] in
-		let () = 
+		begin
+			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
+			let wordScore = r newSubUtterance in
+			let oldBestProduct = fst (List.nth bestList (firstChar - 1)) in
+			let lastCharBestProduct = fst (List.nth bestList lastChar) in
+			let scoreProduct = wordScore *. oldBestProduct in
+			(* Possibly not tail recursive, but it works *)
 			if scoreProduct > lastCharBestProduct then
-				newBestList := (List.take (lastChar - 1) bestList) @ [(scoreProduct, firstChar)] @ (List.drop lastChar bestList)
-		else	
-			newBestList := bestList
-		in
-		mbdp_inner subUtterance (firstChar + 1) lastChar !newBestList
+				mbdp_inner subUtterance (firstChar + 1) lastChar ((List.take (lastChar - 1) bestList) @ [(scoreProduct, firstChar)] @ (List.drop lastChar bestList))
+			else	
+				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
+		end
 	else
 		bestList;;
 
@@ -186,7 +185,7 @@ List.iter
 		hashstrint_print lexicon;
 		printf "\nPhoneme counts = %s" "";
 		hashchart_print phonemeCounts; *)
-		(* printf "bestStartList = ";
+		(* printf "bestStartList = %s" "";
 		List.iter (fun x -> printf "%d\t" x) bestStartList; *)
 		(* printf "\nsegmentation = %s" "";
 		List.iter (fun x -> printf "%d\t" x) segmentation; *)
