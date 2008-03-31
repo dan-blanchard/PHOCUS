@@ -16,37 +16,31 @@ use List::Util qw(first max maxstr min minstr reduce shuffle sum);
 use Readonly;
 
 # Constants
-Readonly::Scalar my $delimiter => "#";			# word delimiter
+Readonly::Scalar my $delimiter => " ";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
 Readonly::Scalar my $sixOverPiSquared => 6 / (pi**2);
 
 our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d, $opt_l);
 my $window = 1;
-my @segmentation;
-my @bestProduct;
-my @bestStart;
-my $wordScore;
-my $scoreProduct;
-my $segmentedSentence;
 my %lexicon = ();
+my %prefixes = (); 				# all prefixes and lexical items
 my %phonemeCounts = ();			# This stores phoneme counts (be they phonemes, phoneme n-grams, or feature n-grams)
 my $totalWords = 0;
 my $totalPhonemes = 0;
 my @words;
 my $firstChar;
 my @segmentation;
-my $segmentedSentence;
 my %wordPhonemeCounts = ();		# Phoneme counts for novel word
 my $wordTotalPhonemes = 0;		# Total phonemes for novel word
 my $featureChart;
 my @phoneFeatures;
 my %productCache = ();
-my @subList;
-my @concatenatedResults;
-my $subword;
-my $currentSet;
+my $currentLine;
 $lexicon{$utteranceDelimiter} = 0;				# end of utterance symbol added to lexicon with count 0
 $phonemeCounts{$delimiter} = 0;
+
+my $tooManyLiveCounter = 0;
+my $okLiveCounter = 0;
 
 # Handle arguments
 getopts('vnpw:b:d:l:f:');
@@ -66,44 +60,159 @@ if ($opt_w > 1)
 	$window = $opt_w;
 }
 
-while (<>)
+sub processSentence
 {
-	chomp;
-	my $sentence = $_;
-	@segmentation = ();
-	$sentence =~ s/((\s)|(\.))+//g;
-	$segmentedSentence = $sentence;
-
-	@bestProduct = ();
-	@bestStart = ();
-	
-	
+	my $sentence = shift;
+	my $segmentedSentence = $sentence;
+	$sentence =~ s/\Q$delimiter\E+//g;
+	my @segmentation;
+	my @bestProduct;
+	my @bestStart;
+	my $wordScore;
+	my $scoreProduct;
+	my %liveNodes = ();
+	my %syncNodeCounts = ();
+	my %deadForFamiliar = ();
+	my %deadForNovel = ();
+	my $subUtterance;
+	my $syncNode;
 	for (my $lastChar = 0; $lastChar < length($sentence); $lastChar++)
 	{
-		push(@bestProduct, R(substr($sentence,0,$lastChar + 1)));	
+		$subUtterance = substr($sentence,0, $lastChar + 1);		
+		push(@bestProduct, R($subUtterance));
 		push(@bestStart, 0);
+		%liveNodes = ();
+		$liveNodes{0} = 1;
+		%syncNodeCounts = ();
+		$syncNodeCounts{0} = 0;
+		if (!(exists $prefixes{$subUtterance}))
+		{
+			$deadForFamiliar{0} = 1;
+		}
+		# After loop, bestStart[lastChar] points to beginning of the optimal word ending with lastChar
+		# bestProduct[lastChar] contains the actual score for the optimal word
 		for ($firstChar = 1; $firstChar <= $lastChar; $firstChar++)
 		{
-			$wordScore = R(substr($sentence,$firstChar,($lastChar + 1) - $firstChar));		
-			$scoreProduct = $wordScore * $bestProduct[$firstChar - 1];
-			if ($scoreProduct > $bestProduct[$lastChar])
+			$liveNodes{$firstChar} = 1;
+			$syncNodeCounts{$firstChar} = 0;
+			$subUtterance = substr($sentence, $firstChar, ($lastChar + 1) - $firstChar);
+			if (!(exists $prefixes{$subUtterance}))
 			{
-				$bestProduct[$lastChar] = $scoreProduct;
-				$bestStart[$lastChar] = $firstChar;
+				$deadForFamiliar{$firstChar} = 1;
+				if (exists $deadForNovel{$firstChar})
+				{
+					# print "Previous length: " . (keys %liveNodes) . "\n";
+					delete $liveNodes{$firstChar};
+					# print "Following length: " . (keys %liveNodes) . "\n";
+					# print "Delete node for familiar\n";
+				}
 			}
+			if (exists $liveNodes{$firstChar})
+			{
+				$wordScore = R($subUtterance);
+				$scoreProduct = $wordScore * $bestProduct[$firstChar - 1];
+				if ($scoreProduct > $bestProduct[$lastChar])
+				{
+					# print "I'm better than this possible word: " . substr($sentence, $bestStart[$lastChar], ($lastChar + 1) - $bestStart[$lastChar]) . "\n";
+					if ((exists $deadForFamiliar{$firstChar}) && (exists $deadForFamiliar{$bestStart[$lastChar]}))#(!(exists $lexicon{substr($sentence, $bestStart[$lastChar], ($lastChar + 1) - $bestStart[$lastChar])})))
+					{
+						$deadForNovel{$bestStart[$lastChar]} = 1;
+#						if (exists $deadForFamiliar{$bestStart[$lastChar]})
+#						{
+							# print "Previous length: " . (keys %liveNodes) . "\n";
+							delete $liveNodes{$bestStart[$lastChar]};
+							# print "Following length: " . (keys %liveNodes) . "\n";
+							# print "Delete node for novel\n";
+						# }
+					}
+					# else
+					# {
+					# 	print "Didn't delete\n";
+					# }
+					$bestProduct[$lastChar] = $scoreProduct;
+					$bestStart[$lastChar] = $firstChar;
+				}
+				if ((exists $deadForNovel{$firstChar}) && (exists $deadForNovel{$firstChar}))
+				{
+					# print "Previous length: " . (keys %liveNodes) . "\n";
+					delete $liveNodes{$firstChar};
+					# print "Following length: " . (keys %liveNodes) . "\n";
+					# print "Delete node for both\n";
+				}
+			}
+			else
+			{
+				# print "Dead Node\n";
+			}
+			# print "Live nodes in loop: " . (keys %liveNodes) . "\n";			
 		}
+		# print "Live node length: " . (keys %liveNodes) . "\n";
+		if (scalar(keys %liveNodes) > 7)
+		{
+			$tooManyLiveCounter++;
+		}
+		else
+		{
+			$okLiveCounter++;
+		}
+		# print "LastChar: $lastChar\n";	
+		# print "Dead for familiar: " . scalar(keys %deadForFamiliar) . "\n";
+		# print "Dead for novel: " . scalar(keys %deadForNovel) . "\n";		
+		# print "Lives nodes:";
+		foreach my $liveNode (keys %liveNodes)
+		{
+			# print "$liveNode ";
+			# if ($liveNode <= $lastChar)
+			# {
+				# print "In live node check: $liveNode\n";
+				$syncNode = $bestStart[$liveNode - 1];
+				while ($syncNode > 0)
+				{
+					$syncNodeCounts{$syncNode} = $syncNodeCounts{$syncNode} + 1;
+					# print "In sync node check: $syncNode\t$syncNodeCounts{$syncNode}\tout of " . scalar(keys %liveNodes) . "\n";
+					if ($syncNodeCounts{$syncNode} == scalar(keys %liveNodes))
+					{
+						# print "\n\nFound sync node\n\n";
+						$firstChar = $bestStart[$syncNode];
+						while ($firstChar > 0)
+						{
+							push(@segmentation, $firstChar);
+							$firstChar = $bestStart[$firstChar - 1];
+						}
+						updateLexicon(substr($sentence, 0, $syncNode), 0, @segmentation);
+						return substr($sentence, $syncNode);
+					}
+					$syncNode = $bestStart[$syncNode - 1];
+				}
+			# }
+			# else
+			# {
+			# 	print "\n\nLive node too late!\n\n";
+			# }
+		}
+		# print "\n";
 	}
+	# print "Too many live: $tooManyLiveCounter\tOk live: $okLiveCounter\n";	
 	if ($opt_v)
 	{
 		print "Best start: @bestStart\n";
-		print "Best product: @bestProduct\n"		
+		print "Best product: @bestProduct\n"
 	}
 	$firstChar = $bestStart[length($sentence) - 1];
 	while ($firstChar > 0)
 	{
-		push(@segmentation,$firstChar);
+		push(@segmentation, $firstChar);
 		$firstChar = $bestStart[$firstChar - 1];
 	}
+	updateLexicon($sentence, 1, @segmentation);
+	return 0;
+}
+
+sub updateLexicon
+{
+	my $sentence = shift;
+	my $endOfUtterance = shift;
+	my @segmentation = @_;
 	@segmentation = sort { $a <=> $b } @segmentation;
 	unshift(@segmentation, 0);
 	push(@segmentation,length($sentence));
@@ -112,23 +221,31 @@ while (<>)
 	my $subword;
 	my $wordWindow = $window;
 	my $wordWithBoundary;
-	if ($opt_v)
-	{
-		print "\nSegmented utterance: ";		
-	}
-	if ($opt_n)
-	{
-		print $lexicon{$utteranceDelimiter} + 1 . ": ";
-	}
+	my $currentSet;
+	my @subList;
+	my @concatenatedResults;
 	for (my $i = 0; $i < scalar(@segmentation) - 1; $i++)
 	{
 		$totalWords++;
 		$word = substr($sentence, $segmentation[$i], $segmentation[$i+1] - $segmentation[$i]);
 		print $word . $delimiter;
+		for (my $j = 1; $j <= length($word); $j++)
+		{
+			$subword = substr($word, 0, $j);
+			if (exists $prefixes{$subword})
+			{
+				$prefixes{$subword} += 1;
+			}
+			else
+			{
+				$prefixes{$subword} = 1;
+			}
+			# print "Added prefix: $subword\n";
+		}
 		if (exists $lexicon{$word})
 		{
 			$lexicon{$word} += 1;
-		}			
+		}
 		else
 		{
 			$lexicon{$word} = 1;
@@ -137,44 +254,44 @@ while (<>)
 		if ($wordWindow > 1)
 		{
 			$wordWithBoundary = $delimiter . $wordWithBoundary;
-		} 
+		}
 		# Backoff for words shorter than n
 		if (length($wordWithBoundary) < $window)
 		{
 			$wordWindow = length($wordWithBoundary);
-		}			
+		}
 		if (!$opt_f)
-		{			
+		{
 			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
-				$phoneme = substr($wordWithBoundary,$i,$wordWindow);
+				$phoneme = substr($wordWithBoundary, $i, $wordWindow);
 				if (exists $phonemeCounts{$phoneme})
 				{
-					$phonemeCounts{$phoneme} += 1; 	
+					$phonemeCounts{$phoneme} += 1;
 				}
 				else
 				{
-					$phonemeCounts{$phoneme} = 1;					
+					$phonemeCounts{$phoneme} = 1;
 				}
 				$totalPhonemes++;
-			}			
+			}
 		}
 		else
 		{
-			@phoneFeatures = ();		
-			# Get all feature bundles for current word	
+			@phoneFeatures = ();
+			# Get all feature bundles for current word
 			for (my $i = 0; $i < length($wordWithBoundary); $i++)
 			{
-				$phoneme = substr($wordWithBoundary,$i,1);
+				$phoneme = substr($wordWithBoundary, $i,1);
 				push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
-			}			
+			}
 			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
 				@subList = @phoneFeatures[$i..$i + $wordWindow - 1];
 				$currentSet = $subList[0];
 				for (my $j = 1; $j < $wordWindow; $j++)
 				{
-					$subword = substr($wordWithBoundary,$i,$j+1);
+					$subword = substr($wordWithBoundary, $i, $j+1);
 					if (exists $productCache{$subword})
 					{
 						$currentSet = $productCache{$subword};
@@ -194,24 +311,47 @@ while (<>)
 				{
 					if (exists $phonemeCounts{$featureGram})
 					{
-						$phonemeCounts{$featureGram} += 1; 	
+						$phonemeCounts{$featureGram} += 1;
 					}
 					else
 					{
-						$phonemeCounts{$featureGram} = 1;					
+						$phonemeCounts{$featureGram} = 1;
 					}
 					$totalPhonemes++;
-				}					
+				}
 			}
 		}
 	}
-	$totalWords++; # not sure this extra + 1 to total words is necessary.  appears to be for utteranceDelimiter
-	$lexicon{$utteranceDelimiter} += 1;
-	print "$utteranceDelimiter\n";
+	if ($endOfUtterance)
+	{
+		$totalWords++; # not sure this extra + 1 to total words is necessary.  appears to be for utteranceDelimiter
+		$lexicon{$utteranceDelimiter} += 1;
+		print "$utteranceDelimiter\n";
+	}
 	if ($opt_v)
 	{
 		"\n";
 	}
+}
+
+while (<>)
+{
+	chomp;
+	$currentLine = $_;
+	if ($opt_n)
+	{
+		print $lexicon{$utteranceDelimiter} + 1 . ": ";
+	}
+	if ($opt_v)
+	{
+		print "\nSegmented utterance: ";
+	}
+
+	while ($currentLine)
+	{
+		$currentLine = processSentence($currentLine);
+	}
+
 	# if ($lexicon{$utteranceDelimiter} > 2)
 	# {
 	# 	last;
@@ -252,6 +392,10 @@ sub R
 	my $wordWindow = $window;
 	my $temp;
 	my $phoneme;
+	my $currentSet;
+	my @subList;
+	my $subword;
+	my @concatenatedResults;
 
 	if ($opt_v)
 	{
@@ -272,25 +416,25 @@ sub R
 		if ($wordWindow > 1)
 		{
 			$wordWithBoundary = $delimiter . $wordWithBoundary;
-		} 
+		}
 		# If this is set to length($wordWithBoundary) instead of length($word), the model drastically over-segments
 		if (length($word) < $window)
 		{
 			if ($opt_b && (length($wordWithBoundary) >= $opt_b))
 			{
 				$wordWindow = length($wordWithBoundary);
-			}			
+			}
 			else
 			{
 				return 0;
 			}
 		}
 		if (!$opt_f)
-		{		
+		{
 			# Get adjusted phoneme counts for posited word
 			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
-				$phoneme = substr($wordWithBoundary,$i,$wordWindow);
+				$phoneme = substr($wordWithBoundary, $i, $wordWindow);
 				if (exists $wordPhonemeCounts{$phoneme})
 				{
 					$wordPhonemeCounts{$phoneme} += 1;
@@ -302,26 +446,26 @@ sub R
 				else
 				{
 					$wordPhonemeCounts{$phoneme} = 1;
-				}	
-				$wordTotalPhonemes++;			
+				}
+				$wordTotalPhonemes++;
 			}
 		}
 		else
 		{
-			@phoneFeatures = ();		
-			# Get all feature bundles for current word	
+			@phoneFeatures = ();
+			# Get all feature bundles for current word
 			for (my $i = 0; $i < length($wordWithBoundary); $i++)
 			{
-				$phoneme = substr($wordWithBoundary,$i,1);
+				$phoneme = substr($wordWithBoundary, $i,1);
 				push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
-			}			
+			}
 			for (my $i = 0; $i < length($wordWithBoundary) - ($wordWindow - 1); $i++)
 			{
 				@subList = @phoneFeatures[$i..$i + $wordWindow - 1];
 				$currentSet = $subList[0];
 				for (my $j = 1; $j < $wordWindow; $j++)
 				{
-					$subword = substr($word,$i,$j+1);
+					$subword = substr($word, $i, $j+1);
 					if (exists $productCache{$subword})
 					{
 						$currentSet = $productCache{$subword};
@@ -341,7 +485,7 @@ sub R
 				{
 					if (exists $wordPhonemeCounts{$featureGram})
 					{
-						$wordPhonemeCounts{$featureGram} += 1; 	
+						$wordPhonemeCounts{$featureGram} += 1;
 					}
 					# Added this elsif clause because i thought it was necessary, but unsure.  look over
 					elsif (exists $phonemeCounts{$featureGram})
@@ -350,46 +494,49 @@ sub R
 					}
 					else
 					{
-						$wordPhonemeCounts{$featureGram} = 1;					
+						$wordPhonemeCounts{$featureGram} = 1;
 					}
 					$wordTotalPhonemes++;
-				}					
+				}
 			}
 		}
 		if ($opt_v)
 		{
-			print "First term: " . $sixOverPiSquared . "\n";			
+			print "First term: " . $sixOverPiSquared . "\n";
 			print "Second term: " . ($wordTypes / ($totalWords + 1)) . "\n";
 		}
 		$score = $sixOverPiSquared;
 		$score *= ($wordTypes / ($totalWords + 1));
-		$phonemeScore = 0;
-		foreach my $key (keys %lexicon)
-		{
-			if (!($key eq $utteranceDelimiter))
-			{
-				$phonemeScore += ProbPhonemes($key);				
-			}
-		}
-		if ($phonemeScore > 0)
-		{
-			$temp = ProbPhonemes($word);
-			$score *= $temp / (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore));
+		# Third-bottom is basically 1 and we can drastically reduce computation time by removing it, so let's comment out the following
+		# $phonemeScore = 0;
+		# foreach my $key (keys %lexicon)
+		# {
+		# 	if (!($key eq $utteranceDelimiter))
+		# 	{
+		# 		$phonemeScore += ProbPhonemes($key);
+		# 	}
+		# }
+		# if ($phonemeScore > 0)
+		# {
+			# $temp = ProbPhonemes($word);
+			# $score *= $temp / (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore));
+			$score *= ProbPhonemes($word);
 			if ($opt_v)
-			{				
-				print "Third-top: " . $temp . "\n";
-				print "Third-bottom: " . (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore)) . "\n";
-				print "Third term: " . $temp / (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore)) . "\n";
+			{
+				print "Third term: " . $temp . "\n";
+				# print "Third-top: " . $temp . "\n";
+				# print "Third-bottom: " . (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore)) . "\n";
+				# print "Third term: " . $temp / (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore)) . "\n";
 			}
-		}
-		else
-		{
-			$score = 0;
-		}
+		# }
+		# else
+		# {
+		# 	$score = 0;
+		# }
 		$score *= (($wordTypes - 1) / $wordTypes) ** 2;
 		if ($opt_v)
 		{
-			print "Fourth term: " . (($wordTypes - 1) / $wordTypes) ** 2 . "\n";			
+			print "Fourth term: " . (($wordTypes - 1) / $wordTypes) ** 2 . "\n";
 		}
 	}
 	if ($opt_v)
@@ -397,8 +544,8 @@ sub R
 		print "Lexicon:\n@{[ %lexicon ]}\n";
 		print "Actual phoneme Counts:\n@{[ %phonemeCounts ]}\n";
 		print "Novel-word phoneme Counts:\n@{[ %wordPhonemeCounts ]}\n";
-		print "Total phonemes: $wordTotalPhonemes\n"; 
-		print "score for $word: $score\n";		
+		print "Total phonemes: $wordTotalPhonemes\n";
+		print "score for $word: $score\n";
 	}
 	return $score;
 }
@@ -415,7 +562,7 @@ sub ProbPhonemes
 	my $wordWindow = $window;
 	if ($wordWindow > 1)
 	{
-		$word = $delimiter . $word;		
+		$word = $delimiter . $word;
 	}
 	else
 	{
@@ -426,7 +573,7 @@ sub ProbPhonemes
 		if ($opt_b && (length($word) >= $opt_b))
 		{
 			$wordWindow = length($word);
-		}			
+		}
 		else
 		{
 			return 0;
@@ -436,7 +583,7 @@ sub ProbPhonemes
 	{
 		for (my $i = 0; $i < length($word) - ($wordWindow - 1); $i++)
 		{
-			$phoneme = substr($word,$i,$wordWindow);
+			$phoneme = substr($word, $i, $wordWindow);
 			if (exists $wordPhonemeCounts{$phoneme})
 			{
 				$phonemeScore *= $wordPhonemeCounts{$phoneme} / $wordTotalPhonemes;
@@ -445,24 +592,24 @@ sub ProbPhonemes
 			{
 				$phonemeScore *= $phonemeCounts{$phoneme} / $wordTotalPhonemes;
 			}
-		}		
+		}
 	}
 	else
 	{
-		@phoneFeatures = ();		
-		# Get all feature bundles for current word	
+		@phoneFeatures = ();
+		# Get all feature bundles for current word
 		for (my $i = 0; $i < length($word); $i++)
 		{
-			$phoneme = substr($word,$i,1);
+			$phoneme = substr($word, $i,1);
 			push(@phoneFeatures, $featureChart->featuresForPhone($phoneme))
-		}			
+		}
 		for (my $i = 0; $i < length($word) - ($wordWindow - 1); $i++)
 		{
 			@subList = @phoneFeatures[$i..$i + $wordWindow - 1];
 			$currentSet = $subList[0];
 			for (my $j = 1; $j < $wordWindow; $j++)
 			{
-				$subword = substr($word,$i,$j+1);
+				$subword = substr($word, $i, $j+1);
 				if (exists $productCache{$subword})
 				{
 					$currentSet = $productCache{$subword};
@@ -488,7 +635,7 @@ sub ProbPhonemes
 				{
 					$phonemeScore *= $phonemeCounts{$featureGram} / $wordTotalPhonemes;
 				}
-			}					
+			}
 		}
 	}
 	return $phonemeScore;
