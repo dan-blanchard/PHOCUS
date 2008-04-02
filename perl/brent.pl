@@ -39,9 +39,6 @@ my $currentLine;
 $lexicon{$utteranceDelimiter} = 0;				# end of utterance symbol added to lexicon with count 0
 $phonemeCounts{$delimiter} = 0;
 
-my $tooManyLiveCounter = 0;
-my $okLiveCounter = 0;
-
 # Handle arguments
 getopts('vnpw:b:d:l:f:');
 
@@ -93,18 +90,18 @@ sub processSentence
 		# bestProduct[lastChar] contains the actual score for the optimal word
 		for ($firstChar = 1; $firstChar <= $lastChar; $firstChar++)
 		{
-			$liveNodes{$firstChar} = 1;
 			$syncNodeCounts{$firstChar} = 0;
-			$subUtterance = substr($sentence, $firstChar, ($lastChar + 1) - $firstChar);
-			if (!(exists $prefixes{$subUtterance}))
+			if (!(exists $deadForNovel{$firstChar}) || !(exists $deadForNovel{$firstChar}))
 			{
-				$deadForFamiliar{$firstChar} = 1;
-				if (exists $deadForNovel{$firstChar})
+				$liveNodes{$firstChar} = 1;
+				$subUtterance = substr($sentence, $firstChar, ($lastChar + 1) - $firstChar);
+				if (!(exists $prefixes{$subUtterance}))
 				{
-					# print "Previous length: " . (keys %liveNodes) . "\n";
-					delete $liveNodes{$firstChar};
-					# print "Following length: " . (keys %liveNodes) . "\n";
-					# print "Delete node for familiar\n";
+					$deadForFamiliar{$firstChar} = 1;
+					if (exists $deadForNovel{$firstChar})
+					{
+						delete $liveNodes{$firstChar};
+					}
 				}
 			}
 			if (exists $liveNodes{$firstChar})
@@ -113,86 +110,50 @@ sub processSentence
 				$scoreProduct = $wordScore * $bestProduct[$firstChar - 1];
 				if ($scoreProduct > $bestProduct[$lastChar])
 				{
-					# print "I'm better than this possible word: " . substr($sentence, $bestStart[$lastChar], ($lastChar + 1) - $bestStart[$lastChar]) . "\n";
-					if ((exists $deadForFamiliar{$firstChar}) && (exists $deadForFamiliar{$bestStart[$lastChar]}))#(!(exists $lexicon{substr($sentence, $bestStart[$lastChar], ($lastChar + 1) - $bestStart[$lastChar])})))
-					{
-						$deadForNovel{$bestStart[$lastChar]} = 1;
-#						if (exists $deadForFamiliar{$bestStart[$lastChar]})
-#						{
-							# print "Previous length: " . (keys %liveNodes) . "\n";
-							delete $liveNodes{$bestStart[$lastChar]};
-							# print "Following length: " . (keys %liveNodes) . "\n";
-							# print "Delete node for novel\n";
-						# }
-					}
-					# else
-					# {
-					# 	print "Didn't delete\n";
-					# }
 					$bestProduct[$lastChar] = $scoreProduct;
 					$bestStart[$lastChar] = $firstChar;
+					if (exists $deadForFamiliar{$firstChar})
+					{
+						foreach my $liveNode (keys %liveNodes)
+						{
+							if (($liveNode < $firstChar) && (!(exists $lexicon{substr($sentence, $liveNode)})))
+							{
+								$deadForNovel{$liveNode} = 1;
+								if (exists $deadForFamiliar{$liveNode})
+								{
+									delete $liveNodes{$liveNode};
+								}
+							}
+						}						
+					}
 				}
 				if ((exists $deadForNovel{$firstChar}) && (exists $deadForNovel{$firstChar}))
 				{
-					# print "Previous length: " . (keys %liveNodes) . "\n";
 					delete $liveNodes{$firstChar};
-					# print "Following length: " . (keys %liveNodes) . "\n";
-					# print "Delete node for both\n";
 				}
 			}
-			else
-			{
-				# print "Dead Node\n";
-			}
-			# print "Live nodes in loop: " . (keys %liveNodes) . "\n";			
 		}
-		# print "Live node length: " . (keys %liveNodes) . "\n";
-		if (scalar(keys %liveNodes) > 7)
-		{
-			$tooManyLiveCounter++;
-		}
-		else
-		{
-			$okLiveCounter++;
-		}
-		# print "LastChar: $lastChar\n";	
-		# print "Dead for familiar: " . scalar(keys %deadForFamiliar) . "\n";
-		# print "Dead for novel: " . scalar(keys %deadForNovel) . "\n";		
-		# print "Lives nodes:";
 		foreach my $liveNode (keys %liveNodes)
 		{
-			# print "$liveNode ";
-			# if ($liveNode <= $lastChar)
-			# {
-				# print "In live node check: $liveNode\n";
-				$syncNode = $bestStart[$liveNode - 1];
-				while ($syncNode > 0)
+			$syncNode = $bestStart[$liveNode - 1];
+			while ($syncNode > 0)
+			{
+				$syncNodeCounts{$syncNode} = $syncNodeCounts{$syncNode} + 1;
+				if ($syncNodeCounts{$syncNode} == scalar(keys %liveNodes))
 				{
-					$syncNodeCounts{$syncNode} = $syncNodeCounts{$syncNode} + 1;
-					# print "In sync node check: $syncNode\t$syncNodeCounts{$syncNode}\tout of " . scalar(keys %liveNodes) . "\n";
-					if ($syncNodeCounts{$syncNode} == scalar(keys %liveNodes))
+					$firstChar = $bestStart[$syncNode];
+					while ($firstChar > 0)
 					{
-						# print "\n\nFound sync node\n\n";
-						$firstChar = $bestStart[$syncNode];
-						while ($firstChar > 0)
-						{
-							push(@segmentation, $firstChar);
-							$firstChar = $bestStart[$firstChar - 1];
-						}
-						updateLexicon(substr($sentence, 0, $syncNode), 0, @segmentation);
-						return substr($sentence, $syncNode);
+						push(@segmentation, $firstChar);
+						$firstChar = $bestStart[$firstChar - 1];
 					}
-					$syncNode = $bestStart[$syncNode - 1];
+					updateLexicon(substr($sentence, 0, $syncNode), 0, @segmentation);
+					return substr($sentence, $syncNode);
 				}
-			# }
-			# else
-			# {
-			# 	print "\n\nLive node too late!\n\n";
-			# }
+				$syncNode = $bestStart[$syncNode - 1];
+			}
 		}
-		# print "\n";
 	}
-	# print "Too many live: $tooManyLiveCounter\tOk live: $okLiveCounter\n";	
 	if ($opt_v)
 	{
 		print "Best start: @bestStart\n";
@@ -240,7 +201,6 @@ sub updateLexicon
 			{
 				$prefixes{$subword} = 1;
 			}
-			# print "Added prefix: $subword\n";
 		}
 		if (exists $lexicon{$word})
 		{
@@ -507,32 +467,11 @@ sub R
 		}
 		$score = $sixOverPiSquared;
 		$score *= ($wordTypes / ($totalWords + 1));
-		# Third-bottom is basically 1 and we can drastically reduce computation time by removing it, so let's comment out the following
-		# $phonemeScore = 0;
-		# foreach my $key (keys %lexicon)
-		# {
-		# 	if (!($key eq $utteranceDelimiter))
-		# 	{
-		# 		$phonemeScore += ProbPhonemes($key);
-		# 	}
-		# }
-		# if ($phonemeScore > 0)
-		# {
-			# $temp = ProbPhonemes($word);
-			# $score *= $temp / (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore));
-			$score *= ProbPhonemes($word);
-			if ($opt_v)
-			{
-				print "Third term: " . $temp . "\n";
-				# print "Third-top: " . $temp . "\n";
-				# print "Third-bottom: " . (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore)) . "\n";
-				# print "Third term: " . $temp / (1 - (($wordTypes - 1) / $wordTypes) * ($temp + $phonemeScore)) . "\n";
-			}
-		# }
-		# else
-		# {
-		# 	$score = 0;
-		# }
+		$score *= ProbPhonemes($word);
+		if ($opt_v)
+		{
+			print "Third term: " . $temp . "\n";
+		}
 		$score *= (($wordTypes - 1) / $wordTypes) ** 2;
 		if ($opt_v)
 		{
