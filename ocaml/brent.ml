@@ -101,9 +101,8 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 			let oldBestProduct = fst (List.nth bestList (firstChar - 1)) in
 			let lastCharBestProduct = fst (List.nth bestList lastChar) in
 			let scoreProduct = wordScore *. oldBestProduct in
-			(* Possibly not tail recursive, but it works *)
 			if scoreProduct > lastCharBestProduct then
-				mbdp_inner subUtterance (firstChar + 1) lastChar ((List.take (lastChar - 1) bestList) @ [(scoreProduct, firstChar)] @ (List.drop lastChar bestList))
+				mbdp_inner subUtterance (firstChar + 1) lastChar ((List.take lastChar bestList) @ [(scoreProduct, firstChar)] @ (List.drop (lastChar + 1) bestList))
 			else	
 				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
 		end
