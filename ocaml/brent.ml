@@ -73,26 +73,6 @@ let r word =
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
 
- let mbdp_imperative sentence =
-	let bestProduct = DynArray.make ((String.length sentence) - 1) in
-	let bestStart = DynArray.make ((String.length sentence) - 1) in
-	for lastChar = 0 to ((String.length sentence) - 1) do
-		DynArray.add bestProduct (r (String.sub sentence 0 (lastChar + 1)));
-		DynArray.add bestStart 0;
-		for firstChar = 1 to lastChar do			
-			let wordScore = r (String.sub sentence firstChar ((lastChar + 1) - firstChar)) in
-			let scoreProduct = wordScore *. (DynArray.get bestProduct (firstChar - 1)) in
-			if scoreProduct > (DynArray.get bestProduct lastChar) then
-				begin
-					DynArray.set bestProduct lastChar scoreProduct;
-					DynArray.set bestStart lastChar firstChar
-				end
-			else
-				()				
-		done
-	done;
-	DynArray.to_list bestStart;; 
-
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
 		begin
@@ -110,9 +90,10 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 		bestList;;
 
 let mbdp_outer sentence =
-	let lastCharList = List.init ((String.length sentence) - 1) (fun a -> a) in
+	let lastCharList = List.init (String.length sentence) (fun a -> a) in
 	let bestList = List.fold_left
 		(fun oldBestList lastChar ->
+			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
 			let newBestList = oldBestList @ [((r subUtterance), 0)] in
 			mbdp_inner subUtterance 1 lastChar newBestList
@@ -178,7 +159,6 @@ List.iter
 	(fun segmentedSentence -> 
 		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 		let bestStartList = mbdp_outer sentence in
-		(* let bestStartList = mbdp_imperative sentence in *)
 		let segmentation = (List.sort (find_segmentation bestStartList (List.length bestStartList) [])) @ [String.length sentence] in
 		(* printf "\nLexicon = %s" "";
 		hashstrint_print lexicon;
