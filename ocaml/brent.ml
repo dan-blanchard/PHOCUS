@@ -168,7 +168,7 @@ List.iter
 		List.iter (fun x -> printf "%d\t" x) bestStartList; *)
 		(* printf "\nsegmentation = %s" "";
 		List.iter (fun x -> printf "%d\t" x) segmentation; *)
-		printf "\n%d: " ((Hashtbl.find lexicon utteranceDelimiter) + 1);
+		printf "%d: " ((Hashtbl.find lexicon utteranceDelimiter) + 1);
 		lexicon_updater segmentation sentence; 
 		printf "%s\n" utteranceDelimiter;
 		Hashtbl.replace lexicon utteranceDelimiter ((Hashtbl.find lexicon utteranceDelimiter) + 1)
