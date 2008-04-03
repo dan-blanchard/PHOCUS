@@ -187,30 +187,12 @@ r(Word, WordDelimiter, _UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 								WordWithBoundary), 					
 					WordTotalPhonemes = TotalPhonemes + length(WordWithBoundary),
 					% io:format("OriginalTotalPhonemes: ~p~nWord length: ~p~n", [TotalPhonemes, length(WordWithBoundary)]),
-					% Brent drops the denominator of the third term in later papers because it is essentially one, so this is no longer necessary
-					% Pids = [prob_phonemes(self(), Key, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes) || Key <- (lists:map(
-					% 																											fun ({Key,_Value}) ->
-					% 																												Key
-					% 																											end,
-					% 	 																										ets:tab2list(lexicon)) 
-					% 																								-- [UtteranceDelimiter])],
-					% PhonScore = lists:foldl(
-					% 						fun (_Process, Total) ->
-					% 							receive WordScore ->
-					% 								Total + WordScore
-					% 							end
-					% 						end,
-					% 						0,
-					% 						Pids), 				
 					CurrentWordScore = prob_phonemes(WordWithBoundary, WordDelimiter, WordPhonemeCounts, WordTotalPhonemes),
 					ets:delete(WordPhonemeCounts),
 					%	0.607927101854027 = 6 / math:pow(math:pi(), 2) 
 					FirstTerm = 0.607927101854027,
 					SecondTerm = (WordTypes / (TotalWords + 1)),
 					ThirdTerm = CurrentWordScore,
-					% ThirdTop = 	CurrentWordScore,
-					% ThirdBottom = 1 - ((WordTypes - 1) / WordTypes) * (CurrentWordScore + PhonScore),
-					% ThirdTerm = ThirdTop / ThirdBottom, 					
 					FourthTerm = math:pow(((WordTypes - 1) / WordTypes), 2),
 					% io:format("Word: ~s~nFirst: ~f~nSecond: ~f~nThird-Top: ~f~nThird-Bottom: ~f~nThird: ~f~nFourth: ~f~n", [WordWithBoundary, FirstTerm, SecondTerm, ThirdTop, ThirdBottom, ThirdTerm, FourthTerm]),
 					% io:format("Lexicon: ~p~nActual Phoneme Counts: ~p~nWord Phoneme Counts: ~p~nTotal Phonemes: ~w~nScore: ~w~n", [ets:tab2list(lexicon), ets:tab2list(phoneme_counts), ets:tab2list(WordPhonemeCounts), WordTotalPhonemes, FirstTerm * SecondTerm * ThirdTerm * FourthTerm]),
