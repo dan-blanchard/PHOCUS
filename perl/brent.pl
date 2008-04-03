@@ -88,10 +88,10 @@ sub processSentence
 		for ($firstChar = 1; $firstChar <= $lastChar; $firstChar++)
 		{
 			$syncNodeCounts{$firstChar} = 0;
+			$subUtterance = substr($sentence, $firstChar, ($lastChar + 1) - $firstChar);
 			if (!(exists $deadForNovel{$firstChar}) || !(exists $deadForNovel{$firstChar}))
 			{
 				$liveNodes{$firstChar} = 1;
-				$subUtterance = substr($sentence, $firstChar, ($lastChar + 1) - $firstChar);
 				if ($opt_q)
 				{
 					if (!(exists $prefixes{$subUtterance}))
