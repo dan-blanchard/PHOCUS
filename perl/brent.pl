@@ -3,10 +3,7 @@
 # Dan Blanchard
 # MBDP Implementation
 
-# usage: ./brent.pl [-v] [-n] [-w WINDOW_SIZE -b MIN_WINDOW_SIZE -d NGRAMFILE] [-l LEXICON_OUT ][-f FEATURE_CHART] FILE
-
-# TODO Add flag for enabling/disabling backoff
-
+# usage: ./brent.pl [-v] [-n] [-q] [-w WINDOW_SIZE -b MIN_WINDOW_SIZE -d NGRAMFILE] [-l LEXICON_OUT ][-f FEATURE_CHART] FILE
 
 use Math::Trig;
 use strict;
@@ -20,7 +17,7 @@ Readonly::Scalar my $delimiter => " ";			# word delimiter
 Readonly::Scalar my $utteranceDelimiter => "\$";
 Readonly::Scalar my $sixOverPiSquared => 6 / (pi**2);
 
-our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d, $opt_l);
+our ($opt_v, $opt_n, $opt_w, $opt_f, $opt_b, $opt_d, $opt_l, $opt_q);
 my $window = 1;
 my %lexicon = ();
 my %prefixes = (); 				# all prefixes and lexical items
@@ -40,7 +37,7 @@ $lexicon{$utteranceDelimiter} = 0;				# end of utterance symbol added to lexicon
 $phonemeCounts{$delimiter} = 0;
 
 # Handle arguments
-getopts('vnpw:b:d:l:f:');
+getopts('vnqw:b:d:l:f:');
 
 # Check for feature chart file
 if ($opt_f)
@@ -95,12 +92,15 @@ sub processSentence
 			{
 				$liveNodes{$firstChar} = 1;
 				$subUtterance = substr($sentence, $firstChar, ($lastChar + 1) - $firstChar);
-				if (!(exists $prefixes{$subUtterance}))
+				if ($opt_q)
 				{
-					$deadForFamiliar{$firstChar} = 1;
-					if (exists $deadForNovel{$firstChar})
+					if (!(exists $prefixes{$subUtterance}))
 					{
-						delete $liveNodes{$firstChar};
+						$deadForFamiliar{$firstChar} = 1;
+						if (exists $deadForNovel{$firstChar})
+						{
+							delete $liveNodes{$firstChar};
+						}
 					}
 				}
 			}
@@ -108,49 +108,63 @@ sub processSentence
 			{
 				$wordScore = R($subUtterance);
 				$scoreProduct = $wordScore * $bestProduct[$firstChar - 1];
-				if ($scoreProduct > $bestProduct[$lastChar])
+				if ($opt_q)
 				{
-					$bestProduct[$lastChar] = $scoreProduct;
-					$bestStart[$lastChar] = $firstChar;
-					if (exists $deadForFamiliar{$firstChar})
+					if ($scoreProduct > $bestProduct[$lastChar])
 					{
-						foreach my $liveNode (keys %liveNodes)
+						$bestProduct[$lastChar] = $scoreProduct;
+						$bestStart[$lastChar] = $firstChar;
+						if (exists $deadForFamiliar{$firstChar})
 						{
-							if (($liveNode < $firstChar) && (!(exists $lexicon{substr($sentence, $liveNode)})))
+							foreach my $liveNode (keys %liveNodes)
 							{
-								$deadForNovel{$liveNode} = 1;
-								if (exists $deadForFamiliar{$liveNode})
+								if (($liveNode < $firstChar) && (!(exists $lexicon{substr($sentence, $liveNode)})))
 								{
-									delete $liveNodes{$liveNode};
+									$deadForNovel{$liveNode} = 1;
+									if (exists $deadForFamiliar{$liveNode})
+									{
+										delete $liveNodes{$liveNode};
+									}
 								}
-							}
-						}						
+							}						
+						}
 					}
+					if ((exists $deadForNovel{$firstChar}) && (exists $deadForNovel{$firstChar}))
+					{
+						delete $liveNodes{$firstChar};
+					}					
 				}
-				if ((exists $deadForNovel{$firstChar}) && (exists $deadForNovel{$firstChar}))
+				else
 				{
-					delete $liveNodes{$firstChar};
+					if ($scoreProduct > $bestProduct[$lastChar])
+					{
+						$bestProduct[$lastChar] = $scoreProduct;
+						$bestStart[$lastChar] = $firstChar;
+					}					
 				}
 			}
 		}
-		foreach my $liveNode (keys %liveNodes)
-		{
-			$syncNode = $bestStart[$liveNode - 1];
-			while ($syncNode > 0)
+		if ($opt_q)
+		{			
+			foreach my $liveNode (keys %liveNodes)
 			{
-				$syncNodeCounts{$syncNode} = $syncNodeCounts{$syncNode} + 1;
-				if ($syncNodeCounts{$syncNode} == scalar(keys %liveNodes))
+				$syncNode = $bestStart[$liveNode - 1];
+				while ($syncNode > 0)
 				{
-					$firstChar = $bestStart[$syncNode];
-					while ($firstChar > 0)
+					$syncNodeCounts{$syncNode} = $syncNodeCounts{$syncNode} + 1;
+					if ($syncNodeCounts{$syncNode} == scalar(keys %liveNodes))
 					{
-						push(@segmentation, $firstChar);
-						$firstChar = $bestStart[$firstChar - 1];
+						$firstChar = $bestStart[$syncNode];
+						while ($firstChar > 0)
+						{
+							push(@segmentation, $firstChar);
+							$firstChar = $bestStart[$firstChar - 1];
+						}
+						updateLexicon(substr($sentence, 0, $syncNode), 0, @segmentation);
+						return substr($sentence, $syncNode);
 					}
-					updateLexicon(substr($sentence, 0, $syncNode), 0, @segmentation);
-					return substr($sentence, $syncNode);
+					$syncNode = $bestStart[$syncNode - 1];
 				}
-				$syncNode = $bestStart[$syncNode - 1];
 			}
 		}
 	}
@@ -166,7 +180,7 @@ sub processSentence
 		$firstChar = $bestStart[$firstChar - 1];
 	}
 	updateLexicon($sentence, 1, @segmentation);
-	return 0;
+	return "";
 }
 
 sub updateLexicon
@@ -176,7 +190,10 @@ sub updateLexicon
 	my @segmentation = @_;
 	@segmentation = sort { $a <=> $b } @segmentation;
 	unshift(@segmentation, 0);
-	push(@segmentation,length($sentence));
+	if ($segmentation[-1] != length($sentence))
+	{
+		push(@segmentation,length($sentence));				
+	}
 	my $word;
 	my $phoneme;
 	my $subword;
