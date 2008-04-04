@@ -467,7 +467,7 @@ sub R
 					# Added this elsif clause because i thought it was necessary, but unsure.  look over
 					elsif (exists $phonemeCounts{$featureGram})
 					{
-						$wordPhonemeCounts{$phoneme} = $phonemeCounts{$phoneme} + 1;
+						$wordPhonemeCounts{$featureGram} = $phonemeCounts{$featureGram} + 1;
 					}
 					else
 					{

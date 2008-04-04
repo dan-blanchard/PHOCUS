@@ -7,7 +7,7 @@ open ExtList
 
 let wordDelimiter = ' '
 let utteranceDelimiter = "$"
-let corpus = "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
+let corpus = "../corpora/brent.txt"
 let sentenceList = ref []
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
