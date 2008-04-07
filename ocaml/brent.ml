@@ -12,7 +12,7 @@ let sentenceList = ref []
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
-let piSquared = 3.1415926536 ** 2.0
+let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = 3
 let totalWords = ref 0
@@ -82,7 +82,7 @@ let r word =
 				)
 				firstCharList;
 			wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
-			score := (6.0 /. piSquared) *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
+			score := sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
 			let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
 			score := !score *. (wordPhonemeScore /. (1.0 -. ((wordTypesFloat -. 1.0) /. wordTypesFloat) *. wordPhonemeScore));
 			score := !score *. ((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0;
