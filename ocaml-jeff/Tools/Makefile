@@ -2,7 +2,8 @@ LIB=tools
 
 OCAMLC=ocamlc
 OCAMLOPT=ocamlopt
-OCAMLOPTFLAGS=-inline 32#-unsafe -ccopt "-O3 -march=i686"
+OCAMLOPTFLAGS=-inline 32
+#-unsafe -ccopt "-O3 -march=i686"
 
 OCAMLFLAGS=-g
 STD_LIBS=unix.cma str.cma
@@ -22,7 +23,7 @@ all:	$(CMOFILES) $(CMIFILES)
 	$(OCAMLC) -a $(OCAMLFLAGS) $(STD_LIBS) $(ML_SOURCES) -o $(LIB).cma
 
 opt:	$(CMXFILES) $(CMIFILES)
-	$(OCAMLOPT) -cclib -lunix.cmxa -cclib -lstr.cmxa -a $(OCAMLOPTFLAGS) -o $(LIB).cmxa unix.a str.a $(CMXFILES)
+#	$(OCAMLOPT) -a $(OCAMLOPTFLAGS) $(STD_LIBSX) $(CMXFILES) -o $(LIB).cmxa
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .mly .mll
 
