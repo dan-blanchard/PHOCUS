@@ -5,15 +5,16 @@ open Pcre
 open Printf
 open ExtList
 
-let wordDelimiter = ' '
+let wordDelimiter = " "
 let utteranceDelimiter = "$"
-let corpus = "../corpora/brent.txt"
+let corpus = "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
 let sentenceList = ref []
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
 let piSquared = 3.1415926536 ** 2.0
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
+let windowSize = 1
 let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
@@ -25,17 +26,19 @@ Hashtbl.add phonemeCounts wordDelimiter 0;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
-	let wordWithBoundary = word ^ String.make 1 wordDelimiter in
+	let wordWithBoundary = word ^ wordDelimiter in
 	let wordTotalPhonemesFloat = float wordTotalPhonemes in
 	let phonemeScore = ref (1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts wordDelimiter)) /. wordTotalPhonemesFloat))) in
-	String.iter (* Get adjusted phoneme counts *)
-		(fun phoneme ->
+	let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
+	List.iter (* Get adjusted phoneme counts *)
+		(fun firstChar ->
+			let phoneme = String.sub wordWithBoundary firstChar windowSize in
 			if Hashtbl.mem wordPhonemeCounts phoneme then
 				phonemeScore := !phonemeScore *. ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat)
 			else
 				phonemeScore := !phonemeScore *. ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat)
 		)
-		wordWithBoundary;
+		firstCharList;
 	!phonemeScore;;
 
 
@@ -53,9 +56,11 @@ let r word =
 		end
 	else	(* novel word *)
 		begin
-			let wordWithBoundary = word ^ String.make 1 wordDelimiter in
-			String.iter (* Get adjusted phoneme counts *)
-				(fun phoneme ->
+			let wordWithBoundary = word ^ wordDelimiter in
+			let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
+			List.iter (* Get adjusted phoneme counts *)
+				(fun firstChar ->
+					let phoneme = String.sub wordWithBoundary firstChar windowSize in
 					if Hashtbl.mem wordPhonemeCounts phoneme then
 						Hashtbl.replace wordPhonemeCounts phoneme ((Hashtbl.find wordPhonemeCounts phoneme) + 1)
 					else if Hashtbl.mem phonemeCounts phoneme then
@@ -63,7 +68,7 @@ let r word =
 					else
 						Hashtbl.add wordPhonemeCounts phoneme 1
 				)
-				wordWithBoundary;
+				firstCharList;
 			wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
 			score := (6.0 /. piSquared) *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
 			let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
@@ -123,19 +128,21 @@ let rec lexicon_updater segmentation sentence =
 			let startChar = List.nth segmentation 0 in
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
+			let wordWithBoundary = newWord ^ wordDelimiter in		
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
-			printf "%s%c" newWord wordDelimiter;
+			printf "%s" wordWithBoundary;
 			totalWords := !totalWords + 1;
-			totalPhonemes := !totalPhonemes + (String.length newWord) + 1; (* Add one for the delimiter*)		
-			Hashtbl.replace phonemeCounts wordDelimiter ((Hashtbl.find phonemeCounts wordDelimiter) + 1);
-			String.iter 
-				(fun phoneme ->
+			totalPhonemes := !totalPhonemes + (String.length wordWithBoundary);
+			let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
+			List.iter (* Get adjusted phoneme counts *)
+				(fun firstChar ->
+					let phoneme = String.sub wordWithBoundary firstChar windowSize in
 					if Hashtbl.mem phonemeCounts phoneme then
 						Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
 					else
 						Hashtbl.add phonemeCounts phoneme 1		
 				)
-				newWord;
+				firstCharList;
 			if Hashtbl.mem lexicon newWord then
 				Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) + 1)
 			else
