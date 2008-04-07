@@ -14,7 +14,7 @@ let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
 let piSquared = 3.1415926536 ** 2.0
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
-let windowSize = 1
+let windowSize = 3
 let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
@@ -26,20 +26,29 @@ Hashtbl.add phonemeCounts wordDelimiter 0;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
-	let wordWithBoundary = word ^ wordDelimiter in
-	let wordTotalPhonemesFloat = float wordTotalPhonemes in
-	let phonemeScore = ref (1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts wordDelimiter)) /. wordTotalPhonemesFloat))) in
-	let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
-	List.iter (* Get adjusted phoneme counts *)
-		(fun firstChar ->
-			let phoneme = String.sub wordWithBoundary firstChar windowSize in
-			if Hashtbl.mem wordPhonemeCounts phoneme then
-				phonemeScore := !phonemeScore *. ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat)
-			else
-				phonemeScore := !phonemeScore *. ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat)
-		)
-		firstCharList;
-	!phonemeScore;;
+	if (String.length word) < windowSize then
+		0.0000000000000000001
+	else		
+		let wordWithBoundary = (if windowSize > 1 then 
+									wordDelimiter ^ word ^ wordDelimiter 
+								else 
+									word ^ wordDelimiter) in
+		let wordTotalPhonemesFloat = float wordTotalPhonemes in
+		let phonemeScore = ref (if windowSize > 1 then 
+									1.0
+								else
+									(1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts wordDelimiter)) /. wordTotalPhonemesFloat)))) in
+		let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
+		List.iter (* Get adjusted phoneme counts *)
+			(fun firstChar ->
+				let phoneme = String.sub wordWithBoundary firstChar windowSize in
+				if Hashtbl.mem wordPhonemeCounts phoneme then
+					phonemeScore := !phonemeScore *. ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat)
+				else
+					phonemeScore := !phonemeScore *. ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat)
+			)
+			firstCharList;
+		!phonemeScore;;
 
 
 (* Function to calculate r-score*)
@@ -56,7 +65,10 @@ let r word =
 		end
 	else	(* novel word *)
 		begin
-			let wordWithBoundary = word ^ wordDelimiter in
+			let wordWithBoundary = (if windowSize > 1 then 
+										wordDelimiter ^ word ^ wordDelimiter 
+									else 
+										word ^ wordDelimiter) in
 			let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
 			List.iter (* Get adjusted phoneme counts *)
 				(fun firstChar ->
@@ -66,7 +78,7 @@ let r word =
 					else if Hashtbl.mem phonemeCounts phoneme then
 						Hashtbl.add wordPhonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
 					else
-						Hashtbl.add wordPhonemeCounts phoneme 1
+						Hashtbl.add wordPhonemeCounts phoneme 1;
 				)
 				firstCharList;
 			wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
@@ -128,15 +140,22 @@ let rec lexicon_updater segmentation sentence =
 			let startChar = List.nth segmentation 0 in
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
-			let wordWithBoundary = newWord ^ wordDelimiter in		
+			let wordWithBoundary = (if windowSize > 1 then 
+										wordDelimiter ^ newWord ^ wordDelimiter 
+									else 
+										newWord ^ wordDelimiter) in
+			let wordWindow = (if (String.length newWord) < windowSize then
+								String.length newWord
+							else
+								windowSize) in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
-			printf "%s" wordWithBoundary;
+			printf "%s" (newWord ^ wordDelimiter);
 			totalWords := !totalWords + 1;
 			totalPhonemes := !totalPhonemes + (String.length wordWithBoundary);
-			let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
+			let firstCharList = List.init ((String.length wordWithBoundary) - (wordWindow - 1)) (fun a -> a) in
 			List.iter (* Get adjusted phoneme counts *)
 				(fun firstChar ->
-					let phoneme = String.sub wordWithBoundary firstChar windowSize in
+					let phoneme = String.sub wordWithBoundary firstChar wordWindow in
 					if Hashtbl.mem phonemeCounts phoneme then
 						Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
 					else
