@@ -9,7 +9,7 @@ let displayLineNumbers = ref false
 let badScore =  ref 0.000000000000001
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
-let corpus = ref "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
+let corpus = ref "/Network/Servers/phonology.cogsci.udel.edu/Users/dan/Documents/Segmentation/corpora/brent.txt"
 let sentenceList = ref []
 let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
@@ -171,9 +171,10 @@ let rec lexicon_updater segmentation sentence =
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
 									else 
 										newWord ^ !wordDelimiter) in
-			let wordWindow = (if (String.length newWord) < !windowSize then
-								String.length newWord
+			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
+								String.length wordWithBoundary
 							else
+								printf "\n\n Too short: %s \n\n" phoneme;
 								!windowSize) in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
 			printf "%s" (newWord ^ !wordDelimiter);
