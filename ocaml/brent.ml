@@ -23,7 +23,7 @@ let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
 let hash_print = Hashtbl.iter (fun key data -> printf "%s: %d; " key data);;
-let hash_fprint file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d; " key data);;
+let hash_fprint file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
 
 (* Process command-line arguments *)
 let process_anon_args corpusFile = corpus := corpusFile;;
