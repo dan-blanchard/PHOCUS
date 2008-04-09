@@ -5,43 +5,61 @@ open Pcre
 open Printf
 open ExtList
 
-let wordDelimiter = " "
-let utteranceDelimiter = "$"
-let corpus = "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
+let displayLineNumbers = ref false
+let badScore =  ref 0.000000000000001
+let wordDelimiter = ref " "
+let utteranceDelimiter = ref "$"
+let corpus = ref "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
 let sentenceList = ref []
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
-let windowSize = 3
+let windowSize = ref 3
 let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
 let hashstrint_print = Hashtbl.iter (fun key data -> printf "%s: %d; " key data);;
 let hashchart_print = Hashtbl.iter (fun key data -> printf "%c: %d; " key data);;
 
-Hashtbl.add lexicon utteranceDelimiter 0;;
-Hashtbl.add phonemeCounts wordDelimiter 0;;
+(* Process command-line arguments *)
+let process_anon_args corpusFile = corpus := corpusFile;;
+let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, "Word delimiter.";
+					"-wd", Arg.Set_string wordDelimiter, "Short for --wordDelimiter";
+					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, "Utterance delimiter."; 
+					"-ud", Arg.Set_string utteranceDelimiter, "Short for --utteranceDelimiter"; 
+					"--windowSize", Arg.Set_int windowSize, "Window size for n-grams.";
+					"-ws", Arg.Set_int windowSize, "Short for --windowSize";
+					"--badScore", Arg.Set_float badScore, "Score assigned when word length is less than window size.";
+					"-bs", Arg.Set_float badScore, "Short for --badScore";
+					"--lineNumbers", Arg.Set displayLineNumbers, "Display line numbers before each segmented utterance.";
+					"-ln", Arg.Set displayLineNumbers, "Short for --lineNumbers"];;
+let usage = Sys.executable_name ^ " [-options]";;
+Arg.parse arg_spec_list	process_anon_args usage;;
+
+(* Setup initial values for utteranceDelimiter and wordDelimiter in the lexicon and phonemeCounts*)
+Hashtbl.add lexicon !utteranceDelimiter 0;;
+Hashtbl.add phonemeCounts !wordDelimiter 0;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
-	if (String.length word) < windowSize then
-		0.0000000000000000001
+	let wordWithBoundary = (if !windowSize > 1 then 
+								!wordDelimiter ^ word ^ !wordDelimiter 
+							else 
+								word ^ !wordDelimiter) in
+	if (String.length word) < !windowSize then
+		!badScore
 	else		
-		let wordWithBoundary = (if windowSize > 1 then 
-									wordDelimiter ^ word ^ wordDelimiter 
-								else 
-									word ^ wordDelimiter) in
 		let wordTotalPhonemesFloat = float wordTotalPhonemes in
-		let phonemeScore = ref (if windowSize > 1 then 
+		let phonemeScore = ref (if !windowSize > 1 then 
 									1.0
 								else
-									(1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts wordDelimiter)) /. wordTotalPhonemesFloat)))) in
-		let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
+									(1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts !wordDelimiter)) /. wordTotalPhonemesFloat)))) in
+		let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
 		List.iter (* Get adjusted phoneme counts *)
 			(fun firstChar ->
-				let phoneme = String.sub wordWithBoundary firstChar windowSize in
+				let phoneme = String.sub wordWithBoundary firstChar !windowSize in
 				if Hashtbl.mem wordPhonemeCounts phoneme then
 					phonemeScore := !phonemeScore *. ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat)
 				else
@@ -65,27 +83,30 @@ let r word =
 		end
 	else	(* novel word *)
 		begin
-			let wordWithBoundary = (if windowSize > 1 then 
-										wordDelimiter ^ word ^ wordDelimiter 
+			let wordWithBoundary = (if !windowSize > 1 then 
+										!wordDelimiter ^ word ^ !wordDelimiter 
 									else 
-										word ^ wordDelimiter) in
-			let firstCharList = List.init ((String.length wordWithBoundary) - (windowSize - 1)) (fun a -> a) in
-			List.iter (* Get adjusted phoneme counts *)
-				(fun firstChar ->
-					let phoneme = String.sub wordWithBoundary firstChar windowSize in
-					if Hashtbl.mem wordPhonemeCounts phoneme then
-						Hashtbl.replace wordPhonemeCounts phoneme ((Hashtbl.find wordPhonemeCounts phoneme) + 1)
-					else if Hashtbl.mem phonemeCounts phoneme then
-						Hashtbl.add wordPhonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
-					else
-						Hashtbl.add wordPhonemeCounts phoneme 1;
-				)
-				firstCharList;
-			wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
-			score := sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
-			let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
-			score := !score *. (wordPhonemeScore /. (1.0 -. ((wordTypesFloat -. 1.0) /. wordTypesFloat) *. wordPhonemeScore));
-			score := !score *. ((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0;
+										word ^ !wordDelimiter) in
+			if (String.length wordWithBoundary) < !windowSize then
+				score := !badScore
+			else												
+				let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
+				List.iter (* Get adjusted phoneme counts *)
+					(fun firstChar ->
+						let phoneme = String.sub wordWithBoundary firstChar !windowSize in
+						if Hashtbl.mem wordPhonemeCounts phoneme then
+							Hashtbl.replace wordPhonemeCounts phoneme ((Hashtbl.find wordPhonemeCounts phoneme) + 1)
+						else if Hashtbl.mem phonemeCounts phoneme then
+							Hashtbl.add wordPhonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
+						else
+							Hashtbl.add wordPhonemeCounts phoneme 1;
+					)
+					firstCharList;
+				wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
+				score := sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
+				let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
+				score := !score *. (wordPhonemeScore /. (1.0 -. ((wordTypesFloat -. 1.0) /. wordTypesFloat) *. wordPhonemeScore));
+				score := !score *. ((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0;
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
@@ -140,16 +161,16 @@ let rec lexicon_updater segmentation sentence =
 			let startChar = List.nth segmentation 0 in
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
-			let wordWithBoundary = (if windowSize > 1 then 
-										wordDelimiter ^ newWord ^ wordDelimiter 
+			let wordWithBoundary = (if !windowSize > 1 then 
+										!wordDelimiter ^ newWord ^ !wordDelimiter 
 									else 
-										newWord ^ wordDelimiter) in
-			let wordWindow = (if (String.length newWord) < windowSize then
+										newWord ^ !wordDelimiter) in
+			let wordWindow = (if (String.length newWord) < !windowSize then
 								String.length newWord
 							else
-								windowSize) in
+								!windowSize) in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
-			printf "%s" (newWord ^ wordDelimiter);
+			printf "%s" (newWord ^ !wordDelimiter);
 			totalWords := !totalWords + 1;
 			totalPhonemes := !totalPhonemes + (String.length wordWithBoundary);
 			let firstCharList = List.init ((String.length wordWithBoundary) - (wordWindow - 1)) (fun a -> a) in
@@ -172,7 +193,7 @@ let rec lexicon_updater segmentation sentence =
 		();;
 
 (* Read file *)
-let ic = open_in corpus in
+let ic = open_in !corpus in
 try
 	sentenceList := Std.input_list ic;
 	close_in ic
@@ -194,9 +215,10 @@ List.iter
 		List.iter (fun x -> printf "%d\t" x) bestStartList; *)
 		(* printf "\nsegmentation = %s" "";
 		List.iter (fun x -> printf "%d\t" x) segmentation; *)
-		printf "%d: " ((Hashtbl.find lexicon utteranceDelimiter) + 1);
+		if (!displayLineNumbers) then
+			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
 		lexicon_updater segmentation sentence; 
-		printf "%s\n" utteranceDelimiter;
-		Hashtbl.replace lexicon utteranceDelimiter ((Hashtbl.find lexicon utteranceDelimiter) + 1)
+		printf "%s\n" !utteranceDelimiter;
+		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
 	)
 	!sentenceList;;
