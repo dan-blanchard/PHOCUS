@@ -39,8 +39,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
 					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
 					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
-					"--ngramsOut", Arg.Set_string lexiconOut, " File to dump final n-gram counts to";
-					"-no", Arg.Set_string lexiconOut, " Short for --ngramsOut"];;
+					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
+					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut"];;
 let usage = Sys.executable_name ^ " [-options]";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
