@@ -11,30 +11,36 @@ let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
 let corpus = ref "/Users/dan/Documents/Grad School/Research/Segmentation/Implementation/corpora/brent.txt"
 let sentenceList = ref []
+let lexiconOut = ref ""
+let phonemeCountsOut = ref ""
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
-let windowSize = ref 3
+let windowSize = ref 1
 let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
-let hashstrint_print = Hashtbl.iter (fun key data -> printf "%s: %d; " key data);;
-let hashchart_print = Hashtbl.iter (fun key data -> printf "%c: %d; " key data);;
+let hash_print = Hashtbl.iter (fun key data -> printf "%s: %d; " key data);;
+let hash_fprint file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d; " key data);;
 
 (* Process command-line arguments *)
 let process_anon_args corpusFile = corpus := corpusFile;;
 let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
 					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter";
-					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter" ; 
-					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter" ; 
-					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams" ;
-					"-ws", Arg.Set_int windowSize, " Short for --windowSize" ;
-					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size" ;
-					"-bs", Arg.Set_float badScore, " Short for --badScore" ;
-					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance" ;
-					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers" ];;
+					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
+					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
+					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
+					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
+					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
+					"-bs", Arg.Set_float badScore, " Short for --badScore";
+					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
+					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
+					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
+					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
+					"--ngramsOut", Arg.Set_string lexiconOut, " File to dump final n-gram counts to";
+					"-no", Arg.Set_string lexiconOut, " Short for --ngramsOut"];;
 let usage = Sys.executable_name ^ " [-options]";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
@@ -192,7 +198,7 @@ let rec lexicon_updater segmentation sentence =
 	else
 		();;
 
-(* Read file *)
+(* Read corpus file *)
 let ic = open_in !corpus in
 try
 	sentenceList := Std.input_list ic;
@@ -222,3 +228,15 @@ List.iter
 		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
 	)
 	!sentenceList;;
+
+(* Dump lexicon if requested *)
+if !lexiconOut <> "" then
+	let oc = open_out !lexiconOut in
+	hash_fprint oc lexicon;
+	close_out oc;;
+
+(* Dump n-gram counts if requested *)
+if !phonemeCountsOut <> "" then
+	let oc = open_out !phonemeCountsOut in
+	hash_fprint oc phonemeCounts;
+	close_out oc;;
