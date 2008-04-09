@@ -41,7 +41,7 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
 					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
 					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut"];;
-let usage = Sys.executable_name ^ " [-options]";;
+let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
 (* Setup initial values for utteranceDelimiter and wordDelimiter in the lexicon and phonemeCounts*)
