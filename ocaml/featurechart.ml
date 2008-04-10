@@ -47,3 +47,5 @@ let read_file featureFile =
 		close_in_noerr ic;
 		raise e;;
 		
+let features_for_phone phone =
+	Hashtbl.find phonesToFeatures phone;;
