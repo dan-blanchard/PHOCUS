@@ -34,8 +34,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
 					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
 					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
-					"--featureChart", Arg.Set_int windowSize, " Feature chart file";
-					"-fc", Arg.Set_int windowSize, " Short for --featureChart";					
+					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
+					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
 					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
 					"-bs", Arg.Set_float badScore, " Short for --badScore";
 					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
@@ -215,6 +215,10 @@ else
 	(* printf "Please enter each unsegmented utterance on its own line.  Terminate entry with ^D.\n\n"; *)
 	sentenceList := Std.input_list stdin;
 	close_in stdin;;	
+
+(* Read feature file, if specifed *)
+if !featureFile <> "" then
+	Featurechart.read_file !featureFile;;
 
 (* Loop through sentences *)
 List.iter
