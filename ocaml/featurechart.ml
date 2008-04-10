@@ -21,13 +21,13 @@ let read_file featureFile =
 		List.iter
 			(fun line ->
 				let lineList = String.split line "\t" in
-				let phone = lineList.hd in
-				let featureList = lineList.tl in
+				let phone = List.hd lineList in
+				let featureList = List.tl lineList in
 				let currentFeatureSet = FeatureSet.empty in 
 				(* Create new feature set below containing all features in feature values in featureList appended with the corresponding feature names *)
-				List.iteri 
+				List.mapi
 					(fun index value ->
-						
+						value ^ (List.nth index features)
 						if Hashtbl.mem phonemeCounts phoneme then
 							Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
 						else
