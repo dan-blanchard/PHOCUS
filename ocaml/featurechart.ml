@@ -1,12 +1,15 @@
 (* OCaml port of featurechart.pm *)
 
+open ExtList
+open ExtString
+
 let badLeft = "⟪"
 let badRight = "⟫"
 let phonesToFeatures = Hashtbl.create 100
 let featuresToPhones = Hashtbl.create 100
 let features = ref [];;
 
-module FeatureSet = Set.Make(String);;
+module StringSet = Set.Make(String);;
 
 (* Read feature file *)
 let read_file featureFile =
@@ -14,27 +17,32 @@ let read_file featureFile =
 	try
 		let fileLines = Std.input_list ic in
 		close_in ic;
+		(* Fill feature list *)
 		List.iter 
 			(fun feature ->	
 				features := !features @ [feature])
-			String.split (String.lchop (List.hd fileLines)) "\t";
+			(String.nsplit (String.lchop (List.hd fileLines)) "\t");
+		(* Fill phonesToFeatures and featuresToPhones tables*)
 		List.iter
 			(fun line ->
-				let lineList = String.split line "\t" in
+				let lineList = String.nsplit line "\t" in
 				let phone = List.hd lineList in
 				let featureList = List.tl lineList in
-				let currentFeatureSet = FeatureSet.empty in 
-				(* Create new feature set below containing all features in feature values in featureList appended with the corresponding feature names *)
-				List.mapi
-					(fun index value ->
-						value ^ (List.nth index features)
-						if Hashtbl.mem phonemeCounts phoneme then
-							Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
-						else
-							Hashtbl.add phonemeCounts phoneme 1								
-					)
-					featureList)
-			List.tl fileLines
+				let currentFeatureSet = (List.fold_left
+														(fun oldFeatureSet newFeature ->
+															StringSet.add newFeature oldFeatureSet)
+														StringSet.empty
+														(List.mapi
+															(fun index value ->
+																let featureValue = value ^ (List.nth !features index) in
+																if Hashtbl.mem featuresToPhones featureValue then
+																	Hashtbl.replace featuresToPhones featureValue (StringSet.add phone (Hashtbl.find featuresToPhones featureValue))
+																else
+																	Hashtbl.add featuresToPhones featureValue (StringSet.add phone StringSet.empty);
+																featureValue)
+															featureList)) in
+				Hashtbl.add phonesToFeatures phone currentFeatureSet)
+			(List.tl fileLines);
 	with e ->
 		close_in_noerr ic;
 		raise e;;
