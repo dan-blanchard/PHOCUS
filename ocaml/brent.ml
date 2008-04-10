@@ -6,10 +6,11 @@ open Printf
 open ExtList
 
 let displayLineNumbers = ref false
+let featureFile = ref ""
 let badScore =  ref 0.000000000000001
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
-let corpus = ref "/Network/Servers/phonology.cogsci.udel.edu/Users/dan/Documents/Segmentation/corpora/brent.txt"
+let corpus = ref ""
 let sentenceList = ref []
 let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
@@ -33,6 +34,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
 					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
 					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
+					"--featureChart", Arg.Set_int windowSize, " Feature chart file";
+					"-fc", Arg.Set_int windowSize, " Short for --featureChart";					
 					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
 					"-bs", Arg.Set_float badScore, " Short for --badScore";
 					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
@@ -174,7 +177,6 @@ let rec lexicon_updater segmentation sentence =
 			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
 								String.length wordWithBoundary
 							else
-								printf "\n\n Too short: %s \n\n" phoneme;
 								!windowSize) in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
 			printf "%s" (newWord ^ !wordDelimiter);
@@ -199,14 +201,20 @@ let rec lexicon_updater segmentation sentence =
 	else
 		();;
 
-(* Read corpus file *)
-let ic = open_in !corpus in
-try
-	sentenceList := Std.input_list ic;
-	close_in ic
-with e ->
-	close_in_noerr ic;
-	raise e;;
+(* Read corpus file, if specified, otherwise read from stdin *)
+if !corpus <> "" then
+	let ic = open_in !corpus in
+	try
+		sentenceList := Std.input_list ic;
+		close_in ic
+	with e ->
+		close_in_noerr ic;
+		raise e
+else
+	(* The prompt below would not print out above the input, so I commented it out.*)
+	(* printf "Please enter each unsegmented utterance on its own line.  Terminate entry with ^D.\n\n"; *)
+	sentenceList := Std.input_list stdin;
+	close_in stdin;;	
 
 (* Loop through sentences *)
 List.iter
