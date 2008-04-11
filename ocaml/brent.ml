@@ -5,6 +5,7 @@ open Pcre
 open Printf
 open ExtList
 
+let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
 let badScore =  ref 0.000000000000001
@@ -40,6 +41,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-bs", Arg.Set_float badScore, " Short for --badScore";
 					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
 					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
+					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance ";
+					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
 					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
 					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
@@ -47,9 +50,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
-(* Setup initial values for utteranceDelimiter and wordDelimiter in the lexicon and phonemeCounts*)
+(* Setup initial value for utteranceDelimiter in the lexicon *)
 Hashtbl.add lexicon !utteranceDelimiter 0;;
-Hashtbl.add phonemeCounts !wordDelimiter 0;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
@@ -164,6 +166,7 @@ let rec find_segmentation bestStartList firstChar path =
 	else
 		path;;
 		
+(* Updates lexicon with newly segmented words, and prints out segmented utterance *)
 let rec lexicon_updater segmentation sentence =
 	if (List.length segmentation) > 1 then
 		begin
@@ -175,7 +178,7 @@ let rec lexicon_updater segmentation sentence =
 									else 
 										newWord ^ !wordDelimiter) in
 			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
-								String.length wordWithBoundary
+									String.length wordWithBoundary
 							else
 								!windowSize) in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
@@ -237,7 +240,8 @@ List.iter
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
 		lexicon_updater segmentation sentence; 
-		printf "%s\n" !utteranceDelimiter;
+		if (!printUtteranceDelimiter) then
+			printf "%s\n" !utteranceDelimiter;
 		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
 	)
 	!sentenceList;;
