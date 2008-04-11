@@ -20,7 +20,8 @@ let read_file featureFile =
 		(* Fill feature list *)
 		List.iter 
 			(fun feature ->	
-				features := !features @ [feature])
+				features := !features @ [feature]
+			)
 			(String.nsplit (String.lchop (List.hd fileLines)) "\t");
 		(* Fill phonesToFeatures and featuresToPhones tables*)
 		List.iter
@@ -33,7 +34,8 @@ let read_file featureFile =
 															if newFeature <> "" then
 																StringSet.add newFeature oldFeatureSet
 															else
-																oldFeatureSet)
+																oldFeatureSet
+														)
 														StringSet.empty
 														(List.mapi
 															(fun index value ->
@@ -45,9 +47,11 @@ let read_file featureFile =
 																		Hashtbl.add featuresToPhones featureValue (StringSet.add phone StringSet.empty);
 																	featureValue
 																else
-																	"")
+																	""
+															)
 															featureList)) in
-				Hashtbl.add phonesToFeatures phone currentFeatureSet)
+				Hashtbl.add phonesToFeatures phone currentFeatureSet
+			)
 			(List.tl fileLines);
 	with e ->
 		close_in_noerr ic;
