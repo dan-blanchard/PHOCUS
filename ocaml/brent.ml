@@ -8,7 +8,7 @@ open ExtList
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
-let badScore =  ref 0.000000000000001
+let badScore =  ref 0.0
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
 let corpus = ref ""
@@ -18,13 +18,15 @@ let phonemeCountsOut = ref ""
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
+(* let cartesianProductCache = Hashtbl.create 10000 *)
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
 let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
-let hash_print = Hashtbl.iter (fun key data -> printf "%s: %d; " key data);;
+let hash_print = Hashtbl.iter (fun key data -> printf "%s: %d;" key data);;
+let hash_dump = Hashtbl.iter (fun key data -> Std.print key; Std.print data);;
 let hash_fprint file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
 
 (* Process command-line arguments *)
@@ -184,17 +186,24 @@ let rec lexicon_updater segmentation sentence =
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
 			printf "%s" (newWord ^ !wordDelimiter);
 			totalWords := !totalWords + 1;
-			totalPhonemes := !totalPhonemes + (String.length wordWithBoundary);
 			let firstCharList = List.init ((String.length wordWithBoundary) - (wordWindow - 1)) (fun a -> a) in
-			List.iter (* Get adjusted phoneme counts *)
-				(fun firstChar ->
-					let phoneme = String.sub wordWithBoundary firstChar wordWindow in
-					if Hashtbl.mem phonemeCounts phoneme then
-						Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
-					else
-						Hashtbl.add phonemeCounts phoneme 1		
-				)
-				firstCharList;
+			if !featureChart <> "" then
+				begin
+					
+				end
+			else
+				begin
+					List.iter (* Get adjusted phoneme counts *)
+						(fun firstChar ->
+							let phoneme = String.sub wordWithBoundary firstChar wordWindow in
+							if Hashtbl.mem phonemeCounts phoneme then
+								Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
+							else
+								Hashtbl.add phonemeCounts phoneme 1;
+							totalPhonemes := !totalPhonemes + 1;
+						)
+						firstCharList
+				end;
 			if Hashtbl.mem lexicon newWord then
 				Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) + 1)
 			else
@@ -229,19 +238,12 @@ List.iter
 		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 		let bestStartList = mbdp_outer sentence in
 		let segmentation = (List.sort (find_segmentation bestStartList (List.length bestStartList) [])) @ [String.length sentence] in
-		(* printf "\nLexicon = %s" "";
-		hashstrint_print lexicon;
-		printf "\nPhoneme counts = %s" "";
-		hashchart_print phonemeCounts; *)
-		(* printf "bestStartList = %s" "";
-		List.iter (fun x -> printf "%d\t" x) bestStartList; *)
-		(* printf "\nsegmentation = %s" "";
-		List.iter (fun x -> printf "%d\t" x) segmentation; *)
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
 		lexicon_updater segmentation sentence; 
 		if (!printUtteranceDelimiter) then
-			printf "%s\n" !utteranceDelimiter;
+			printf "%s" !utteranceDelimiter;		
+		printf "\n";
 		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
 	)
 	!sentenceList;;
