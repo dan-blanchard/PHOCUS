@@ -30,16 +30,22 @@ let read_file featureFile =
 				let featureList = List.tl lineList in
 				let currentFeatureSet = (List.fold_left
 														(fun oldFeatureSet newFeature ->
-															StringSet.add newFeature oldFeatureSet)
+															if newFeature <> "" then
+																StringSet.add newFeature oldFeatureSet
+															else
+																oldFeatureSet)
 														StringSet.empty
 														(List.mapi
 															(fun index value ->
-																let featureValue = value ^ (List.nth !features index) in
-																if Hashtbl.mem featuresToPhones featureValue then
-																	Hashtbl.replace featuresToPhones featureValue (StringSet.add phone (Hashtbl.find featuresToPhones featureValue))
+																if value <> "0" then
+																	let featureValue = value ^ (List.nth !features index) in
+																	if Hashtbl.mem featuresToPhones featureValue then
+																		Hashtbl.replace featuresToPhones featureValue (StringSet.add phone (Hashtbl.find featuresToPhones featureValue))
+																	else
+																		Hashtbl.add featuresToPhones featureValue (StringSet.add phone StringSet.empty);
+																	featureValue
 																else
-																	Hashtbl.add featuresToPhones featureValue (StringSet.add phone StringSet.empty);
-																featureValue)
+																	"")
 															featureList)) in
 				Hashtbl.add phonesToFeatures phone currentFeatureSet)
 			(List.tl fileLines);
