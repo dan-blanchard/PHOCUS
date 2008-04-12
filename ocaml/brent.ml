@@ -26,7 +26,7 @@ let totalWords = ref 0
 let totalPhonemes = ref 0;;
 
 let hash_print = Hashtbl.iter (fun key data -> printf "%s: %d;" key data);;
-let hash_dump = Hashtbl.iter (fun key data -> Std.print key; Std.print data);;
+(* let hash_dump = Hashtbl.iter (fun key data -> Std.print key; Std.print data);; *)
 let hash_fprint file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
 
 (* Process command-line arguments *)
@@ -187,7 +187,7 @@ let rec lexicon_updater segmentation sentence =
 			printf "%s" (newWord ^ !wordDelimiter);
 			totalWords := !totalWords + 1;
 			let firstCharList = List.init ((String.length wordWithBoundary) - (wordWindow - 1)) (fun a -> a) in
-			if !featureChart <> "" then
+			if !featureFile <> "" then
 				begin
 					
 				end
