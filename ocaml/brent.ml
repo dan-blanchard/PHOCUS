@@ -20,7 +20,7 @@ let phonemeCountsOut = ref ""
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
-let cartesianProductCache = Hashtbl.create 10000
+(* let cartesianProductCache = Hashtbl.create 10000 *)
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
@@ -131,11 +131,11 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 		begin
 			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
 			let wordScore = r newSubUtterance in
-			let oldBestProduct = fst (List.nth bestList (firstChar - 1)) in
-			let lastCharBestProduct = fst (List.nth bestList lastChar) in
+			let oldBestProduct = fst (bestList.(firstChar - 1)) in
+			let lastCharBestProduct = fst (bestList.(lastChar)) in
 			let scoreProduct = wordScore *. oldBestProduct in
 			if scoreProduct > lastCharBestProduct then
-				mbdp_inner subUtterance (firstChar + 1) lastChar ((List.take lastChar bestList) @ [(scoreProduct, firstChar)] @ (List.drop (lastChar + 1) bestList))
+				mbdp_inner subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
 			else	
 				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
 		end
@@ -143,19 +143,19 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 		bestList;;
 
 let mbdp_outer sentence =
-	let lastCharList = List.init (String.length sentence) (fun a -> a) in
-	let bestList = List.fold_left
+	let lastCharList = Array.init (String.length sentence) (fun a -> a) in
+	let bestList = Array.fold_left
 		(fun oldBestList lastChar ->
 			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
-			let newBestList = oldBestList @ [((r subUtterance), 0)] in
+			let newBestList = Array.append oldBestList [|((r subUtterance), 0)|] in
 			mbdp_inner subUtterance 1 lastChar newBestList
 		)
-		[]
+		[||]
 		lastCharList
 	in
 	(* List.iter (fun (x, y) -> printf "(%e, %d)" x y) bestList; *)
-	List.map
+	Array.map
 	 	snd
 		bestList;;
 
@@ -164,7 +164,7 @@ let mbdp_outer sentence =
 let rec find_segmentation bestStartList firstChar path =
 	if firstChar > 0 then
 		begin
-			let newFirstChar = List.nth bestStartList (firstChar - 1) in
+			let newFirstChar = bestStartList.(firstChar - 1) in
 			find_segmentation bestStartList newFirstChar (path @ [newFirstChar])
 		end
 	else
@@ -257,7 +257,7 @@ List.iter
 	(fun segmentedSentence -> 
 		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 		let bestStartList = mbdp_outer sentence in
-		let segmentation = (List.sort (find_segmentation bestStartList (List.length bestStartList) [])) @ [String.length sentence] in
+		let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
 		lexicon_updater segmentation sentence; 
