@@ -4,6 +4,8 @@
 open Pcre
 open Printf
 open ExtList
+open ExtString
+open ExtArray
 
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
@@ -18,7 +20,7 @@ let phonemeCountsOut = ref ""
 let lexicon = Hashtbl.create 10000
 let phonemeCounts = Hashtbl.create 10000
 let wordPhonemeCounts = Hashtbl.create 100
-(* let cartesianProductCache = Hashtbl.create 10000 *)
+let cartesianProductCache = Hashtbl.create 10000
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
@@ -182,14 +184,32 @@ let rec lexicon_updater segmentation sentence =
 			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
 									String.length wordWithBoundary
 							else
-								!windowSize) in
+								!windowSize) 
+			in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
 			printf "%s" (newWord ^ !wordDelimiter);
 			totalWords := !totalWords + 1;
 			let firstCharList = List.init ((String.length wordWithBoundary) - (wordWindow - 1)) (fun a -> a) in
 			if !featureFile <> "" then
 				begin
-					
+					let firstCharListForBundles = List.init (String.length wordWithBoundary) (fun a -> a) in
+					let wordFeatures = List.map (* Build list of all feature bundles in current word*)
+											(fun firstChar ->
+												let phoneme = String.sub wordWithBoundary firstChar 1 in
+												Featurechart.features_for_phone phoneme
+											) 
+											firstCharListForBundles 
+					in
+					List.iter (* Get adjusted phoneme counts *)
+						(fun firstChar ->
+							let phoneme = String.sub wordWithBoundary firstChar wordWindow in
+							if Hashtbl.mem phonemeCounts phoneme then
+								Hashtbl.replace phonemeCounts phoneme ((Hashtbl.find phonemeCounts phoneme) + 1)
+							else
+								Hashtbl.add phonemeCounts phoneme 1;
+							totalPhonemes := !totalPhonemes + 1;
+						)
+						firstCharList					
 				end
 			else
 				begin
