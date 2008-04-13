@@ -442,7 +442,7 @@ sub R
 				$currentSet = $subList[0];
 				for (my $j = 1; $j < $wordWindow; $j++)
 				{
-					$subword = substr($word, $i, $j+1);
+					$subword = substr($wordWithBoundary, $i, $j+1); # Used to be $word, but I think that was wrong
 					if (exists $productCache{$subword})
 					{
 						$currentSet = $productCache{$subword};
