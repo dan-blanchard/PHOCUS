@@ -134,13 +134,13 @@ let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
 							else 
 								word ^ !wordDelimiter) in							
 	if (String.length word) < !windowSize then
-		!badScore
+		-. (log !badScore)
 	else	
 		let wordTotalPhonemesFloat = float wordTotalPhonemes in			
 		let phonemeScore = ref (if !windowSize > 1 then 
-									1.0
+									-.(log 1.0)
 								else
-									(1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts !wordDelimiter)) /. wordTotalPhonemesFloat)))) in
+									-.(log (1.0 /. (1.0 -. ((float (Hashtbl.find wordPhonemeCounts !wordDelimiter)) /. wordTotalPhonemesFloat))))) in
 		let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
 		if !featureFile <> "" then
 			begin
@@ -189,9 +189,9 @@ let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
 						StringSet.iter
 							(fun featureGram ->
 								if Hashtbl.mem wordPhonemeCounts featureGram then
-									phonemeScore := !phonemeScore *. ((float (Hashtbl.find wordPhonemeCounts featureGram)) /. wordTotalPhonemesFloat)
+									phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find wordPhonemeCounts featureGram)) /. wordTotalPhonemesFloat))
 								else
-									phonemeScore := !phonemeScore *. ((float (Hashtbl.find phonemeCounts featureGram)) /. wordTotalPhonemesFloat)
+									phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find phonemeCounts featureGram)) /. wordTotalPhonemesFloat))
 							)
 							ngramFeatureSet
 					)
@@ -203,9 +203,9 @@ let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
 					(fun firstChar ->
 						let phoneme = String.sub wordWithBoundary firstChar !windowSize in
 						if Hashtbl.mem wordPhonemeCounts phoneme then
-							phonemeScore := !phonemeScore *. ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat)
+							phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat))
 						else
-							phonemeScore := !phonemeScore *. ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat)
+							phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat))
 					)
 					firstCharList;
 			end;
@@ -220,8 +220,8 @@ let r word =
 	let score = ref 0.0 in
 	if Hashtbl.mem lexicon word then 	(* familiar word*)
 		begin
-			let wordCountFloat = float (Hashtbl.find lexicon word) in
-			score := ((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)
+			let wordCountFloat = float (Hashtbl.find lexicon word) in		
+			score := -.(log (((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
 		end
 	else	(* novel word *)
 		begin
@@ -230,7 +230,7 @@ let r word =
 									else 
 										word ^ !wordDelimiter) in
 			if (String.length wordWithBoundary) < !windowSize then
-				score := !badScore
+				score := -. (log (!badScore))
 			else												
 				let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
 				if !featureFile <> "" then
@@ -306,10 +306,10 @@ let r word =
 							firstCharList;
 						wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
 					end;
-				score := sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0));
+				score := -.(log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0))));
 				let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
-				score := !score *. (wordPhonemeScore /. (1.0 -. ((wordTypesFloat -. 1.0) /. wordTypesFloat) *. wordPhonemeScore));
-				score := !score *. ((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0;
+				score := !score +. wordPhonemeScore;
+				score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
@@ -321,8 +321,8 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 			let wordScore = r newSubUtterance in
 			let oldBestProduct = fst (bestList.(firstChar - 1)) in
 			let lastCharBestProduct = fst (bestList.(lastChar)) in
-			let scoreProduct = wordScore *. oldBestProduct in
-			if scoreProduct > lastCharBestProduct then
+			let scoreProduct = wordScore +. oldBestProduct in
+			if scoreProduct < lastCharBestProduct then
 				mbdp_inner subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
 			else	
 				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
