@@ -3,8 +3,6 @@
 open ExtList
 open ExtString
 
-let badLeft = "⟪"
-let badRight = "⟫"
 let phonesToFeatures = Hashtbl.create 100
 let featuresToPhones = Hashtbl.create 100
 let features = ref [];;
@@ -56,6 +54,6 @@ let read_file featureFile =
 	with e ->
 		close_in_noerr ic;
 		raise e;;
-		
+	
 let features_for_phone phone =
 	Hashtbl.find phonesToFeatures phone;;
