@@ -100,7 +100,8 @@ exception Different_Utterances;;
 
 let rec make_pair_list test_list gold_list list = 
   match (test_list,gold_list) with
-    | ([],[]) -> (Letter(wb),Letter(wb))::list                 (* if we have finished the recursion *)
+    | ([],[]) -> list
+(*    | ([],[]) -> (Letter(wb),Letter(wb))::list                 (* if we have finished the recursion *)*)
     | (_,[]) 
     | ([],_) -> raise Different_Utterances
     | _ -> 
@@ -121,10 +122,16 @@ let rec make_pair_list test_list gold_list list =
 	end;;
 
 
+let print_pair_list pair_list = List.map (fun (a,b) -> print_endline (":"^(sym_to_string a)^":"^(sym_to_string b)^":")) (pair_list);;
+
+
 let rec true_positives pair_list tp possible_word = 
+(*  let _ = print_pair_list pair_list in
+  let () = print_endline ((string_of_float tp)^":"^(string_of_bool possible_word)) in
+*)
   match pair_list with
     |  [] -> tp
-    | head::tail ->	
+    | head::tail ->
 	match head with
 	  |  (Letter(x),Letter(y)) when (x=wb) && (y=wb) -> 
 	       if possible_word 
@@ -160,14 +167,13 @@ let rec compare_utterances test_u gold_u =
     let () = print_endline (Mstring.concat_list "\n" (List.rev (List.map (fun (a,b) -> (sym_to_string a)^","^(sym_to_string b)) pair_list)) "")
     in
   *)
-  let tp = true_positives pair_list 0. false in
+  let tp = true_positives (List.rev pair_list) 0. true in
   let fp = (float_of_int (Utterance.length test_u)) -. tp in
   let fn = (float_of_int (Utterance.length gold_u)) -. tp in
   (*  let () = print_endline ((string_of_float tp)^"\t"^(string_of_float fp)^"\t"^(string_of_float fn)) 
       in
   *)
   (tp,fp,fn);;
-  
 
 (* double_fold assumes the files are aligned line by line *)
 

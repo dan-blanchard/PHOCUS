@@ -235,9 +235,9 @@ struct
       
   let third_term lexicon freq_seg_map word types total_segs= 
     (* this is the 3rd term in in (21) pg 87 of Brent 1999*)
-    (prob_word word freq_seg_map total_segs) (* /. 
+    (prob_word word freq_seg_map total_segs)  /. 
           (1. -. (((types -. 1.)/. types) *. 
-    	       (prob_all_words lexicon freq_seg_map total_segs)) )  *)
+    	       (prob_all_words lexicon freq_seg_map total_segs)) )  
       
   let r_familiar word_frequency total_tokens = 
     (* computes (22) on pg 87 of Brent 1999 *)
