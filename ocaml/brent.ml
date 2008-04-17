@@ -128,7 +128,7 @@ let print_string_set stringSet =
 
 
 (* Calculates the probability of each phoneme in a word*)
-let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
+let prob_phonemes word wordPhonemeCounts wordTotalPhonemes combine_ngram_score combine_phoneme_score =
 	let wordWithBoundary = (if !windowSize > 1 then 
 								!wordDelimiter ^ word ^ !wordDelimiter 
 							else 
@@ -186,14 +186,16 @@ let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
 												StringSet.empty
 												lastCharList;
 						in
+						let ngramScore = ref (-.(log 1.0)) in 
 						StringSet.iter
 							(fun featureGram ->
 								if Hashtbl.mem wordPhonemeCounts featureGram then
-									phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find wordPhonemeCounts featureGram)) /. wordTotalPhonemesFloat))
+									ngramScore := (combine_ngram_score !ngramScore (-. (log ((float (Hashtbl.find wordPhonemeCounts featureGram)) /. wordTotalPhonemesFloat))))
 								else
-									phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find phonemeCounts featureGram)) /. wordTotalPhonemesFloat))
+									ngramScore := (combine_ngram_score !ngramScore (-. (log ((float (Hashtbl.find phonemeCounts featureGram)) /. wordTotalPhonemesFloat))))
 							)
-							ngramFeatureSet
+							ngramFeatureSet;
+						phonemeScore := (combine_phoneme_score !phonemeScore !ngramScore)
 					)
 					firstCharList
 			end
@@ -203,9 +205,9 @@ let prob_phonemes word wordPhonemeCounts wordTotalPhonemes =
 					(fun firstChar ->
 						let phoneme = String.sub wordWithBoundary firstChar !windowSize in
 						if Hashtbl.mem wordPhonemeCounts phoneme then
-							phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat))
+							phonemeScore := (combine_phoneme_score !phonemeScore (-. (log ((float (Hashtbl.find wordPhonemeCounts phoneme)) /. wordTotalPhonemesFloat))))
 						else
-							phonemeScore := !phonemeScore -. (log ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat))
+							phonemeScore := (combine_phoneme_score !phonemeScore (-. (log ((float (Hashtbl.find phonemeCounts phoneme)) /. wordTotalPhonemesFloat))))
 					)
 					firstCharList;
 			end;
@@ -307,7 +309,7 @@ let r word =
 						wordTotalPhonemes := !totalPhonemes + String.length wordWithBoundary;
 					end;
 				score := -.(log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0))));
-				let wordPhonemeScore = prob_phonemes word wordPhonemeCounts !wordTotalPhonemes in
+				let wordPhonemeScore = (prob_phonemes word wordPhonemeCounts !wordTotalPhonemes (max) (+.)) in
 				score := !score +. wordPhonemeScore;
 				score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
 		end;
@@ -464,10 +466,12 @@ if !corpus <> "" then
 		close_in_noerr ic;
 		raise e
 else
-	(* The prompt below would not print out above the input, so I commented it out.*)
-	(* printf "Please enter each unsegmented utterance on its own line.  Terminate entry with ^D.\n\n"; *)
-	sentenceList := Std.input_list stdin;
-	close_in stdin;;	
+	begin
+		(* The prompt below would not print out above the input, so I commented it out.*)
+		print_endline "Please enter each unsegmented utterance on its own line.  Terminate entry with ^D.\n";
+		sentenceList := Std.input_list stdin;
+		close_in stdin
+	end;;
 
 (* Read feature file, if specifed *)
 if !featureFile <> "" then
