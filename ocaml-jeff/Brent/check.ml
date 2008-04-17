@@ -244,12 +244,17 @@ let update_tp_fp_fn blocksize test_string gold_string (tp,fp,fn,counter,array) =
     (tp +. utterance_tp, fp +. utterance_fp, fn +. utterance_fn, counter+1, array);;  
 
 
+
 let evaluate testfile goldfile blocksize =
   let counter = 0 and
       a = Array.make blocksize (0.,0.,0.) 
   in
-  double_fold (update_tp_fp_fn blocksize) testfile goldfile (0.,0.,0.,counter,a);;
- 
+  let (tp,fp,fn,c,ar)= double_fold (update_tp_fp_fn blocksize) testfile goldfile (0.,0.,0.,counter,a) 
+  in
+  let prec = precision tp fp in
+  let recl = recall tp fn in
+    print_endline ((string_of_int c)^"\t"^(string_of_float prec)^"\t"^(string_of_float recl))
+  
 
 
 let main () = 
