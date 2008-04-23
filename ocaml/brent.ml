@@ -126,27 +126,32 @@ let print_string_set stringSet =
 (*******************END FEATURE CHART ************************)
 
 
-(* Recursively computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-let rec prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray =	
-	if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-		if (n = 0) then
-			begin
-				(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))
-			end 
-		else
-			begin
-				((float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))) /. (prob_ngram (String.sub ngram 0 n) (n - 1) wordNgramCountsArray wordTotalNgramsArray)				
-			end
+(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
+let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray =
+	let prefix = String.sub ngram 0 n in
+	if (n = 0) then
+		(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))
 	else
-		if (n = 0) then
-			begin
-				(float (Hashtbl.find ngramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))
-			end 
-		else
-			begin
-				((float (Hashtbl.find ngramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))) /. (prob_ngram (String.sub ngram 0 n) (n - 1) wordNgramCountsArray wordTotalNgramsArray)				
-			end;;
-
+		begin
+			if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
+				begin					
+					if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find wordNgramCountsArray.(n - 1) prefix))
+					else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find ngramCountsArray.(n - 1) prefix))
+					else
+						!badScore
+				end
+			else 
+				begin					
+					if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find ngramCountsArray.(n) ngram)) /. (float (Hashtbl.find wordNgramCountsArray.(n - 1) prefix))
+					else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find ngramCountsArray.(n) ngram)) /. (float (Hashtbl.find ngramCountsArray.(n - 1) prefix))
+					else
+						!badScore
+				end								
+		end;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray combine_ngram_score combine_phoneme_score =
