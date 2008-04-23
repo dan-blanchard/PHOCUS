@@ -535,6 +535,7 @@ if !phonemeCountsOut <> "" then
 	let oc = open_out !phonemeCountsOut in
 	List.iter
 		(fun currentWindowSizeMinusOne ->
+			fprintf oc "CURRENT WINDOW SIZE: %d\n" (currentWindowSizeMinusOne + 1); 
 			hash_fprint oc ngramCountsArray.(currentWindowSizeMinusOne);			
 		)
 		ngramList;
