@@ -28,6 +28,7 @@ let cartesianProductCache = Hashtbl.create 10000
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
+let condProb = ref false
 let totalWords = ref 0;;
 
 module StringSet = Set.Make(String);;
@@ -55,7 +56,9 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
 					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
 					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
-					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut"];;
+					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
+					"--conditionalProbability", Arg.Set condProb, " Use conditional probabilities instead of joint";
+					"-cp", Arg.Set condProb, " Short for --conditionalProbability"];;
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
@@ -127,7 +130,7 @@ let print_string_set stringSet =
 
 
 (* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray =
+let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
 	let prefix = String.sub ngram 0 n in
 	if (n = 0) then
 		(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))
@@ -152,6 +155,16 @@ let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray =
 						!badScore
 				end								
 		end;;
+
+(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
+let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
+	(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n));;
+
+let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray = 
+	if (!condProb) then
+		prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
+	else
+		prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray combine_ngram_score combine_phoneme_score =
