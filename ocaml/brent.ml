@@ -25,10 +25,12 @@ let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
 let lexicon = Hashtbl.create 10000
 let cartesianProductCache = Hashtbl.create 10000
+
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
 let condProb = ref false
+let smooth = ref false
 let totalWords = ref 0;;
 
 module StringSet = Set.Make(String);;
@@ -67,6 +69,7 @@ Hashtbl.add lexicon !utteranceDelimiter 0;;
 
 let ngramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))));;
 let totalNgramsArray = Array.init (!windowSize) (fun a -> 0);;
+let typesWithCountArray = Array.init 3 (fun a -> 0);;
 let ngramList = List.init !windowSize (fun a -> a);; (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
 
 (************ SHOULD BE IN ITS OWN MODULE: FEATURE CHART **********)
@@ -128,6 +131,15 @@ let print_string_set stringSet =
 	printf "\n";;
 (*******************END FEATURE CHART ************************)
 
+(* Calculates D_n for Modified Kneser-Ney Smoothing*)
+let rec discount n wordTypesWithCountArray = 
+	if (n = 0) then
+		wordTypesWithCountArray.(0) / (wordTypesWithCountArray.(0) + (2 * wordTypesWithCountArray.(1)))
+	else if (n < 3) then
+		n - ((n + 1) * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(n) / (wordTypesWithCountArray.(n - 1))))
+	else
+		3 - (4 * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(4) / (wordTypesWithCountArray.(3))));;
+	
 
 (* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
@@ -156,18 +168,50 @@ let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
 				end								
 		end;;
 
+let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
+	let prefix = String.sub ngram 0 n in
+	let d = discount n in
+	if (n = 0) then
+		(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))
+	else
+		begin
+			if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
+				begin					
+					if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find wordNgramCountsArray.(n - 1) prefix))
+					else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find ngramCountsArray.(n - 1) prefix))
+					else
+						!badScore
+				end
+			else 
+				begin					
+					if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find ngramCountsArray.(n) ngram)) /. (float (Hashtbl.find wordNgramCountsArray.(n - 1) prefix))
+					else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+						(float (Hashtbl.find ngramCountsArray.(n) ngram)) /. (float (Hashtbl.find ngramCountsArray.(n - 1) prefix))
+					else
+						!badScore
+				end								
+		end;;
+	
 (* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
 	(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n));;
 
-let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray = 
+let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
 	if (!condProb) then
-		prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
+		begin
+			if (!smooth) then
+				prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
+			else
+				prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
+		end
 	else
 		prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
 
 (* Calculates the probability of each phoneme in a word*)
-let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray combine_ngram_score combine_phoneme_score =
+let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray combine_ngram_score combine_phoneme_score =
 	let wordWithBoundary = (if !windowSize > 1 then 
 								!wordDelimiter ^ word ^ !wordDelimiter 
 							else 
@@ -227,7 +271,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray combine_ngram_s
 						let ngramScore = ref (-.(log 1.0)) in 
 						StringSet.iter
 							(fun featureGram ->
-								ngramScore := (combine_ngram_score !ngramScore (-. (log (prob_ngram featureGram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray))))								
+								ngramScore := (combine_ngram_score !ngramScore (-. (log (prob_ngram featureGram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))))								
 							)
 							ngramFeatureSet;
 						phonemeScore := (combine_phoneme_score !phonemeScore !ngramScore)
@@ -239,7 +283,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray combine_ngram_s
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						phonemeScore := (combine_phoneme_score !phonemeScore (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray))))
+						phonemeScore := (combine_phoneme_score !phonemeScore (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))))
 					)
 					firstCharList;
 			end;
@@ -249,6 +293,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray combine_ngram_s
 let r word =
 	let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
 	let wordTotalNgramsArray = Array.init (!windowSize) (fun a -> 0) in
+	let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
 	let wordTypesFloat = float (Hashtbl.length lexicon) in
 	let totalWordsFloat = float !totalWords in
 	let score = ref 0.0 in
@@ -347,7 +392,7 @@ let r word =
 							ngramList
 					end;
 				score := -.(log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0))));
-				score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray (max) (+.));
+				score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.));
 				score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
