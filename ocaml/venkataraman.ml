@@ -219,7 +219,10 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 	if (String.length word) < !windowSize then
 		-. (log !badScore)
 	else	
-		let phonemeScore = ref -.(log 1.0) in
+		let phonemeScore = ref (if !windowSize > 1 then 
+								-.(log 1.0)
+							else
+								-.(log (1.0 /. (1.0 -. ((float (Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter)) /. (float wordTotalNgramsArray.(0))))))) in
 		let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
 		if !featureFile <> "" then
 			begin
@@ -410,12 +413,13 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	else
 		bestList;;
 
-let mbdp_outer sentence =
+let evalUtterance sentence =
 	let lastCharList = Array.init (String.length sentence) (fun a -> a) in
 	let bestList = Array.fold_left
 		(fun oldBestList lastChar ->
 			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
+			let word = String.slice ~first:(lastChar + 1) sentence in
 			let newBestList = Array.append oldBestList [|((r subUtterance), 0)|] in
 			mbdp_inner subUtterance 1 lastChar newBestList
 		)
