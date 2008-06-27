@@ -125,21 +125,21 @@ let rec make_pair_list test_list gold_list list =
 let print_pair_list pair_list = List.map (fun (a,b) -> print_endline (":"^(sym_to_string a)^":"^(sym_to_string b)^":")) (pair_list);;
 
 
-let rec true_positives pair_list tp possible_word = 
-(*  let _ = print_pair_list pair_list in
+let rec true_positives pair_list (wtp,btp) possible_word = 
+(*  l6et _ = print_pair_list pair_list in
   let () = print_endline ((string_of_float tp)^":"^(string_of_bool possible_word)) in
 *)
   match pair_list with
-    |  [] -> tp
+    |  [] -> wtp,btp
     | head::tail ->
 	match head with
 	  |  (Letter(x),Letter(y)) when (x=wb) && (y=wb) -> 
 	       if possible_word 
-	       then true_positives tail (tp +. 1.) true 
-	       else true_positives tail tp true 
+	       then true_positives tail (wtp +. 1., btp +. 1.) true 
+	       else true_positives tail (wtp, btp +.1.) true 
 	  | (Blank,_) 
-	  | (_,Blank) -> true_positives tail tp false
-	  | _ -> true_positives tail tp possible_word (*maintain status quo*);;
+	  | (_,Blank) -> true_positives tail (wtp,btp) false
+	  | _ -> true_positives tail (wtp,btp) possible_word (*maintain status quo*);;
   
 
 let rec word_to_list w list = 
@@ -167,13 +167,15 @@ let rec compare_utterances test_u gold_u =
     let () = print_endline (Mstring.concat_list "\n" (List.rev (List.map (fun (a,b) -> (sym_to_string a)^","^(sym_to_string b)) pair_list)) "")
     in
   *)
-  let tp = true_positives (List.rev pair_list) 0. true in
-  let fp = (float_of_int (Utterance.length test_u)) -. tp in
-  let fn = (float_of_int (Utterance.length gold_u)) -. tp in
+  let wtp,btp = true_positives (List.rev pair_list) (0., 1.) true in   (* word true positives,  boundary true positives*)	 
+  let wfp = (float_of_int (Utterance.length test_u)) -. wtp in (* word false positives*) 
+  let wfn = (float_of_int (Utterance.length gold_u)) -. wtp in (* word false negatives *)
+  let bfp = (float_of_int (Utterance.length test_u) +. 1.) -. btp in(* boundary false positives*) 
+  let bfn = (float_of_int (Utterance.length gold_u) +. 1.) -. btp in(* boundary false negatives *)
   (*  let () = print_endline ((string_of_float tp)^"\t"^(string_of_float fp)^"\t"^(string_of_float fn)) 
       in
   *)
-  (tp,fp,fn);;
+  (wtp,wfp,wfn,btp,bfp,bfn);;
 
 (* double_fold assumes the files are aligned line by line *)
 
@@ -189,13 +191,12 @@ let double_fold f file1 file2 a =
   do try
       let line1 = input_line infile1 in
       let line2 = input_line infile2 in
-      aref := f line1 line2 !aref
+	aref := f line1 line2 !aref
     with 
       | End_of_file -> eof := true
   done;
-  close_in infile1; close_in infile2;
-  !aref
-
+    close_in infile1; close_in infile2;
+    !aref
 
 let precision tp fp = 
   tp /. (tp +. fp);;   (* true positives / (true positives + false positives ) *)
@@ -203,12 +204,14 @@ let precision tp fp =
 let recall tp fn = 
   tp /. (tp +. fn);;    (* true positives / (true positives + false negatives ) *)
 
+let fscore p r = ( 2. *. p *. r ) /. (p +. r);; 
 
-let update_tp_fp_fn blocksize test_string gold_string (tp,fp,fn,counter,array) =
+
+let update_scores blocksize test_string gold_string (wtp,wfp,wfn,btp,bfp,bfn,counter,array) =
   let test_u = Utterance.of_string test_string in
   let gold_u = Utterance.of_string gold_string in
 
-  let utterance_tp,utterance_fp,utterance_fn = 
+  let uwtp,uwfp,uwfn,ubtp,ubfp,ubfn = 
     try compare_utterances test_u gold_u
     with Different_Utterances -> failwith ((string_of_int counter)^": Different Utterances!")
   in
@@ -222,41 +225,67 @@ let update_tp_fp_fn blocksize test_string gold_string (tp,fp,fn,counter,array) =
   then 
     let position = counter mod blocksize 
     in
-    let c_tp,c_fp,c_fn = Array.get array position
+    let c_wtp,c_wfp,c_wfn,c_btp,c_bfp,c_bfn = Array.get array position
     in
-    let new_tp,new_fp,new_fn = tp-.c_tp, fp-.c_fp, fn-.c_fn
+    let new_wtp,new_wfp,new_wfn,new_btp,new_bfp,new_bfn = 
+      wtp-.c_wtp, wfp-.c_wfp, wfn-.c_wfn,wtp-.c_wtp, bfp-.c_bfp, bfn-.c_bfn
     in
-    let () = Array.set array position (utterance_tp,utterance_fp,utterance_fn) 
+    let () = Array.set array position (uwtp,uwfp,uwfn,ubtp,ubfp,ubfn) 
     in
-    let prec = precision (new_tp +. utterance_tp) (new_fp +. utterance_fp)
+    let wprec = precision (new_wtp +. uwtp) (new_wfp +. uwfp)
     in
-    let recl = recall (new_tp +. utterance_tp) (new_fn +. utterance_fn)
+    let wrecl = recall (new_wtp +. uwtp) (new_wfn +. uwfn)
+    in
+    let wfscore = fscore wprec wrecl
+    in 
+    let bprec = precision (new_btp +. ubtp) (new_bfp +. ubfp)
+    in
+    let brecl = recall (new_btp +. ubtp) (new_bfn +. ubfn)
+    in
+    let bfscore = fscore bprec brecl 
     in
     let () = 
       if (counter mod modvalue = 0) 
-      then print_endline ((string_of_int counter)^"\t"^(string_of_float prec)^"\t"^(string_of_float recl))
+      then print_endline ((string_of_int counter)^"\t"
+			 ^(string_of_float wprec)^"\t"
+			 ^(string_of_float wrecl)^"\t"
+			 ^(string_of_float wfscore)^"\t"
+			 ^(string_of_float bprec)^"\t"
+			 ^(string_of_float brecl)^"\t"
+			 ^(string_of_float bfscore))
       else ()
     in
-    (new_tp +. utterance_tp, new_fp +. utterance_fp, new_fn +. utterance_fn, counter+1, array)
+    (new_wtp +. uwtp, new_wfp +. uwfp, new_wfn +. uwfn,new_btp +. ubtp, new_bfp +. ubfp, new_bfn +. ubfn, counter+1, array)
   else
-    let () = Array.set array counter (utterance_tp,utterance_fp,utterance_fn) 
+    let () = Array.set array counter (wtp,wfp,wfn,btp,bfp,bfn) 
     in
-    (tp +. utterance_tp, fp +. utterance_fp, fn +. utterance_fn, counter+1, array);;  
+    (wtp +. uwtp, wfp +. uwfp, wfn +. uwfn, btp +. ubtp, bfp +. ubfp, bfn +. ubfn, counter+1, array)
+
 
 
 
 let evaluate testfile goldfile blocksize =
+  let () = print_endline ("block\tWP\tWR\tWF\tBP\tBR\tBF") 
+  in
   let counter = 0 and
-      a = Array.make blocksize (0.,0.,0.) 
+      a = Array.make blocksize (0.,0.,0.,0.,0.,0.) 
   in
-  let (tp,fp,fn,c,ar)= double_fold (update_tp_fp_fn blocksize) testfile goldfile (0.,0.,0.,counter,a) 
+  let (wtp,wfp,wfn,btp,bfp,bfn,c,ar)= double_fold (update_scores blocksize) testfile goldfile (0.,0.,0.,0.,0.,0.,counter,a) 
   in
-  let prec = precision tp fp in
-  let recl = recall tp fn in
-    print_endline ((string_of_int c)^"\t"^(string_of_float prec)^"\t"^(string_of_float recl))
+  let wprec = precision wtp wfp in
+  let wrecl = recall wtp wfn in
+  let bprec = precision btp bfp in
+  let brecl = recall btp bfn in
+  let wfscore = fscore wprec wrecl in
+  let bfscore = fscore bprec brecl in
+  print_endline ((string_of_int counter)^"\t"
+			 ^(string_of_float wprec)^"\t"
+			 ^(string_of_float wrecl)^"\t"
+			 ^(string_of_float wfscore)^"\t"
+			 ^(string_of_float bprec)^"\t"
+			 ^(string_of_float brecl)^"\t"
+			 ^(string_of_float bfscore))
   
-
-
 let main () = 
   if Array.get cmd_array err_pos = "true" 
   then let () = usage () in 
