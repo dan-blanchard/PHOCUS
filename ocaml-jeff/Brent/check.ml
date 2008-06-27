@@ -159,19 +159,26 @@ let rec compare_utterances test_u gold_u =
   let test_list = flatten_utterance test_u [] in
   let gold_list = flatten_utterance gold_u [] in
   (*
-    let () = print_endline ("test as word: "^(Mstring.concat_list Seg_D.delim (List.map Seg.to_string test_list) "")) in
-    let () = print_endline ("gold as word: "^(Mstring.concat_list Seg_D.delim (List.map Seg.to_string gold_list) "")) in
+    let () = print_endline ("test as word:"
+    ^(Mstring.concat_list Seg_D.delim (List.map Seg.to_string test_list) "")) 
+    in
+    let () = print_endline ("gold as word: "
+    ^(Mstring.concat_list Seg_D.delim (List.map Seg.to_string gold_list) "")) 
+    in
   *)
   let pair_list = make_pair_list test_list gold_list [] in
   (*
-    let () = print_endline (Mstring.concat_list "\n" (List.rev (List.map (fun (a,b) -> (sym_to_string a)^","^(sym_to_string b)) pair_list)) "")
+    let () = print_endline (Mstring.concat_list "\n" 
+    (List.rev (List.map (fun (a,b) -> (sym_to_string a)^","^(sym_to_string b)) pair_list)) "")
     in
   *)
-  let wtp,btp = true_positives (List.rev pair_list) (0., 1.) true in   (* word true positives,  boundary true positives*)	 
+  let wtp,btp_temp = true_positives (List.rev pair_list) (0., 0.) true in   
+    (* word true positives,  boundary true positives*)	 
+  let btp = btp_temp -. 1. in
   let wfp = (float_of_int (Utterance.length test_u)) -. wtp in (* word false positives*) 
   let wfn = (float_of_int (Utterance.length gold_u)) -. wtp in (* word false negatives *)
-  let bfp = (float_of_int (Utterance.length test_u) +. 1.) -. btp in(* boundary false positives*) 
-  let bfn = (float_of_int (Utterance.length gold_u) +. 1.) -. btp in(* boundary false negatives *)
+  let bfp = (float_of_int (Utterance.length test_u) -. 1.) -. btp in(* boundary false positives*) 
+  let bfn = (float_of_int (Utterance.length gold_u) -. 1.) -. btp in(* boundary false negatives *)
   (*  let () = print_endline ((string_of_float tp)^"\t"^(string_of_float fp)^"\t"^(string_of_float fn)) 
       in
   *)
@@ -227,8 +234,8 @@ let update_scores blocksize test_string gold_string (wtp,wfp,wfn,btp,bfp,bfn,cou
     in
     let c_wtp,c_wfp,c_wfn,c_btp,c_bfp,c_bfn = Array.get array position
     in
-    let new_wtp,new_wfp,new_wfn,new_btp,new_bfp,new_bfn = 
-      wtp-.c_wtp, wfp-.c_wfp, wfn-.c_wfn,wtp-.c_wtp, bfp-.c_bfp, bfn-.c_bfn
+    let  new_wtp,    new_wfp,    new_wfn,    new_btp,    new_bfp,    new_bfn = 
+      wtp-.c_wtp, wfp-.c_wfp, wfn-.c_wfn, btp-.c_btp, bfp-.c_bfp, bfn-.c_bfn
     in
     let () = Array.set array position (uwtp,uwfp,uwfn,ubtp,ubfp,ubfn) 
     in
@@ -255,22 +262,31 @@ let update_scores blocksize test_string gold_string (wtp,wfp,wfn,btp,bfp,bfn,cou
 			 ^(string_of_float bfscore))
       else ()
     in
-    (new_wtp +. uwtp, new_wfp +. uwfp, new_wfn +. uwfn,new_btp +. ubtp, new_bfp +. ubfp, new_bfn +. ubfn, counter+1, array)
+    (new_wtp +. uwtp, 
+    new_wfp +. uwfp, 
+    new_wfn +. uwfn,
+    new_btp +. ubtp, 
+    new_bfp +. ubfp, 
+    new_bfn +. ubfn, counter+1, array)
   else
-    let () = Array.set array counter (wtp,wfp,wfn,btp,bfp,bfn) 
+    let () = Array.set array counter (uwtp,uwfp,uwfn,ubtp,ubfp,ubfn) 
     in
-    (wtp +. uwtp, wfp +. uwfp, wfn +. uwfn, btp +. ubtp, bfp +. ubfp, bfn +. ubfn, counter+1, array)
-
-
+    (wtp +. uwtp, 
+    wfp +. uwfp, 
+    wfn +. uwfn, 
+    btp +. ubtp, 
+    bfp +. ubfp, 
+    bfn +. ubfn, counter+1, array)
 
 
 let evaluate testfile goldfile blocksize =
-  let () = print_endline ("block\tWP\tWR\tWF\tBP\tBR\tBF") 
+  let () = print_endline ("\nblock\tWP\tWR\tWF\tBP\tBR\tBF") 
   in
   let counter = 0 and
       a = Array.make blocksize (0.,0.,0.,0.,0.,0.) 
   in
-  let (wtp,wfp,wfn,btp,bfp,bfn,c,ar)= double_fold (update_scores blocksize) testfile goldfile (0.,0.,0.,0.,0.,0.,counter,a) 
+  let (wtp,wfp,wfn,btp,bfp,bfn,c,ar)= 
+    double_fold (update_scores blocksize) testfile goldfile (0.,0.,0.,0.,0.,0.,counter,a) 
   in
   let wprec = precision wtp wfp in
   let wrecl = recall wtp wfn in
@@ -278,7 +294,7 @@ let evaluate testfile goldfile blocksize =
   let brecl = recall btp bfn in
   let wfscore = fscore wprec wrecl in
   let bfscore = fscore bprec brecl in
-  print_endline ((string_of_int counter)^"\t"
+  print_endline ((string_of_int c)^"\t"
 			 ^(string_of_float wprec)^"\t"
 			 ^(string_of_float wrecl)^"\t"
 			 ^(string_of_float wfscore)^"\t"
