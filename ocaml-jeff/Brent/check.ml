@@ -279,6 +279,18 @@ let update_scores blocksize test_string gold_string (wtp,wfp,wfn,btp,bfp,bfn,cou
     bfn +. ubfn, counter+1, array)
 
 
+let rec finalize (wtp,wfp,wfn,btp,bfp,bfn) ar pos =
+  try
+    let (pwtp,pwfp,pwfn,pbtp,pbfp,pbfn) = Array.get ar pos in
+      finalize (wtp -. pwtp,
+	       wfp -. pwfp,
+	       wfn -. pwfn,
+	       btp -. pbtp,
+	       bfp -. pbfp,
+	       bfn -. pbfn)
+	ar (pos+1)
+  with Invalid_argument "index out of bounds" -> (wtp,wfp,wfn,btp,bfp,bfn)
+
 let evaluate testfile goldfile blocksize =
   let () = print_endline ("\nblock\tWP\tWR\tWF\tBP\tBR\tBF") 
   in
@@ -288,10 +300,14 @@ let evaluate testfile goldfile blocksize =
   let (wtp,wfp,wfn,btp,bfp,bfn,c,ar)= 
     double_fold (update_scores blocksize) testfile goldfile (0.,0.,0.,0.,0.,0.,counter,a) 
   in
-  let wprec = precision wtp wfp in
-  let wrecl = recall wtp wfn in
-  let bprec = precision btp bfp in
-  let brecl = recall btp bfn in
+  let rem = c mod blocksize in
+  let (fwtp,fwfp,fwfn,fbtp,fbfp,fbfn) = (* getting the final scores for the final block*)
+    finalize (wtp,wfp,wfn,btp,bfp,bfn) ar rem
+  in
+  let wprec = precision fwtp fwfp in
+  let wrecl = recall fwtp fwfn in
+  let bprec = precision fbtp fbfp in
+  let brecl = recall fbtp fbfn in
   let wfscore = fscore wprec wrecl in
   let bfscore = fscore bprec brecl in
   print_endline ((string_of_int c)^"\t"
