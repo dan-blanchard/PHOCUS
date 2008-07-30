@@ -168,6 +168,43 @@ let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
 				end								
 		end;;
 
+(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
+let prob_ngram_conditional_boundary_dependent ngram n wordNgramCountsArray wordTotalNgramsArray =
+	let firstChar = String.sub ngram 0 1 in
+	let lastChar = String.sub ngram n 1 in
+	let prefix = String.rchop ngram in
+	let suffix = String.lchop ngram in
+	if (n = 0) then
+		(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n))
+	else
+		begin
+			let wholeNgramCountsArray = (if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
+											wordNgramCountsArray
+										else
+											ngramCountsArray) in
+			let prefixCountsArray = (if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+										wordNgramCountsArray
+									else
+										ngramCountsArray) in
+			let suffixCountsArray = (if (Hashtbl.mem wordNgramCountsArray.(n - 1) suffix) then
+										wordNgramCountsArray
+									else
+										ngramCountsArray) in
+			if (not ((Hashtbl.mem prefixCountsArray.(n - 1) prefix) && (Hashtbl.mem suffixCountsArray.(n - 1) suffix))) then
+				!badScore
+			else
+				begin
+					if (firstChar = !wordDelimiter) then
+						(float (Hashtbl.find wholeNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find prefixCountsArray.(n - 1) prefix))
+					else if (lastChar = !wordDelimiter) then
+						(float (Hashtbl.find wholeNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find suffixCountsArray.(n - 1) suffix))
+					else
+						(((float (Hashtbl.find wholeNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find prefixCountsArray.(n - 1) prefix))) 
+						+. ((float (Hashtbl.find wholeNgramCountsArray.(n) ngram)) /. (float (Hashtbl.find prefixCountsArray.(n - 1) prefix)))) /. 2.0						
+				end		
+		end;;
+
+
 let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
 	let prefix = String.sub ngram 0 n in
 	let d = discount n in
