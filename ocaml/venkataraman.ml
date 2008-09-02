@@ -290,7 +290,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 	!phonemeScore;;
 						
 (* Function to calculate r-score*)
-let r word =
+let evalWord word =
 	let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
 	let wordTotalNgramsArray = Array.init (!windowSize) (fun a -> 0) in
 	let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
@@ -300,7 +300,7 @@ let r word =
 	if Hashtbl.mem lexicon word then 	(* familiar word*)
 		begin
 			let wordCountFloat = float (Hashtbl.find lexicon word) in		
-			score := -.(log ((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)))
+			score := -.(log ((wordCountFloat +. 1.0) /. (totalWordsFloat +. wordTypesFloat +. 1.0)))
 		end
 	else	(* novel word *)
 		begin
@@ -397,18 +397,18 @@ let r word =
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
 
-let rec mbdp_inner subUtterance firstChar lastChar bestList =
+let rec evalUtteranceRecurser subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
 		begin
 			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
-			let wordScore = r newSubUtterance in
+			let wordScore = evalWord newSubUtterance in
 			let oldBestProduct = fst (bestList.(firstChar - 1)) in
 			let lastCharBestProduct = fst (bestList.(lastChar)) in
 			let scoreProduct = wordScore +. oldBestProduct in
 			if scoreProduct < lastCharBestProduct then
-				mbdp_inner subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
+				evalUtteranceRecurser subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
 			else	
-				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
+				evalUtteranceRecurser subUtterance (firstChar + 1) lastChar bestList
 		end
 	else
 		bestList;;
@@ -419,9 +419,8 @@ let evalUtterance sentence =
 		(fun oldBestList lastChar ->
 			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
-			let word = String.slice ~first:(lastChar + 1) sentence in
-			let newBestList = Array.append oldBestList [|((r subUtterance), 0)|] in
-			mbdp_inner subUtterance 1 lastChar newBestList
+			let newBestList = Array.append oldBestList [|((evalWord subUtterance), 0)|] in
+			evalUtteranceRecurser subUtterance 1 lastChar newBestList
 		)
 		[||]
 		lastCharList
@@ -570,7 +569,7 @@ if !featureFile <> "" then
 List.iter
 	(fun segmentedSentence -> 
 		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-		let bestStartList = mbdp_outer sentence in
+		let bestStartList = evalUtterance sentence in
 		let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);

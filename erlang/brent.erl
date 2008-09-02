@@ -41,7 +41,7 @@ all_possible_words(Utterance) ->
 				FirstCharSeq).
 	
 % Loops through all utterances in list, running the various parts of the MBDP algorithm
-mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) when length(Utterances) > 0 ->
+mdbp_utterance_loop([_|_]=Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 	[First | Rest] = Utterances,
 	Pids = [r(self(), Word, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes) || Word <- all_possible_words(First)],
 	RScores = lists:foldl(
@@ -54,7 +54,7 @@ mdbp_utterance_loop(Utterances, WordDelimiter, UtteranceDelimiter, TotalWords, T
 						Pids),
 	BestStart = mdbp_outer(First, WordDelimiter, UtteranceDelimiter, TotalWords, TotalPhonemes, RScores),
 	Segmentation = path_search(BestStart, length(First), []),
-	{NewTotalWords, NewTotalPhonemes} = lexicon_updater(lists:sort(Segmentation ++ [length(First) + 1]),
+	{NewTotalWords, NewTotalPhonemes} = lexicon_updater(lists:sort([length(First) + 1] ++ Segmentation),
 																						First,
 																						WordDelimiter,
 																						TotalWords,
@@ -71,14 +71,14 @@ mdbp_utterance_loop(Utterances, _WordDelimiter, _UtteranceDelimiter, _TotalWords
 % Retrieves the segmentation from BestStart list
 path_search(BestStart, FirstChar, Path) when FirstChar > 1 ->
 	NewFirstChar = lists:nth(FirstChar - 1, BestStart),
-	path_search(BestStart, NewFirstChar, Path ++ [NewFirstChar]);
+	path_search(BestStart, NewFirstChar, [NewFirstChar] ++ Path);
 
 path_search(_BestStart, _FirstChar, Path) ->
-	Path.
+	lists:reverse(Path).
 
 
 % Adds the new words to the lexicon, and updates phoneme counts
-lexicon_updater(Segmentation, Utterance, WordDelimiter, TotalWords, TotalPhonemes) when length(Segmentation) > 1 ->
+lexicon_updater([_,_|_]=Segmentation, Utterance, WordDelimiter, TotalWords, TotalPhonemes) ->
 	[StartChar, EndChar | Rest] = Segmentation,
 	NewWord = lists:sublist(Utterance, StartChar, EndChar - StartChar),
 	io:format("~s", [NewWord ++ [WordDelimiter]]), 	
@@ -203,14 +203,6 @@ r(Word, WordDelimiter, _UtteranceDelimiter, TotalWords, TotalPhonemes) ->
 	end.
 
 
-% Calculates scores for all phonemes in a word, as a new process
-prob_phonemes(Parent, Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
-	spawn(
-		fun () ->
-			Score = prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes),
-			Parent ! Score
-		end).
-		
 % Calculates scores for all phonemes in a word
 prob_phonemes(Word, WordDelimiter, WordPhonemeCounts, TotalPhonemes) ->
 	if 
