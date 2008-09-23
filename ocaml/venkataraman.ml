@@ -29,7 +29,7 @@ let cartesianProductCache = Hashtbl.create 10000
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
-let condProb = ref false
+let condProb = ref true
 let smooth = ref false
 let totalWords = ref 0;;
 
@@ -53,7 +53,7 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-bs", Arg.Set_float badScore, " Short for --badScore";
 					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
 					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
-					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance ";
+					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
 					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
