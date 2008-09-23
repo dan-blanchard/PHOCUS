@@ -313,62 +313,66 @@ let evalWord word =
 			else												
 				if !featureFile <> "" then
 					begin
-						(* let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
-						let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
-						let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
-												(fun firstChar ->
-													let phoneme = String.sub wordWithBoundary firstChar 1 in
-													features_for_phone phoneme
-												) 
-												firstCharListForBundles 
-						in
-						List.iter
-							(fun firstChar ->
-								let ngramFeatures = Array.sub wordFeatures firstChar !windowSize in
-								let lastCharList = List.init (!windowSize - 1) (fun a -> (a + 1)) in
-								let ngramFeatureSet = List.fold_left
-														(fun currentProduct lastChar ->
-															let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
-															if Hashtbl.mem cartesianProductCache subWord then															
-																begin
-																	Hashtbl.find cartesianProductCache subWord
-																end
-															else
-																begin															
-																	let newProduct = StringSet.fold 
-																						(fun currentFeature currentSet->
-																							StringSet.union 
-																								currentSet
-																								(StringSet.fold
-																									(fun otherFeature otherSet ->
-																										StringSet.add (currentFeature ^ otherFeature) otherSet
-																									)
-																									ngramFeatures.(lastChar)
-																									StringSet.empty)
-																						)
-																						currentProduct 
-																						StringSet.empty
-																	in
-																	Hashtbl.add cartesianProductCache subWord newProduct;
-																	newProduct
-																end
-														)
-														ngramFeatures.(0)
-														lastCharList;
-								in
-								StringSet.iter
-									(fun featureGram ->
-										if Hashtbl.mem wordPhonemeCounts featureGram then
-											Hashtbl.replace wordPhonemeCounts featureGram ((Hashtbl.find wordPhonemeCounts featureGram) + 1)
-										else if Hashtbl.mem phonemeCounts featureGram then
-											Hashtbl.add wordPhonemeCounts featureGram ((Hashtbl.find phonemeCounts featureGram) + 1)
-										else
-											Hashtbl.add wordPhonemeCounts featureGram 1;
-										totalPhonemes := !totalPhonemes + 1									
+						List.iter (* Get feature n-gram counts of all size *)
+							(fun currentWindowSizeMinusOne ->						
+								let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
+								let firstCharList = List.init ((String.length wordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
+								let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
+														(fun firstChar ->
+															let phoneme = String.sub wordWithBoundary firstChar 1 in
+															features_for_phone phoneme
+														) 
+														firstCharListForBundles 
+								in						
+								List.iter
+									(fun firstChar ->
+										let ngramFeatures = Array.sub wordFeatures firstChar (currentWindowSizeMinusOne + 1) in
+										let lastCharList = List.init currentWindowSizeMinusOne (fun a -> (a + 1)) in
+										let ngramFeatureSet = List.fold_left
+																(fun currentProduct lastChar ->
+																	let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
+																	if Hashtbl.mem cartesianProductCache subWord then															
+																		begin
+																			Hashtbl.find cartesianProductCache subWord
+																		end
+																	else
+																		begin															
+																			let newProduct = StringSet.fold 
+																								(fun currentFeature currentSet->
+																									StringSet.union 
+																										currentSet
+																										(StringSet.fold
+																											(fun otherFeature otherSet ->
+																												StringSet.add (currentFeature ^ otherFeature) otherSet
+																											)
+																											ngramFeatures.(lastChar)
+																											StringSet.empty)
+																								)
+																								currentProduct 
+																								StringSet.empty
+																			in
+																			Hashtbl.add cartesianProductCache subWord newProduct;
+																			newProduct
+																		end
+																)
+																ngramFeatures.(0)
+																lastCharList;
+										in
+										StringSet.iter
+											(fun featureGram ->
+												if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram then
+													Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
+												else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
+													Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
+												else
+													Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram 1;
+												Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + 1)							
+											)
+											ngramFeatureSet;
 									)
-									ngramFeatureSet
+									firstCharList
 							)
-							firstCharList *)
+							ngramList
 					end
 				else
 					begin
@@ -457,63 +461,68 @@ let rec lexicon_updater segmentation sentence =
 							else
 								!windowSize) 
 			in
+			let wordNgramList = List.init wordWindow (fun a -> a) in
 			(* printf "startChar = %d\tendChar =%d\n" startChar endChar; *)
 			printf "%s" (newWord ^ !wordDelimiter);
 			totalWords := !totalWords + 1;
 			if !featureFile <> "" then
 				begin
-					(* let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
-					let firstCharList = List.init ((String.length wordWithBoundary) - (wordWindow - 1)) (fun a -> a) in
-					let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
-											(fun firstChar ->
-												let phoneme = String.sub wordWithBoundary firstChar 1 in												
-												features_for_phone phoneme
-											) 
-											firstCharListForBundles 
-					in
-					List.iter
-						(fun firstChar ->							
-							let ngramFeatures = Array.sub wordFeatures firstChar wordWindow in
-							let lastCharList = List.init (wordWindow - 1) (fun a -> (a + 1)) in
-							let ngramFeatureSet = List.fold_left
-													(fun currentProduct lastChar ->
-														let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
-														if Hashtbl.mem cartesianProductCache subWord then
-															Hashtbl.find cartesianProductCache subWord
-														else
-															begin															
-																let newProduct = StringSet.fold 
-																					(fun currentFeature currentSet->
-																						StringSet.union 
-																							currentSet
-																							(StringSet.fold
-																								(fun otherFeature otherSet ->
-																									StringSet.add (currentFeature ^ otherFeature) otherSet
-																								)
-																							StringSet.empty
-																							ngramFeatures.(lastChar))
-																					)
-																					StringSet.empty
-																					currentProduct 
-																in
-																Hashtbl.add cartesianProductCache subWord newProduct;
-																newProduct
-															end
-													)
-													StringSet.empty
-													lastCharList;
+					List.iter (* Get feature n-gram counts of all size *)
+						(fun currentWindowSizeMinusOne ->											
+							let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
+							let firstCharList = List.init ((String.length wordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
+							let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
+													(fun firstChar ->
+														let phoneme = String.sub wordWithBoundary firstChar 1 in												
+														features_for_phone phoneme
+													) 
+													firstCharListForBundles 
 							in
-							StringSet.iter
-								(fun featureGram ->
-									if Hashtbl.mem phonemeCounts featureGram then
-										Hashtbl.replace phonemeCounts featureGram ((Hashtbl.find phonemeCounts featureGram) + 1)
-									else
-										Hashtbl.add phonemeCounts featureGram 1;
-									totalPhonemes := !totalPhonemes + 1
+							List.iter
+								(fun firstChar ->							
+									let ngramFeatures = Array.sub wordFeatures firstChar (currentWindowSizeMinusOne + 1) in
+									let lastCharList = List.init currentWindowSizeMinusOne (fun a -> (a + 1)) in
+									let ngramFeatureSet = List.fold_left
+															(fun currentProduct lastChar ->
+																let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
+																if Hashtbl.mem cartesianProductCache subWord then
+																	Hashtbl.find cartesianProductCache subWord
+																else
+																	begin															
+																		let newProduct = StringSet.fold 
+																							(fun currentFeature currentSet->
+																								StringSet.union 
+																									currentSet
+																									(StringSet.fold
+																										(fun otherFeature otherSet ->
+																											StringSet.add (currentFeature ^ otherFeature) otherSet
+																										)
+																									StringSet.empty
+																									ngramFeatures.(lastChar))
+																							)
+																							StringSet.empty
+																							currentProduct 
+																		in
+																		Hashtbl.add cartesianProductCache subWord newProduct;
+																		newProduct
+																	end
+															)
+															StringSet.empty
+															lastCharList;
+									in
+									StringSet.iter
+										(fun featureGram ->
+											if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
+												Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
+											else
+												Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) featureGram 1;
+											Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + 1)
+										)
+										ngramFeatureSet;							
 								)
-								ngramFeatureSet;							
+								firstCharList;
 						)
-						firstCharList; *)
+						wordNgramList
 				end
 			else
 				begin
