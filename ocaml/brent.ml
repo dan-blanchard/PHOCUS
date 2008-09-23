@@ -29,7 +29,7 @@ let cartesianProductCache = Hashtbl.create 10000
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
-let condProb = ref false
+let condProb = ref true
 let smooth = ref false
 let totalWords = ref 0;;
 
