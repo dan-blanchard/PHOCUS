@@ -300,7 +300,7 @@ let evalWord word =
 	if Hashtbl.mem lexicon word then 	(* familiar word*)
 		begin
 			let wordCountFloat = float (Hashtbl.find lexicon word) in		
-			score := -.(log ((wordCountFloat +. 1.0) /. (totalWordsFloat +. wordTypesFloat +. 1.0)))
+			score := -.(log (wordCountFloat /. (totalWordsFloat +. wordTypesFloat)))
 		end
 	else	(* novel word *)
 		begin
@@ -383,51 +383,59 @@ let evalWord word =
 								List.iter (* Loop through all n-grams of current size *)
 									(fun firstChar ->
 										let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
-										if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) ngram then
-											Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) ngram) + 1)
-										else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
-											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) + 1)
+										if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
+											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram)
 										else
-											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 1;
+											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 0;
 									)
 									ngramFirstCharList;
 								Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + ngramFirstCharListLength)
 							)
 							ngramList
 					end;
-				score := -.(log (totalWordsFloat +. wordTypesFloat));
+				score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)));
 				score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.));
+				(* score := !score +. (prob_phonemes word ngramCountsArray totalNgramsArray wordTypesWithCountArray (max) (+.)); *)
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
 
-(* Venkataraman's search algorithm from paper, not tail-recursive*)
+(* Venkataraman's search algorithm from paper, really inefficient... *)
 let rec evalUtterance sentence =
 	let sentenceLength = String.length sentence in 
 	let bestScore = ref (evalWord sentence) in
-	let segPointList = Array.init (sentenceLength - 1) (fun a -> a) in
-	let wordBoundaryList = Array.fold_left
-								(fun oldWordBoundaryList segPoint ->
+	let segPointArray = Array.init (sentenceLength - 1) (fun a -> a) in
+	let wordBoundaryArray = Array.fold_left
+								(fun oldWordBoundaryArray segPoint ->
 									let subUtterance = String.sub sentence 0 (segPoint + 1) in
 									let word = String.sub sentence (segPoint + 1) (sentenceLength - (segPoint + 1)) in
-									(* printf "subUtterance: %s\tword: %s\tsegPoint: %i\tsentenceLength: %i\n" subUtterance word segPoint sentenceLength; *)
+									printf "subUtterance: %s\tword: %s\tsegPoint: %i\tsentenceLength: %i\n" subUtterance word segPoint sentenceLength;
 									let evalTuple = evalUtterance subUtterance in
-									let newWordBoundaryList = snd evalTuple in
+									let newWordBoundaryArray = snd evalTuple in
 									let score = ((fst evalTuple) +. (evalWord word)) in 
 									if (score < !bestScore) then
 										begin
+											(* printf "score: %e\tbestScore %e\n" score !bestScore; *)
 											bestScore := score;
-											oldWordBoundaryList @ newWordBoundaryList
+											Array.blit newWordBoundaryArray 0 oldWordBoundaryArray 0 (Array.length newWordBoundaryArray);
 										end
-									else
-										begin
-											oldWordBoundaryList
-										end
+									(* else
+										printf "lower score\n" *);
+									oldWordBoundaryArray
 								)
-								[sentenceLength - 1]
-								segPointList 
+								(Array.init 
+									(sentenceLength + 1) 
+									(fun a ->
+										if ((a > 0) && (a < sentenceLength)) then
+											-1
+										else
+											a
+									)
+								)
+								segPointArray 
 								in 
-	(!bestScore, wordBoundaryList);;
+	(!bestScore, wordBoundaryArray);;
+	
 		
 (* Updates lexicon with newly segmented words, and prints out segmented utterance *)
 let rec lexicon_updater segmentation sentence =
@@ -549,7 +557,6 @@ if !corpus <> "" then
 else
 	begin
 		(* The prompt below would not print out above the input, so I commented it out.*)
-		print_endline "Please enter each unsegmented utterance on its own line.  Terminate entry with ^D.\n";
 		sentenceList := Std.input_list stdin;
 		close_in stdin
 	end;;
@@ -562,13 +569,17 @@ if !featureFile <> "" then
 List.iter
 	(fun segmentedSentence -> 
 		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-		let bestStartList = evalUtterance sentence in
+		let wordBoundaryArray = (snd (evalUtterance sentence)) in
+		(* Std.print wordBoundaryArray; *)
+		let bestStartList = Array.to_list (Array.filter (fun a -> (a > -1)) wordBoundaryArray) in
+		(* Std.print bestStartList; *)
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
-		lexicon_updater (List.fast_sort compare ([0] @ (snd bestStartList))) sentence; 
+		lexicon_updater bestStartList sentence; 
 		if (!printUtteranceDelimiter) then
 			printf "%s" !utteranceDelimiter;		
 		printf "\n";
+		flush stdout;
 		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
 	)
 	!sentenceList;;
