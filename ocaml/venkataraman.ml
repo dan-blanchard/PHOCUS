@@ -400,42 +400,50 @@ let evalWord word =
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
 
-(* Venkataraman's search algorithm from paper, really inefficient... *)
-let rec evalUtterance sentence =
-	let sentenceLength = String.length sentence in 
-	let bestScore = ref (evalWord sentence) in
-	let segPointArray = Array.init (sentenceLength - 1) (fun a -> a) in
-	let wordBoundaryArray = Array.fold_left
-								(fun oldWordBoundaryArray segPoint ->
-									let subUtterance = String.sub sentence 0 (segPoint + 1) in
-									let word = String.sub sentence (segPoint + 1) (sentenceLength - (segPoint + 1)) in
-									printf "subUtterance: %s\tword: %s\tsegPoint: %i\tsentenceLength: %i\n" subUtterance word segPoint sentenceLength;
-									let evalTuple = evalUtterance subUtterance in
-									let newWordBoundaryArray = snd evalTuple in
-									let score = ((fst evalTuple) +. (evalWord word)) in 
-									if (score < !bestScore) then
-										begin
-											(* printf "score: %e\tbestScore %e\n" score !bestScore; *)
-											bestScore := score;
-											Array.blit newWordBoundaryArray 0 oldWordBoundaryArray 0 (Array.length newWordBoundaryArray);
-										end
-									(* else
-										printf "lower score\n" *);
-									oldWordBoundaryArray
-								)
-								(Array.init 
-									(sentenceLength + 1) 
-									(fun a ->
-										if ((a > 0) && (a < sentenceLength)) then
-											-1
-										else
-											a
-									)
-								)
-								segPointArray 
-								in 
-	(!bestScore, wordBoundaryArray);;
-	
+let rec mbdp_inner subUtterance firstChar lastChar bestList =
+	if firstChar <= lastChar then
+		begin
+			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
+			let wordScore = evalWord newSubUtterance in
+			let oldBestProduct = fst (bestList.(firstChar - 1)) in
+			let lastCharBestProduct = fst (bestList.(lastChar)) in
+			let scoreProduct = wordScore +. oldBestProduct in
+			if scoreProduct < lastCharBestProduct then
+				mbdp_inner subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
+			else	
+				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
+		end
+	else
+		bestList;;
+
+let evalUtterance sentence =
+	let lastCharList = Array.init (String.length sentence) (fun a -> a) in
+	let bestList = Array.fold_left
+		(fun oldBestList lastChar ->
+			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
+			let subUtterance = String.sub sentence 0 (lastChar + 1) in
+			let word = String.slice ~first:(lastChar + 1) sentence in
+			let newBestList = Array.append oldBestList [|((evalWord subUtterance), 0)|] in
+			mbdp_inner subUtterance 1 lastChar newBestList
+		)
+		[||]
+		lastCharList
+	in
+	(* List.iter (fun (x, y) -> printf "(%e, %d)" x y) bestList; *)
+	Array.map
+	 	snd
+		bestList;;	
+
+(* Finds the path through bestStartList which reveals the starts and stops of all hypothesized words in the utterance.
+	Make sure you call this with firstChar set to the length of the utterance*)
+let rec find_segmentation bestStartList firstChar path =
+	if firstChar > 0 then
+		begin
+			let newFirstChar = bestStartList.(firstChar - 1) in
+			find_segmentation bestStartList newFirstChar (path @ [newFirstChar])
+		end
+	else
+		path;;
 		
 (* Updates lexicon with newly segmented words, and prints out segmented utterance *)
 let rec lexicon_updater segmentation sentence =
@@ -569,13 +577,11 @@ if !featureFile <> "" then
 List.iter
 	(fun segmentedSentence -> 
 		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-		let wordBoundaryArray = (snd (evalUtterance sentence)) in
-		(* Std.print wordBoundaryArray; *)
-		let bestStartList = Array.to_list (Array.filter (fun a -> (a > -1)) wordBoundaryArray) in
-		(* Std.print bestStartList; *)
+		let bestStartList = evalUtterance sentence in
+		let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
-		lexicon_updater bestStartList sentence; 
+		lexicon_updater segmentation sentence; 
 		if (!printUtteranceDelimiter) then
 			printf "%s" !utteranceDelimiter;		
 		printf "\n";
