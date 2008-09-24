@@ -409,7 +409,7 @@ let rec evalUtterance sentence =
 	let wordBoundaryList = Array.fold_left
 								(fun oldWordBoundaryList segPoint ->
 									let subUtterance = String.sub sentence 0 (segPoint + 1) in
-									let word = String.sub sentence (segPoint + 1) (sentenceLength - segPoint) in
+									let word = String.sub sentence (segPoint + 1) (sentenceLength - (segPoint + 1)) in
 									let score = ((fst (evalUtterance subUtterance)) +. (evalWord word)) in 
 									if (score < !bestScore) then
 										begin
