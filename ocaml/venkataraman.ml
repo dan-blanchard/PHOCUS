@@ -408,14 +408,16 @@ let rec evalUtterance sentence =
 	let segPointList = Array.init (sentenceLength - 1) (fun a -> a) in
 	let wordBoundaryList = Array.fold_left
 								(fun oldWordBoundaryList segPoint ->
-									printf "segPoint: %i\tsentenceLength: %i" segPoint sentenceLength;
 									let subUtterance = String.sub sentence 0 (segPoint + 1) in
 									let word = String.sub sentence (segPoint + 1) (sentenceLength - (segPoint + 1)) in
-									let score = ((fst (evalUtterance subUtterance)) +. (evalWord word)) in 
+									(* printf "subUtterance: %s\tword: %s\tsegPoint: %i\tsentenceLength: %i\n" subUtterance word segPoint sentenceLength; *)
+									let evalTuple = evalUtterance subUtterance in
+									let newWordBoundaryList = snd evalTuple in
+									let score = ((fst evalTuple) +. (evalWord word)) in 
 									if (score < !bestScore) then
 										begin
 											bestScore := score;
-											oldWordBoundaryList @ [segPoint]
+											oldWordBoundaryList @ newWordBoundaryList
 										end
 									else
 										begin
@@ -426,17 +428,6 @@ let rec evalUtterance sentence =
 								segPointList 
 								in 
 	(!bestScore, wordBoundaryList);;
-
-(* Finds the path through bestStartList which reveals the starts and stops of all hypothesized words in the utterance.
-	Make sure you call this with firstChar set to the length of the utterance*)
-let rec find_segmentation bestStartList firstChar path =
-	if firstChar > 0 then
-		begin
-			let newFirstChar = bestStartList.(firstChar - 1) in
-			find_segmentation bestStartList newFirstChar (path @ [newFirstChar])
-		end
-	else
-		path;;
 		
 (* Updates lexicon with newly segmented words, and prints out segmented utterance *)
 let rec lexicon_updater segmentation sentence =
@@ -574,7 +565,7 @@ List.iter
 		let bestStartList = evalUtterance sentence in
 		if (!displayLineNumbers) then
 			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
-		lexicon_updater (List.fast_sort compare (snd bestStartList)) sentence; 
+		lexicon_updater (List.fast_sort compare ([0] @ (snd bestStartList))) sentence; 
 		if (!printUtteranceDelimiter) then
 			printf "%s" !utteranceDelimiter;		
 		printf "\n";
