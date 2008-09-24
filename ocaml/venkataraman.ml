@@ -408,6 +408,7 @@ let rec evalUtterance sentence =
 	let segPointList = Array.init (sentenceLength - 1) (fun a -> a) in
 	let wordBoundaryList = Array.fold_left
 								(fun oldWordBoundaryList segPoint ->
+									printf "segPoint: %i\tsentenceLength: %i" segPoint sentenceLength;
 									let subUtterance = String.sub sentence 0 (segPoint + 1) in
 									let word = String.sub sentence (segPoint + 1) (sentenceLength - (segPoint + 1)) in
 									let score = ((fst (evalUtterance subUtterance)) +. (evalWord word)) in 
