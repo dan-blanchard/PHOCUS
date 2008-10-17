@@ -31,6 +31,7 @@ let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
 let condProb = ref true
 let smooth = ref false
+let noPhonotactics = ref false
 let totalWords = ref 0;;
 
 module StringSet = Set.Make(String);;
@@ -60,7 +61,9 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
 					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
 					"--conditionalProbability", Arg.Set condProb, " Use conditional probabilities instead of joint";
-					"-cp", Arg.Set condProb, " Short for --conditionalProbability"];;
+					"-cp", Arg.Set condProb, " Short for --conditionalProbability";
+					"--noPhonotactics", Arg.Set noPhonotactics, " Turn off all phonotactics (including unigram), only use isolated words";
+					"-np", Arg.Set noPhonotactics, " Short for --noPhonotactics"];;
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
@@ -341,100 +344,105 @@ let r word =
 		end
 	else	(* novel word *)
 		begin
-			let wordWithBoundary = (if !windowSize > 1 then 
-										!wordDelimiter ^ word ^ !wordDelimiter 
-									else 
-										word ^ !wordDelimiter) in
-			if (String.length wordWithBoundary) < !windowSize then
-				score := -. (log (!badScore))
-			else												
-				if !featureFile <> "" then
-					begin
-						List.iter (* Get feature n-gram counts of all size *)
-							(fun currentWindowSizeMinusOne ->						
-								let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
-								let firstCharList = List.init ((String.length wordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
-								let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
-														(fun firstChar ->
-															let phoneme = String.sub wordWithBoundary firstChar 1 in
-															features_for_phone phoneme
-														) 
-														firstCharListForBundles 
-								in						
-								List.iter
-									(fun firstChar ->
-										let ngramFeatures = Array.sub wordFeatures firstChar (currentWindowSizeMinusOne + 1) in
-										let lastCharList = List.init currentWindowSizeMinusOne (fun a -> (a + 1)) in
-										let ngramFeatureSet = List.fold_left
-																(fun currentProduct lastChar ->
-																	let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
-																	if Hashtbl.mem cartesianProductCache subWord then															
-																		begin
-																			Hashtbl.find cartesianProductCache subWord
-																		end
-																	else
-																		begin															
-																			let newProduct = StringSet.fold 
-																								(fun currentFeature currentSet->
-																									StringSet.union 
-																										currentSet
-																										(StringSet.fold
-																											(fun otherFeature otherSet ->
-																												StringSet.add (currentFeature ^ otherFeature) otherSet
-																											)
-																											ngramFeatures.(lastChar)
-																											StringSet.empty)
-																								)
-																								currentProduct 
-																								StringSet.empty
-																			in
-																			Hashtbl.add cartesianProductCache subWord newProduct;
-																			newProduct
-																		end
-																)
-																ngramFeatures.(0)
-																lastCharList;
-										in
-										StringSet.iter
-											(fun featureGram ->
-												if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram then
-													Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
-												else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
-													Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
-												else
-													Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram 1;
-												Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + 1)							
+			if !noPhonotactics then				
+				score := -. (log 0.00000000000000000000000000000001)
+			else
+				begin
+					let wordWithBoundary = (if !windowSize > 1 then 
+												!wordDelimiter ^ word ^ !wordDelimiter 
+											else 
+												word ^ !wordDelimiter) in
+					if (String.length wordWithBoundary) < !windowSize then
+						score := -. (log (!badScore))
+					else												
+						if !featureFile <> "" then
+							begin
+								List.iter (* Get feature n-gram counts of all size *)
+									(fun currentWindowSizeMinusOne ->						
+										let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
+										let firstCharList = List.init ((String.length wordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
+										let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
+																(fun firstChar ->
+																	let phoneme = String.sub wordWithBoundary firstChar 1 in
+																	features_for_phone phoneme
+																) 
+																firstCharListForBundles 
+										in						
+										List.iter
+											(fun firstChar ->
+												let ngramFeatures = Array.sub wordFeatures firstChar (currentWindowSizeMinusOne + 1) in
+												let lastCharList = List.init currentWindowSizeMinusOne (fun a -> (a + 1)) in
+												let ngramFeatureSet = List.fold_left
+																		(fun currentProduct lastChar ->
+																			let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
+																			if Hashtbl.mem cartesianProductCache subWord then															
+																				begin
+																					Hashtbl.find cartesianProductCache subWord
+																				end
+																			else
+																				begin															
+																					let newProduct = StringSet.fold 
+																										(fun currentFeature currentSet->
+																											StringSet.union 
+																												currentSet
+																												(StringSet.fold
+																													(fun otherFeature otherSet ->
+																														StringSet.add (currentFeature ^ otherFeature) otherSet
+																													)
+																													ngramFeatures.(lastChar)
+																													StringSet.empty)
+																										)
+																										currentProduct 
+																										StringSet.empty
+																					in
+																					Hashtbl.add cartesianProductCache subWord newProduct;
+																					newProduct
+																				end
+																		)
+																		ngramFeatures.(0)
+																		lastCharList;
+												in
+												StringSet.iter
+													(fun featureGram ->
+														if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram then
+															Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
+														else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
+															Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) + 1)
+														else
+															Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram 1;
+														Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + 1)							
+													)
+													ngramFeatureSet;
 											)
-											ngramFeatureSet;
+											firstCharList
 									)
-									firstCharList
-							)
-							ngramList
-					end
-				else
-					begin
-						List.iter (* Get n-gram counts of all size *)
-							(fun currentWindowSizeMinusOne ->
-								let ngramFirstCharListLength = (String.length wordWithBoundary) - currentWindowSizeMinusOne in 
-								let ngramFirstCharList = List.init ngramFirstCharListLength (fun a -> a) in
-								List.iter (* Loop through all n-grams of current size *)
-									(fun firstChar ->
-										let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
-										if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) ngram then
-											Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) ngram) + 1)
-										else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
-											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) + 1)
-										else
-											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 1;
+									ngramList
+							end
+						else
+							begin
+								List.iter (* Get n-gram counts of all size *)
+									(fun currentWindowSizeMinusOne ->
+										let ngramFirstCharListLength = (String.length wordWithBoundary) - currentWindowSizeMinusOne in 
+										let ngramFirstCharList = List.init ngramFirstCharListLength (fun a -> a) in
+										List.iter (* Loop through all n-grams of current size *)
+											(fun firstChar ->
+												let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
+												if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) ngram then
+													Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) ngram) + 1)
+												else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
+													Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) + 1)
+												else
+													Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 1;
+											)
+											ngramFirstCharList;
+										Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + ngramFirstCharListLength)
 									)
-									ngramFirstCharList;
-								Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) + ngramFirstCharListLength)
-							)
-							ngramList
-					end;
-				score := -.(log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0))));
-				score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.));
-				score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
+									ngramList
+							end;
+						score := -.(log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0))));
+						score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.));
+						score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
+				end
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
