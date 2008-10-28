@@ -428,7 +428,6 @@ let evalUtterance sentence =
 		(fun oldBestList lastChar ->
 			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
-			(* let word = String.slice ~first:(lastChar + 1) sentence in *)
 			let newBestList = Array.append oldBestList [|((evalWord subUtterance), 0)|] in
 			mbdp_inner subUtterance 1 lastChar newBestList
 		)
