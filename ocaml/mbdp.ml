@@ -29,7 +29,7 @@ let cartesianProductCache = Hashtbl.create 10000
 let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
-let condProb = ref true
+let jointProb = ref false
 let smooth = ref false
 let noPhonotactics = ref false
 let lexiconPhonotactics = ref false
@@ -61,8 +61,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
 					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
 					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
-					"--conditionalProbability", Arg.Set condProb, " Use conditional probabilities instead of joint";
-					"-cp", Arg.Set condProb, " Short for --conditionalProbability";
+					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
+					"-jp", Arg.Set jointProb, " Short for --jointProbability";
 					"--noPhonotactics", Arg.Set noPhonotactics, " Turn off all phonotactics (including unigram), only use isolated words";
 					"-np", Arg.Set noPhonotactics, " Short for --noPhonotactics";
 					"--lexiconPhonotactics", Arg.Set lexiconPhonotactics, " Only update phoneme n-gram counts once per word type, instead of per word token.";
@@ -243,7 +243,7 @@ let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
 	(float (Hashtbl.find wordNgramCountsArray.(n) ngram)) /. (float wordTotalNgramsArray.(n));;
 
 let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-	if (!condProb) then
+	if (not !jointProb) then
 		begin
 			if (!smooth) then
 				prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
@@ -637,6 +637,7 @@ List.iter
 		if (!printUtteranceDelimiter) then
 			printf "%s" !utteranceDelimiter;		
 		printf "\n";
+		flush stdout;
 		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
 	)
 	!sentenceList;;
