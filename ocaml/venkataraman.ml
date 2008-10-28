@@ -224,9 +224,9 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 		-. (log !badScore)
 	else	
 		let phonemeScore = ref (if !windowSize > 1 then 
-								-.(log 1.0)
-							else
-								-.(log (1.0 /. (1.0 -. ((float (Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter)) /. (float wordTotalNgramsArray.(0))))))) in
+									-.(log 1.0)
+								else
+									-.(log (1.0 /. (1.0 -. ((float (Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter)) /. (float wordTotalNgramsArray.(0))))))) in
 		let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
 		if !featureFile <> "" then
 			begin
@@ -398,8 +398,10 @@ let evalWord word =
 							ngramList
 					end;
 				score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)));
-				score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.));
-				(* score := !score +. (prob_phonemes word ngramCountsArray totalNgramsArray wordTypesWithCountArray (max) (+.)); *)
+				if !windowSize > 1 then 
+					score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.))
+				else
+					score := !score +. (prob_phonemes word ngramCountsArray totalNgramsArray wordTypesWithCountArray (max) (+.));
 		end;
 	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
@@ -566,13 +568,21 @@ if !corpus <> "" then
 	let ic = open_in !corpus in
 	try
 		sentenceList := Std.input_list ic;
-		close_in ic
+		close_in ic;
+		(* Initialize phoneme counts *)
+		let phonemeList = Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort | uniq")) in
+		List.iter
+			(fun phoneme ->
+				Hashtbl.add ngramCountsArray.(0) phoneme 1;
+			)
+			phonemeList;
+		Hashtbl.add ngramCountsArray.(0) !wordDelimiter 1; 
+		Array.set totalNgramsArray 0 (List.length phonemeList)
 	with e ->
 		close_in_noerr ic;
 		raise e
 else
 	begin
-		(* The prompt below would not print out above the input, so I commented it out.*)
 		sentenceList := Std.input_list stdin;
 		close_in stdin
 	end;;
@@ -580,6 +590,7 @@ else
 (* Read feature file, if specifed *)
 if !featureFile <> "" then
 	read_feature_file !featureFile;;
+
 
 (* Loop through sentences *)
 List.iter
