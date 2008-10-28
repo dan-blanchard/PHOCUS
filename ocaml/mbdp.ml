@@ -32,7 +32,7 @@ let windowSize = ref 1
 let jointProb = ref false
 let smooth = ref false
 let noPhonotactics = ref false
-let lexiconPhonotactics = ref false
+let tokenPhonotactics = ref false
 let totalWords = ref 0;;
 
 module StringSet = Set.Make(String);;
@@ -65,8 +65,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-jp", Arg.Set jointProb, " Short for --jointProbability";
 					"--noPhonotactics", Arg.Set noPhonotactics, " Turn off all phonotactics (including unigram), only use isolated words";
 					"-np", Arg.Set noPhonotactics, " Short for --noPhonotactics";
-					"--lexiconPhonotactics", Arg.Set lexiconPhonotactics, " Only update phoneme n-gram counts once per word type, instead of per word token.";
-					"-lp", Arg.Set lexiconPhonotactics, " Short for --lexiconPhonotactics"];;
+					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
+					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics"];;
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
@@ -516,7 +516,7 @@ let rec lexicon_updater segmentation sentence =
 			totalWords := !totalWords + 1;
 				
 			(* Only update ngrams based on current setting *)
-			if not (!lexiconPhonotactics && (Hashtbl.mem lexicon newWord)) then
+			if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 				begin					
 					if !featureFile <> "" then
 						begin
