@@ -39,7 +39,7 @@ module StringSet = Set.Make(String);;
 
 let hash_print = Hashtbl.iter (fun key data -> printf "%s: %d;" key data);;
 (* let hash_dump = Hashtbl.iter (fun key data -> Std.print key; Std.print data);; *)
-let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key (int_of_float data));;
+let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
 let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
 
 (* Process command-line arguments *)
