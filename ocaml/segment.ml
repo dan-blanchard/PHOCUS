@@ -141,6 +141,29 @@ module PhonemeNgramCue : CUE = struct
 		|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
 		| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
 	
+	(* Gets the substrings necessary for string extension learning *)
+	let rec get_substrings windowVector word =
+		match windowVector with
+		| currentWindow::windowTail -> 
+			let windowSum = (List.fold_left (+) 0 windowVector) in
+			if ((String.length word) >= windowSum) then
+				let firstCharList = List.init ((String.length word) - (windowSum - 1)) (fun a -> a) in
+				List.flatten
+					(List.map
+						(fun firstChar -> 
+							let prefix = String.sub word firstChar currentWindow in
+							List.map
+								(fun suffix ->
+									prefix ^ suffix
+								)
+								(get_substrings windowTail (String.slice ~first:(firstChar + currentWindow) word))
+
+						)
+						firstCharList)
+			else
+				[""]
+		| [] -> [""];;
+
 	
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
