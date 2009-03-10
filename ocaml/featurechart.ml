@@ -2,26 +2,36 @@
 
 open ExtList
 open ExtString
+open Printf
 
-let phonesToFeatures = Hashtbl.create 100
-let featuresToPhones = Hashtbl.create 100
-let features = ref [];;
+module StringSet =  Set.Make(String)
 
-module StringSet = Set.Make(String);;
+type feature_chart = 
+{ 
+	phonesToFeatures : (string, Set.Make(String).t) Hashtbl.t;
+	featuresToPhones : (string, Set.Make(String).t) Hashtbl.t;
+	mutable features : string list
+}
 
-(* Read feature file *)
-let read_file featureFile =
+let chart = 
+{
+	phonesToFeatures = Hashtbl.create 100;
+	featuresToPhones = Hashtbl.create 100;
+	features = []
+}
+
+let read_feature_file featureFile =
 	let ic = open_in featureFile in
 	try
 		let fileLines = Std.input_list ic in
 		close_in ic;
 		(* Fill feature list *)
 		List.iter 
-			(fun feature ->	
-				features := !features @ [feature]
+			(fun (feature:string) ->	
+				chart.features <- chart.features @ [feature]
 			)
 			(String.nsplit (String.lchop (List.hd fileLines)) "\t");
-		(* Fill phonesToFeatures and featuresToPhones tables*)
+		(* Fill chart.phonesToFeatures and chart.featuresToPhones tables*)
 		List.iter
 			(fun line ->
 				let lineList = String.nsplit line "\t" in
@@ -38,22 +48,34 @@ let read_file featureFile =
 														(List.mapi
 															(fun index value ->
 																if value <> "0" then
-																	let featureValue = value ^ (List.nth !features index) in
-																	if Hashtbl.mem featuresToPhones featureValue then
-																		Hashtbl.replace featuresToPhones featureValue (StringSet.add phone (Hashtbl.find featuresToPhones featureValue))
+																	let featureValue = value ^ (List.nth chart.features index) in
+																	if Hashtbl.mem chart.featuresToPhones featureValue then
+																		Hashtbl.replace chart.featuresToPhones featureValue (StringSet.add phone (Hashtbl.find chart.featuresToPhones featureValue))
 																	else
-																		Hashtbl.add featuresToPhones featureValue (StringSet.add phone StringSet.empty);
+																		Hashtbl.add chart.featuresToPhones featureValue (StringSet.add phone StringSet.empty);
 																	featureValue
 																else
 																	""
 															)
 															featureList)) in
-				Hashtbl.add phonesToFeatures phone currentFeatureSet
+				Hashtbl.add chart.phonesToFeatures phone currentFeatureSet
 			)
 			(List.tl fileLines);
 	with e ->
 		close_in_noerr ic;
 		raise e;;
-	
+
 let features_for_phone phone =
-	Hashtbl.find phonesToFeatures phone;;
+	Hashtbl.find chart.phonesToFeatures phone;;
+
+let print_string_set stringSet = 
+	StringSet.iter
+		(fun currentFeature -> 
+			printf "%s\t" currentFeature
+		)
+		stringSet;
+	printf "\n";;
+
+
+
+

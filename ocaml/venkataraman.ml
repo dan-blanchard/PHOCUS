@@ -7,12 +7,6 @@ open ExtList
 open ExtString
 open ExtArray
 
-(* SHOULD BE IN ITS OWN MODULE - HACK *)
-let phonesToFeatures = Hashtbl.create 100
-let featuresToPhones = Hashtbl.create 100
-let features = ref []
-(**************************************)
-
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
@@ -80,64 +74,6 @@ let totalNgramsArray = Array.init (!windowSize) (fun a -> 0.0);;
 let typesWithCountArray = Array.init 3 (fun a -> 0);;
 let ngramList = List.init !windowSize (fun a -> a);; (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
 
-(************ SHOULD BE IN ITS OWN MODULE: FEATURE CHART **********)
-(* Read feature file *)
-let read_feature_file featureFile =
-	let ic = open_in featureFile in
-	try
-		let fileLines = Std.input_list ic in
-		close_in ic;
-		(* Fill feature list *)
-		List.iter 
-			(fun feature ->	
-				features := !features @ [feature]
-			)
-			(String.nsplit (String.lchop (List.hd fileLines)) "\t");
-		(* Fill phonesToFeatures and featuresToPhones tables*)
-		List.iter
-			(fun line ->
-				let lineList = String.nsplit line "\t" in
-				let phone = List.hd lineList in
-				let featureList = List.tl lineList in
-				let currentFeatureSet = (List.fold_left
-														(fun oldFeatureSet newFeature ->
-															if newFeature <> "" then
-																StringSet.add newFeature oldFeatureSet
-															else
-																oldFeatureSet
-														)
-														StringSet.empty
-														(List.mapi
-															(fun index value ->
-																if value <> "0" then
-																	let featureValue = value ^ (List.nth !features index) in
-																	if Hashtbl.mem featuresToPhones featureValue then
-																		Hashtbl.replace featuresToPhones featureValue (StringSet.add phone (Hashtbl.find featuresToPhones featureValue))
-																	else
-																		Hashtbl.add featuresToPhones featureValue (StringSet.add phone StringSet.empty);
-																	featureValue
-																else
-																	""
-															)
-															featureList)) in
-				Hashtbl.add phonesToFeatures phone currentFeatureSet
-			)
-			(List.tl fileLines);
-	with e ->
-		close_in_noerr ic;
-		raise e;;
-
-let features_for_phone phone =
-	Hashtbl.find phonesToFeatures phone;;
-
-let print_string_set stringSet = 
-	StringSet.iter
-		(fun currentFeature -> 
-			printf "%s\t" currentFeature
-		)
-		stringSet;
-	printf "\n";;
-(*******************END FEATURE CHART ************************)
 
 (* Calculates D_n for Modified Kneser-Ney Smoothing*)
 let rec discount n wordTypesWithCountArray = 
@@ -207,16 +143,12 @@ let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray word
 let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
 	(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n);;
 
+(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-	if (not !jointProb) then
-		begin
-			if (!smooth) then
-				prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
-			else
-				prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
-		end
-	else
-		prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
+	match (!jointProb, !smooth) with 
+		(false, true)  -> prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
+	|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
+	| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
 
 (* Calculates the probability of each phoneme in a word*)
 let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray combine_ngram_score combine_phoneme_score =
@@ -238,7 +170,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 				let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
 										(fun firstChar ->
 											let phoneme = String.sub wordWithBoundary firstChar 1 in
-											features_for_phone phoneme											
+											Featurechart.features_for_phone phoneme											
 										) 
 										firstCharListForBundles 
 				in
@@ -328,7 +260,7 @@ let evalWord word =
 								let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
 														(fun firstChar ->
 															let phoneme = String.sub wordWithBoundary firstChar 1 in
-															features_for_phone phoneme
+															Featurechart.features_for_phone phoneme
 														) 
 														firstCharListForBundles 
 								in						
@@ -487,7 +419,7 @@ let rec lexicon_updater segmentation sentence =
 									let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
 															(fun firstChar ->
 																let phoneme = String.sub wordWithBoundary firstChar 1 in												
-																features_for_phone phoneme
+																Featurechart.features_for_phone phoneme
 															) 
 															firstCharListForBundles 
 									in
@@ -610,7 +542,7 @@ else
 
 (* Read feature file, if specifed *)
 if !featureFile <> "" then
-	read_feature_file !featureFile;;
+	Featurechart.read_feature_file !featureFile;;
 
 
 (* Loop through sentences *)
