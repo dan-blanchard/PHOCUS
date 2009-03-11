@@ -105,7 +105,6 @@ struct
 	let eval_word (word:string) combine = 
 		if (Hashtbl.mem lexicon word) then
 			let wordCountFloat = float (Hashtbl.find lexicon word) in
-			let wordTypesFloat = float (Hashtbl.length lexicon) in
 			let totalWordsFloat = float !totalWords in
 			-.(log (((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
 		else
@@ -195,9 +194,10 @@ module PhonemeNgramCue : CUE = struct
 					end								
 			end;;
 
+	(* The implementation of this function is NOT done yet. *)
 	let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
 		let prefix = String.sub ngram 0 n in
-		let d = discount n in
+		(* let d = discount n in *)
 		if (n = 0) then
 			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
 		else
@@ -381,9 +381,10 @@ module FeatureNgramCue : CUE = struct
 					end								
 			end;;
 
+	(* The implementation of this function is NOT done yet. *)
 	let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
 		let prefix = String.sub ngram 0 n in
-		let d = discount n in
+		(* let d = discount n in *)
 		if (n = 0) then
 			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
 		else
