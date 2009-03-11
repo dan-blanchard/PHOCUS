@@ -24,6 +24,7 @@ let smooth = ref false
 let tokenPhonotactics = ref false
 let totalWords = ref 0
 let mbdp = ref false
+let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
 
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
@@ -44,6 +45,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
 					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
 					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
+					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
+					"-ul", Arg.Set_int utteranceLimit, " Short for --utteranceLimit";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
@@ -60,7 +63,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse arg_spec_list	process_anon_args usage;;
 
-
+let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
+let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
 
 (* Framework components: search algorithm, evidence/cues, method for combining evidence, method for updating stats, corpus processor *)
 
@@ -75,6 +79,9 @@ sig
 	
 	(* Takes a word and updates any evidence the cue keeps track of based on another occurrence of this word. *)
 	val update_evidence : string -> unit
+	
+	(* Dump the table associated with this cue to a file. *)
+	val dump : string -> unit
 end
 
 module BasicFamiliarWordCue : CUE = 
@@ -90,6 +97,8 @@ struct
 			-.(log !badScore)
 	
 	let initialize initialCount = ()
+	
+	let dump dumpFile = ()
 	
 	let update_evidence (newWord:string) = 
 		totalWords := !totalWords + 1;
@@ -111,6 +120,8 @@ struct
 			-.(log !badScore)
 	
 	let initialize initialCount = ()
+	
+	let dump dumpFile = ()
 		
 	let update_evidence (newWord:string) = 
 		totalWords := !totalWords + 1;
@@ -331,7 +342,17 @@ module PhonemeNgramCue : CUE = struct
 					Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
 				)
 				wordNgramList
-
+	
+	(* Dump the table associated with this cue to a file. *)
+	let dump dumpFile = 
+		let oc = open_out dumpFile in
+		List.iter
+			(fun currentWindowSizeMinusOne ->
+				fprintf oc "CURRENT WINDOW SIZE: %d\n" (currentWindowSizeMinusOne + 1);
+				hash_fprint_float oc ngramCountsArray.(currentWindowSizeMinusOne);
+			)
+			ngramList;
+		close_out oc
 end
 
 module FeatureNgramCue : CUE = struct
@@ -595,6 +616,17 @@ module FeatureNgramCue : CUE = struct
 						firstCharList;
 				)
 				wordNgramList
+	
+	(* Dump the table associated with this cue to a file. *)
+	let dump dumpFile = 
+		let oc = open_out dumpFile in
+		List.iter
+			(fun currentWindowSizeMinusOne ->
+				fprintf oc "CURRENT WINDOW SIZE: %d\n" (currentWindowSizeMinusOne + 1);
+				hash_fprint_float oc ngramCountsArray.(currentWindowSizeMinusOne);
+			)
+			ngramList;
+		close_out oc
 end;;
 
 
@@ -706,19 +738,22 @@ let rec find_segmentation bestStartList firstChar path =
 
 (* Loop through utterances *)
 let incremental_processor utteranceList = 
-	List.iter
-		(fun segmentedSentence -> 
-			let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-			let bestStartList = evalUtterance sentence in
-			let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
-			if (!displayLineNumbers) then
-				printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
-			lexicon_updater segmentation sentence; 
-			if (!printUtteranceDelimiter) then
-				printf "%s" !utteranceDelimiter;		
-			printf "\n";
-			flush stdout;
-			Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+	List.iteri
+		(fun utteranceCount segmentedSentence -> 
+			if ((utteranceCount == 0) || (utteranceCount < !utteranceLimit)) then
+				begin
+					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+					let bestStartList = evalUtterance sentence in
+					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
+					if (!displayLineNumbers) then
+						printf "%d: " (utteranceCount + 1);
+					lexicon_updater segmentation sentence; 
+					if (!printUtteranceDelimiter) then
+						printf "%s" !utteranceDelimiter;		
+					printf "\n";
+					flush stdout;
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+				end
 		)
 		utteranceList;;
 
@@ -727,5 +762,15 @@ let sentence_processor = incremental_processor !sentenceList;;
 (*** ACTUAL START OF PROGRAM ***)
 sentence_processor;;
 
+(* Dump lexicon if requested *)
+if !lexiconOut <> "" then
+	let oc = open_out !lexiconOut in
+	hash_fprint_int oc lexicon;
+	close_out oc;;
+
+(* Dump n-gram counts if requested *)
+if !phonemeCountsOut <> "" then
+	PhonemeNgramCue.dump !phonemeCountsOut;;
+	
 
 
