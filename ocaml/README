@@ -1,14 +1,19 @@
 Build Instructions
--------------------
+------------------
 
 Dependencies: caml-pcre, extlib
 
 To build a particular program (e.g., segment.ml), just use ocamlbuild.  
 
 Examples
---------------
+------------------
 To get a native code version of the segmenter run:
 	ocamlbuild segment.native
 
 To get a byte code version run:
 	ocamlbuild segment.byte
+
+Troubleshooting
+------------------
+If you receive an error about some module not being a compiled interface, then that module must 
+be recompiled with your current version of ocaml (or reinstalled if its an external library).
