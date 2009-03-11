@@ -28,6 +28,38 @@ let lexicon = Hashtbl.create 10000
 
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 
+(* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
+let process_anon_args corpusFile = corpus := corpusFile
+let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
+					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter";
+					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
+					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
+					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
+					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
+					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
+					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
+					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
+					"-bs", Arg.Set_float badScore, " Short for --badScore";
+					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
+					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
+					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
+					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
+					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
+					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
+					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
+					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
+					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
+					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
+					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
+					"-jp", Arg.Set jointProb, " Short for --jointProbability";
+					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
+					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
+					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.";
+					"-mb", Arg.Set mbdp, " Short for --MBDP-1"]
+
+let usage = Sys.executable_name ^ " [-options] CORPUS";;
+Arg.parse arg_spec_list	process_anon_args usage;;
+
 
 
 (* Framework components: search algorithm, evidence/cues, method for combining evidence, method for updating stats, corpus processor *)
@@ -562,42 +594,11 @@ module FeatureNgramCue : CUE = struct
 						firstCharList;
 				)
 				wordNgramList
-end
+end;;
 
 
 (*****BEGIN MAIN PROGRAM******)
 
-(* Process command-line arguments *)
-let process_anon_args corpusFile = corpus := corpusFile
-let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
-					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter";
-					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
-					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
-					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
-					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
-					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
-					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
-					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
-					"-bs", Arg.Set_float badScore, " Short for --badScore";
-					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
-					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
-					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
-					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
-					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
-					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
-					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
-					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
-					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
-					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
-					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
-					"-jp", Arg.Set jointProb, " Short for --jointProbability";
-					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
-					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
-					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.";
-					"-mb", Arg.Set mbdp, " Short for --MBDP-1"]
-
-let usage = Sys.executable_name ^ " [-options] CORPUS";;
-Arg.parse arg_spec_list	process_anon_args usage;;
 
 (* Read corpus file, if specified, otherwise read from stdin *)
 if !corpus <> "" then
