@@ -21,7 +21,6 @@ let phonemeCountsOut = ref ""
 let lexicon = Hashtbl.create 10000
 let cartesianProductCache = Hashtbl.create 10000
 
-let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let windowSize = ref 1
 let jointProb = ref false
@@ -163,6 +162,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 									-.(log 1.0)
 								else
 									-.(log (1.0 /. (1.0 -. ((Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter) /. wordTotalNgramsArray.(0)))))) in
+		(* printf "basePhonemeScore = %e\twordDelimiterCount = %e\twordtotal = %e\n" !phonemeScore (Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter) wordTotalNgramsArray.(0);  *)
 		let firstCharList = List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a) in
 		if !featureFile <> "" then
 			begin
@@ -558,7 +558,7 @@ List.iter
 			printf "%s" !utteranceDelimiter;		
 		printf "\n";
 		flush stdout;
-		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)	
 	)
 	!sentenceList;;
 

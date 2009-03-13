@@ -10,7 +10,7 @@ open ExtArray
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
-let badScore =  ref 0.000000000000000001
+let badScore =  ref 0.0
 let initialNgramCount = ref 0.0000001
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
@@ -84,15 +84,18 @@ sig
 	val dump : string -> unit
 end
 
-module BasicFamiliarWordCue : CUE = 
+module FamiliarWordCue : CUE = 
 struct
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
 		if (Hashtbl.mem lexicon word) then
 			let wordCountFloat = float (Hashtbl.find lexicon word) in
-			let wordTypesFloat = float (Hashtbl.length lexicon) in
 			let totalWordsFloat = float !totalWords in
-			-.(log (wordCountFloat /. (totalWordsFloat +. wordTypesFloat)))
+			if (not !mbdp) then
+				let wordTypesFloat = float (Hashtbl.length lexicon) in
+					-.(log (wordCountFloat /. (totalWordsFloat +. wordTypesFloat)))
+			else
+				-.(log (((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
 		else
 			-.(log !badScore)
 	
@@ -107,30 +110,6 @@ struct
 		else
 			Hashtbl.add lexicon newWord 1;;		
 end
-
-module BrentFamiliarWordCue : CUE = 
-struct
-	(* Returns negative log of frequency that word occurs in lexicon. *)
-	let eval_word (word:string) combine = 
-		if (Hashtbl.mem lexicon word) then
-			let wordCountFloat = float (Hashtbl.find lexicon word) in
-			let totalWordsFloat = float !totalWords in
-			-.(log (((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
-		else
-			-.(log !badScore)
-	
-	let initialize initialCount = ()
-	
-	let dump dumpFile = ()
-		
-	let update_evidence (newWord:string) = 
-		totalWords := !totalWords + 1;
-		if Hashtbl.mem lexicon newWord then
-			Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) + 1)
-		else
-			Hashtbl.add lexicon newWord 1;;		
-end
-
 
 module PhonemeNgramCue : CUE = struct
 	let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
@@ -279,6 +258,7 @@ module PhonemeNgramCue : CUE = struct
 									word ^ !wordDelimiter) in							
 		let wordTypesFloat = float (Hashtbl.length lexicon) in
 		let totalWordsFloat = float !totalWords in
+		let score = ref 0.0 in
 		if (String.length word) < !windowSize then
 			-. (log !badScore)
 		else	
@@ -299,20 +279,24 @@ module PhonemeNgramCue : CUE = struct
 						Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
 					)
 					ngramList;
-				let phonemeScore = ref (if !windowSize > 1 then 
+				let currentTotalNgramsArray = (if !windowSize > 1 then wordTotalNgramsArray else totalNgramsArray) in
+				let currentNgramCountsArray = (if !windowSize > 1 then wordNgramCountsArray else ngramCountsArray) in								
+				score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)));
+				let basePhonemeScore = ref (if !windowSize > 1 then 
 											-.(log 1.0)
 										else
-											-.(log (1.0 /. (1.0 -. ((Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter) /. wordTotalNgramsArray.(0)))))) in
+											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0)))))) in
+				(* printf "basePhonemeScore = %e\twordDelimiterCount = %e\twordtotal = %e\n" !basePhonemeScore (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						phonemeScore := (combine !phonemeScore (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))))
+						score := (combine !score (-. (!basePhonemeScore +. (log (prob_ngram ngram (!windowSize - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray)))))
 					)
 					(List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a));
 				if (not !mbdp) then
-					!phonemeScore
+					!score
 				else
-					!phonemeScore -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0))
+					!score -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0))
 			end
 		
 	let update_evidence (newWord:string) = 
@@ -659,8 +643,8 @@ if !featureFile <> "" then
 Hashtbl.add lexicon !utteranceDelimiter 0;;
 
 (* Function lists store which functions will be called during word evaluation and updating *)
-let updateFunctions = [PhonemeNgramCue.update_evidence; BasicFamiliarWordCue.update_evidence];;
-let wordEvalFunctions = [PhonemeNgramCue.eval_word; BasicFamiliarWordCue.eval_word];;
+let updateFunctions = [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence];;
+let wordEvalFunctions = [PhonemeNgramCue.eval_word; FamiliarWordCue.eval_word];;
 
 
 (* Updates lexicon with newly segmented words, and prints out segmented utterance *)
@@ -678,11 +662,9 @@ let rec lexicon_updater segmentation sentence =
 		();;
 
 let default_evidence_combiner word =
-	let familiarScore = (if (not !mbdp) then 
-							(BasicFamiliarWordCue.eval_word word (+.))
-						else
-							(BrentFamiliarWordCue.eval_word word) (+.)) in
+	let familiarScore = FamiliarWordCue.eval_word word (+.) in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
+	(* printf "\nFamiliar score for %s = %e\nPhoneme score for %s = %e\n" word familiarScore word phonemeScore; *)
 	if (Hashtbl.mem lexicon word) then
 		familiarScore
 	else
@@ -757,10 +739,10 @@ let incremental_processor utteranceList =
 		)
 		utteranceList;;
 
-let sentence_processor = incremental_processor !sentenceList;;
+let sentence_processor = incremental_processor;;
 
 (*** ACTUAL START OF PROGRAM ***)
-sentence_processor;;
+sentence_processor !sentenceList;;
 
 (* Dump lexicon if requested *)
 if !lexiconOut <> "" then
