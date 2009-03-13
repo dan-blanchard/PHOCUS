@@ -683,7 +683,7 @@ let default_evidence_combiner word =
 						else
 							(BrentFamiliarWordCue.eval_word word) (+.)) in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
-	if (familiarScore < (-.(log !badScore))) then
+	if (Hashtbl.mem lexicon word) then
 		familiarScore
 	else
 		phonemeScore;;
@@ -740,7 +740,7 @@ let rec find_segmentation bestStartList firstChar path =
 let incremental_processor utteranceList = 
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
-			if ((utteranceCount == 0) || (utteranceCount < !utteranceLimit)) then
+			if ((!utteranceLimit == 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 					let bestStartList = evalUtterance sentence in
