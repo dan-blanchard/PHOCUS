@@ -2,10 +2,10 @@
    Segmentation Framework *)
 
 (*	NOTES:
-		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance.
-		-	Add switch for doing this or not.  Think it may finally explain why our MBDP implementation is different than his.
-		-	Venkataraman model does not do this for unigrams, but does for bigrams or trigrams.  Should modify so that it is consistent.
-	
+		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance with Venkataraman.
+		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
+		-	Consider functor implementation of ngram cues to clean up redundant code.
+		-	Must figure out why framework MBDP and non-framework MBDP differ.
 	*)
 open Pcre
 open Printf
@@ -30,6 +30,7 @@ let smooth = ref false
 let tokenPhonotactics = ref false
 let totalWords = ref 0
 let mbdp = ref false
+let countProposedNgrams = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
 
@@ -63,7 +64,9 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-jp", Arg.Set jointProb, " Short for --jointProbability";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
-					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.";
+					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
+					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
+					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.  Should also enable --hypotheticalPhonotactics for true MBDP-1.";
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1"]
 
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
@@ -285,8 +288,8 @@ module PhonemeNgramCue : CUE = struct
 						Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
 					)
 					ngramList;
-				let currentTotalNgramsArray = (if !windowSize > 1 then wordTotalNgramsArray else totalNgramsArray) in
-				let currentNgramCountsArray = (if !windowSize > 1 then wordNgramCountsArray else ngramCountsArray) in								
+				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
+				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
 				score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)));
 				score := !score +. (if !windowSize > 1 then 
 											-.(log 1.0)
