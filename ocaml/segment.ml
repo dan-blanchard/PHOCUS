@@ -1,6 +1,12 @@
 (* Dan Blanchard
    Segmentation Framework *)
 
+(*	NOTES:
+		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance.
+		-	Add switch for doing this or not.  Think it may finally explain why our MBDP implementation is different than his.
+		-	Venkataraman model does not do this for unigrams, but does for bigrams or trigrams.  Should modify so that it is consistent.
+	
+	*)
 open Pcre
 open Printf
 open ExtList
@@ -282,15 +288,15 @@ module PhonemeNgramCue : CUE = struct
 				let currentTotalNgramsArray = (if !windowSize > 1 then wordTotalNgramsArray else totalNgramsArray) in
 				let currentNgramCountsArray = (if !windowSize > 1 then wordNgramCountsArray else ngramCountsArray) in								
 				score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)));
-				let basePhonemeScore = ref (if !windowSize > 1 then 
+				score := !score +. (if !windowSize > 1 then 
 											-.(log 1.0)
 										else
-											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0)))))) in
+											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
 				(* printf "basePhonemeScore = %e\twordDelimiterCount = %e\twordtotal = %e\n" !basePhonemeScore (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						score := (combine !score (-. (!basePhonemeScore +. (log (prob_ngram ngram (!windowSize - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray)))))
+						score := (combine !score (-. (log (prob_ngram ngram (!windowSize - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray))))
 					)
 					(List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a));
 				if (not !mbdp) then
