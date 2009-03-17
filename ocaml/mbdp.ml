@@ -323,12 +323,14 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 			end
 		else
 			begin
+				printf "basePhonemeScore = %e\n" !phonemeScore;
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
 						phonemeScore := (combine_phoneme_score !phonemeScore (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))))
 					)
 					firstCharList;
+				printf "Phoneme score for %s = %e" word !phonemeScore;
 			end;
 	!phonemeScore;;
 						
@@ -348,7 +350,7 @@ let r word =
 	else	(* novel word *)
 		begin
 			if !noPhonotactics then				
-				score := -. (log 0.00000000000000000000000000000001)
+				score := -. (log 0.0)
 			else
 				begin
 					let wordWithBoundary = (if !windowSize > 1 then 
@@ -447,7 +449,7 @@ let r word =
 						score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
 				end
 		end;
-	(* printf "\nScore for %s = %e\n" word !score; *)
+	printf "\nScore for %s = %e\n" word !score;
 	!score;;
 
 let rec mbdp_inner subUtterance firstChar lastChar bestList =

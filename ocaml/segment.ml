@@ -99,9 +99,9 @@ struct
 	let eval_word (word:string) combine = 
 		if (Hashtbl.mem lexicon word) then
 			let wordCountFloat = float (Hashtbl.find lexicon word) in
-			let totalWordsFloat = float !totalWords in
+			let totalWordsFloat = float !totalWords in 
 			if (not !mbdp) then
-				let wordTypesFloat = float (Hashtbl.length lexicon) in
+				let wordTypesFloat = float ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
 					-.(log (wordCountFloat /. (totalWordsFloat +. wordTypesFloat)))
 			else
 				-.(log (((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
@@ -265,8 +265,8 @@ module PhonemeNgramCue : CUE = struct
 									!wordDelimiter ^ word ^ !wordDelimiter 
 								else 
 									word ^ !wordDelimiter) in							
-		let wordTypesFloat = float (Hashtbl.length lexicon) in
-		let totalWordsFloat = float !totalWords in
+		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
+		let totalWordsFloat = float (!totalWords + (if !mbdp then 1 else 0)) in
 		let score = ref 0.0 in
 		if (String.length word) < !windowSize then
 			-. (log !badScore)
@@ -279,10 +279,12 @@ module PhonemeNgramCue : CUE = struct
 						List.iter (* Loop through all n-grams of current size *)
 							(fun firstChar ->
 								let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
-								if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
-									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram)
+								if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) ngram then
+									Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) ngram) +. 1.0)
+								else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
+									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +. 1.0)
 								else
-									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 0.0;
+									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 1.0;
 							)
 							ngramFirstCharList;
 						Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
@@ -291,11 +293,11 @@ module PhonemeNgramCue : CUE = struct
 				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
 				score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)));
+				printf "basePhonemeScore = %e\twordDelimiterCount = %e\twordtotal = %e\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0); 
 				score := !score +. (if !windowSize > 1 then 
 											-.(log 1.0)
 										else
 											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
-				(* printf "basePhonemeScore = %e\twordDelimiterCount = %e\twordtotal = %e\n" !basePhonemeScore (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
@@ -305,7 +307,7 @@ module PhonemeNgramCue : CUE = struct
 				if (not !mbdp) then
 					!score
 				else
-					!score -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0))
+					!score -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0))
 			end
 		
 	let update_evidence (newWord:string) = 
@@ -372,7 +374,9 @@ module FeatureNgramCue : CUE = struct
 	let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
 		let prefix = String.sub ngram 0 n in
 		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
+			let temp = (Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n) in
+			printf "ngram score for %s = %e\n" ngram temp;
+			temp
 		else
 			begin
 				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
@@ -673,7 +677,7 @@ let rec lexicon_updater segmentation sentence =
 let default_evidence_combiner word =
 	let familiarScore = FamiliarWordCue.eval_word word (+.) in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
-	(* printf "\nFamiliar score for %s = %e\nPhoneme score for %s = %e\n" word familiarScore word phonemeScore; *)
+	printf "\nFamiliar score for %s = %e\nPhoneme score for %s = %e\n" word familiarScore word phonemeScore;
 	if (Hashtbl.mem lexicon word) then
 		familiarScore
 	else
