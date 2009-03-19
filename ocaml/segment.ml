@@ -666,12 +666,11 @@ if !featureFile <> "" then
 Hashtbl.add lexicon !utteranceDelimiter 0;;
 
 (* Function lists store which functions will be called during word evaluation and updating *)
-let updateFunctions = [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence];;
 let wordEvalFunctions = [PhonemeNgramCue.eval_word; FamiliarWordCue.eval_word];;
 
 
 (* Updates lexicon with newly segmented words, and prints out segmented utterance *)
-let rec lexicon_updater segmentation sentence =
+let rec lexicon_updater segmentation sentence updateFunctions =
 	if (List.length segmentation) > 1 then
 		begin
 			let startChar = List.nth segmentation 0 in
@@ -679,7 +678,7 @@ let rec lexicon_updater segmentation sentence =
 			let newWord = String.sub sentence startChar (endChar - startChar) in
 			List.iter (fun updateFunc -> (updateFunc newWord)) updateFunctions; (* Calls all of the update functions in the list *)
 			printf "%s" (newWord ^ !wordDelimiter);
-			lexicon_updater (List.tl segmentation) sentence
+			lexicon_updater (List.tl segmentation) sentence updateFunctions
 		end
 	else
 		();;
@@ -752,7 +751,7 @@ let incremental_processor utteranceList =
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
-					lexicon_updater segmentation sentence; 
+					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence]; 
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
@@ -762,6 +761,54 @@ let incremental_processor utteranceList =
 		)
 		utteranceList;;
 
+(* Learn phonotactic model from gold corpus, and then resegment without updating phonotactic model *)
+let two_pass_processor utteranceList = 
+	printf "\nPhonotactic Pass:\n";
+	List.iteri
+		(fun utteranceCount segmentedSentence -> 
+			if ((!utteranceLimit == 0) || (utteranceCount < !utteranceLimit)) then
+				begin
+					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+					let segmentedChars = (String.explode segmentedSentence) in
+					let boundaryChar = List.nth (String.explode !wordDelimiter) 0 in
+					let boundaryIndexes = List.mapi (fun index character -> 
+														if (character == boundaryChar) then 
+															index 
+														else 
+															0) 
+													segmentedChars in
+					let segmentation = [0] @ (List.mapi (fun index boundary -> boundary - index) ((List.remove_all boundaryIndexes 0) @ [(String.length segmentedSentence)])) in
+					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence]; 
+					printf "\n";
+					flush stdout;
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+				end
+		)
+		utteranceList;
+	Hashtbl.clear lexicon;
+	Hashtbl.add lexicon !utteranceDelimiter 0;
+	printf "\nSegmentation Pass:\n";
+	List.iteri
+		(fun utteranceCount segmentedSentence -> 
+			if ((!utteranceLimit == 0) || (utteranceCount < !utteranceLimit)) then
+				begin
+					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+					let bestStartList = evalUtterance sentence in
+					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
+					if (!displayLineNumbers) then
+						printf "%d: " (utteranceCount + 1);
+					lexicon_updater segmentation sentence [FamiliarWordCue.update_evidence]; 
+					if (!printUtteranceDelimiter) then
+						printf "%s" !utteranceDelimiter;		
+					printf "\n";
+					flush stdout;
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+				end
+		)
+		utteranceList;;
+
+
+(* let sentence_processor = two_pass_processor;; *)
 let sentence_processor = incremental_processor;;
 
 (*** ACTUAL START OF PROGRAM ***)
