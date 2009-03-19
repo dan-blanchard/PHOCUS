@@ -323,14 +323,16 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 			end
 		else
 			begin
-				printf "basePhonemeScore = %e\n" !phonemeScore;
+				(* printf "basePhonemeScore = %e\n" !phonemeScore; *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						phonemeScore := (combine_phoneme_score !phonemeScore (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))))
+						let ngramScore = (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))) in
+						(* printf "\tNgram score for %s = %e\n" ngram ngramScore;  *)
+						phonemeScore := (combine_phoneme_score !phonemeScore ngramScore)
 					)
 					firstCharList;
-				printf "Phoneme score for %s = %e" word !phonemeScore;
+				(* printf "Phoneme score for %s = %e" word !phonemeScore; *)
 			end;
 	!phonemeScore;;
 						
@@ -445,11 +447,12 @@ let r word =
 									ngramList
 							end;
 						score := -.(log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat +. 1.0))));
-						score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.));
 						score := !score -. log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0);
+						(* printf "\nAdjustment = %e\n" !score; *)
+						score := !score +. (prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray (max) (+.))
 				end
 		end;
-	printf "\nScore for %s = %e\n" word !score;
+	(* printf "\nScore for %s = %e\n" word !score; *)
 	!score;;
 
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
@@ -630,17 +633,20 @@ if !featureFile <> "" then
 (* Loop through sentences *)
 List.iter
 	(fun segmentedSentence -> 
-		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-		let bestStartList = mbdp_outer sentence in
-		let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
-		if (!displayLineNumbers) then
-			printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
-		lexicon_updater segmentation sentence; 
-		if (!printUtteranceDelimiter) then
-			printf "%s" !utteranceDelimiter;		
-		printf "\n";
-		flush stdout;
-		Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+		(* if ((Hashtbl.find lexicon !utteranceDelimiter) + 1) < 3 then
+					begin
+				 *)		let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+				let bestStartList = mbdp_outer sentence in
+				let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
+				if (!displayLineNumbers) then
+					printf "%d: " ((Hashtbl.find lexicon !utteranceDelimiter) + 1);
+				lexicon_updater segmentation sentence; 
+				if (!printUtteranceDelimiter) then
+					printf "%s" !utteranceDelimiter;		
+				printf "\n";
+				flush stdout;
+				Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+			(* end *)
 	)
 	!sentenceList;;
 
