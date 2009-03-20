@@ -44,7 +44,10 @@ let _ = dispatch begin function
        Options.ocamldep   := ocamlfind & A"ocamldep";
        Options.ocamldoc   := ocamlfind & A"ocamldoc";
        Options.ocamlmktop := ocamlfind & A"ocamlmktop"
+   
 
+   (* Add rule here to run "svn info segment.ml | grep Revision | gsed -r 's/Revision: ([0-9]+)/\1/g'" *)
+ 
    | After_rules ->
 
        (* When one link an OCaml library/binary/package, one should use -linkpkg *)

@@ -13,6 +13,7 @@ open ExtList
 open ExtString
 open ExtArray
 
+let svnRevision = "UNKNOWN"
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
