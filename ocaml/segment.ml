@@ -5,8 +5,7 @@
 		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance with Venkataraman.
 		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
 		-	Consider functor implementation of ngram cues to clean up redundant code.
-		-	Must figure out why framework MBDP and non-framework MBDP differ.
-	*)
+*)
 open Pcre
 open Printf
 open ExtList
