@@ -149,7 +149,7 @@ module PhonemeNgramCue : CUE = struct
 				let phonemePermutationList = permutations phonemeList currentWindowSizeMinusOne in
 				List.iter
 					(fun ngram -> 
-						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram initialCount;
+						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCount *. (100.0 ** -.(float_of_int currentWindowSizeMinusOne)));
 					)
 					phonemePermutationList;
 				Array.set totalNgramsArray currentWindowSizeMinusOne ((float (List.length phonemePermutationList)) *. initialCount)
@@ -300,12 +300,12 @@ module PhonemeNgramCue : CUE = struct
 											-.(log 1.0)
 										else
 											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
-				(* printf "basePhonemeScore = %e\twordDelimiterCount = %e\twordtotal = %e\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
+				(* printf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !windowSize in
 						let ngramScore = (-. (log (prob_ngram ngram (!windowSize - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray))) in
-						(* printf "\tNgram score for %s = %e\n" ngram ngramScore; *)
+						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
 					(List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a));
@@ -314,8 +314,8 @@ module PhonemeNgramCue : CUE = struct
 				else
 					begin
 						let adjustment = -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0)) in
-						(* printf "Score adjustment = %e\n" adjustment;
-						printf "Raw phoneme score = %e\n" !score; *)
+						(* printf "Score adjustment = %F\n" adjustment; *)
+						(* printf "Raw phoneme score = %F\n" !score; *)
 						!score +. adjustment
 					end
 			end
@@ -385,7 +385,7 @@ module FeatureNgramCue : CUE = struct
 		let prefix = String.sub ngram 0 n in
 		if (n = 0) then
 			let temp = (Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n) in
-			(* printf "ngram score for %s = %e\n" ngram temp; *)
+			(* printf "ngram score for %s = %F\n" ngram temp; *)
 			temp
 		else
 			begin
@@ -686,7 +686,7 @@ let rec lexicon_updater segmentation sentence updateFunctions =
 let default_evidence_combiner word =
 	let familiarScore = FamiliarWordCue.eval_word word (+.) in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
-	(* printf "Familiar score for %s = %e\nPhoneme score for %s = %e\n\n" word familiarScore word phonemeScore; *)
+	(* printf "Familiar score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word phonemeScore; *)
 	if (Hashtbl.mem lexicon word) then
 		familiarScore
 	else
@@ -722,7 +722,7 @@ let mbdp_outer sentence =
 		[||]
 		lastCharList
 	in
-	(* List.iter (fun (x, y) -> printf "(%e, %d)" x y) bestList; *)
+	(* List.iter (fun (x, y) -> printf "(%F, %d)" x y) bestList; *)
 	Array.map
 	 	snd
 		bestList;;
@@ -751,7 +751,7 @@ let incremental_processor utteranceList =
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
-					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence]; 
+					lexicon_updater segmentation sentence [(* PhonemeNgramCue.update_evidence;  *)FamiliarWordCue.update_evidence]; 
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
