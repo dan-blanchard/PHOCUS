@@ -751,7 +751,7 @@ let incremental_processor utteranceList =
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
-					lexicon_updater segmentation sentence [(* PhonemeNgramCue.update_evidence;  *)FamiliarWordCue.update_evidence]; 
+					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence]; 
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
@@ -778,7 +778,7 @@ let two_pass_processor utteranceList =
 															0) 
 													segmentedChars in
 					let segmentation = [0] @ (List.mapi (fun index boundary -> boundary - index) ((List.remove_all boundaryIndexes 0) @ [(String.length segmentedSentence)])) in
-					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence]; 
+					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence]; 
 					printf "\n";
 					flush stdout;
 					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
@@ -787,6 +787,7 @@ let two_pass_processor utteranceList =
 		utteranceList;
 	Hashtbl.clear lexicon;
 	Hashtbl.add lexicon !utteranceDelimiter 0;
+	totalWords := 0;
 	printf "\nSegmentation Pass:\n";
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
