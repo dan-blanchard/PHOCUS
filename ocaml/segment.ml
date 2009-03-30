@@ -143,7 +143,7 @@ module PhonemeNgramCue : CUE = struct
 		
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
-		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort | uniq"))) in
+		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort | uniq | gsed '/[ \\t]/d'"))) in
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
 				let phonemePermutationList = permutations phonemeList currentWindowSizeMinusOne in
@@ -677,7 +677,9 @@ let rec lexicon_updater segmentation sentence updateFunctions =
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
 			List.iter (fun updateFunc -> (updateFunc newWord)) updateFunctions; (* Calls all of the update functions in the list *)
-			printf "%s" (newWord ^ !wordDelimiter);
+			printf "%s" newWord;
+			if (List.length segmentation > 2) then
+				printf "%s" !wordDelimiter;
 			lexicon_updater (List.tl segmentation) sentence updateFunctions
 		end
 	else
@@ -785,6 +787,7 @@ let two_pass_processor utteranceList =
 				end
 		)
 		utteranceList;
+	totalWords := 0;
 	Hashtbl.clear lexicon;
 	Hashtbl.add lexicon !utteranceDelimiter 0;
 	totalWords := 0;
