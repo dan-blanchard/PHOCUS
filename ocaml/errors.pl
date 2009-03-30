@@ -8,23 +8,22 @@
 use strict;
 use Getopt::Std;
 
-our ($opt_d);
+our ($opt_d,$opt_v);
 my $wordDelimiter = ' ';
-my $goldLine;
-my $line;
-my $underSegmentationCount = 0;
-my $overSegmentationCount = 0;
+my $trueLine;
+my $foundLine;
+my $missingBoundaries = 0;
+my $extraBoundaries = 0;
 my $crossingBracketCount = 0;
-my $trueOpen = 0;
-my $trueClose = 0;
-my $open = 0;
-my $close = 0;
-my $currentIndex = 0;
-my $currentChar = "";
-my $trueChar = "";
-my $shiftedChars = 0;
+my $trueTotalBoundaries = 0;
+my $foundTotalBoundaries = 0;
+my $trueTotalWords = 0;
+my $foundTotalWords = 0;
+my $perfectWords = 0;
+my $matchedPositions = 0;
+
 # Handle arguments
-getopts('d:');
+getopts('vd:');
 
 # Check for word delimiter argument
 if ($opt_d)
@@ -34,113 +33,135 @@ if ($opt_d)
 
 die "\nSegmentation Error Analyzer\nusage: ./errors.pl [OPTIONS] GOLD-CORPUS FILE\n" if @ARGV < 2;
 
+# Take a segmented utterance, and returns an array of binary values that specify whether there is 
+# a break in the string after the indexed position in the array.  The indices match up with an unsegmented
+# version of the string. 
+#
+# Example: "yu want tu" should return [0,1,0,0,0,1,0,1]
+
+sub stringToSegArray
+{
+	my $utterance = shift;
+	my $unsegUtterance = $utterance;
+	$unsegUtterance =~ s/\Q$wordDelimiter\E//g;	
+	if ((substr $utterance, -1, 1) ne $wordDelimiter)
+	{
+		$utterance = $utterance . $wordDelimiter;		
+	}
+	my $uttChar = "";
+	my $boundaryCount = 0;
+	my @segArray = ();
+	for (my $i = 0; $i < length($unsegUtterance); $i++)
+	{
+		push @segArray, 0;
+	}
+	
+	for (my $i = 0; $i < length($utterance); $i++)
+	{
+		$uttChar = substr($utterance, $i,1);
+		if ($uttChar eq $wordDelimiter)
+		{
+			$boundaryCount++;
+			$segArray[$i - $boundaryCount] = 1;
+		}
+	}
+	return @segArray;
+}
+
 open(GOLDFILE, $ARGV[0]);
 open(FILE, $ARGV[1]);
 
-while ($goldLine = <GOLDFILE>)
+while ($trueLine = <GOLDFILE>)
 {
-	chomp $goldLine;
-	$goldLine =~ s/^(.+)$/\($1\)/;
-	$goldLine =~ s/\Q$wordDelimiter\E/\)\(/g;
+	chomp $trueLine;
+	$foundLine = <FILE>;
+	chomp $foundLine;
+
+	my $unsegLine = $foundLine;
+	$unsegLine =~ s/\Q$wordDelimiter\E//g;
+	$unsegLine =~ s/(.)/\1 /g;
+	my @trueArray = stringToSegArray($trueLine);
+	my @foundArray = stringToSegArray($foundLine);
 	
-	$line = <FILE>;
-	chomp $line;
-	$line =~ s/^(.+)$/\($1\)/;
-	$line =~ s/\Q$wordDelimiter\E/\)\(/g;
+	my $missingSinceLastAgree = 0;
+	my $extraSinceLastAgree = 0;
+	my $crossingsSinceLastAgree = 0;
 	
-	$currentIndex = -1;
-	$shiftedChars = 0;
-	foreach $trueChar (split //, $goldLine)
+	my $utteranceMissingBoundaries = 0;
+	my $utteranceExtraBoundaries = 0;
+	my $utteranceCrossingBrackets = 0;
+	
+	# Loop through both segmentation arrays at the same time.
+	for (my $i = 0; $i < scalar(@trueArray); $i++) 
 	{
-		print "True char: $trueChar\tShifted Chars: $shiftedChars\n";
-		if ($trueChar eq "(")
+		# Check for word boundary in true corpus
+		if ($trueArray[$i] == 0)
 		{
-			$trueOpen++;
-		}
-		elsif ($trueChar eq ")")
-		{
-			$trueClose++;
-		}
-		
-		if ($shiftedChars == 0)
-		{
-			do
+			# See if found corpus disagrees
+			if ($foundArray[$i] == 1)
 			{
-				$currentIndex++;
-				if ($currentIndex < (length $line))
+				# Check for crossing-brackets
+				if ($missingSinceLastAgree > 0)
 				{
-					$currentChar = substr($line,$currentIndex,1);
-					print "Current char: $currentChar\tCurrent index: $currentIndex\tLine length: " . (length $line) . "\n";
-					if ($currentChar eq "(")
-					{
-						$open++;
-					}
-					elsif ($currentChar eq ")")
-					{
-						$close++;
-					}
-					elsif ($currentChar ne $trueChar)
-					{
-						$shiftedChars++;
-					}
-				}	
-			} 
-			while (($currentChar ne $trueChar) && ($currentIndex < (length $line)));
-		}
-		elsif (($trueChar ne "(") && ($trueChar ne ")"))
-		{
-			$shiftedChars--;
-		}
-		
-		if ($trueClose == $trueOpen)
-		{
-			if ($open == $close)
-			{
-				if ($open > $trueOpen)
-				{
-					$overSegmentationCount += $open - $trueOpen;
+					$missingSinceLastAgree--;
+					$crossingsSinceLastAgree++;
 				}
-				elsif ($open < $trueOpen)
+				else
 				{
-					$underSegmentationCount += $trueOpen - $open;
+					$extraSinceLastAgree++;
 				}
-				$open = $close = 0;
 			}
+		}
+		else
+		{
+			$trueTotalWords++;
+			# See if found corpus disagrees
+			if ($foundArray[$i] == 0)
+			{
+				# Check for crossing-brackets
+				if ($extraSinceLastAgree > 0)
+				{
+					$crossingsSinceLastAgree++;
+					$extraSinceLastAgree--;
+				}
+				else
+				{
+					$missingSinceLastAgree++;
+				}
+			}
+			# Update utterance error counts when found and true agree on a word boundary.
 			else
 			{
-				$crossingBracketCount++;
+				if (($extraSinceLastAgree == 0) && ($missingSinceLastAgree == 0) && ($crossingsSinceLastAgree == 0))
+				{
+					$perfectWords++;
+				}
+				$utteranceMissingBoundaries += $missingSinceLastAgree;
+				$utteranceExtraBoundaries += $extraSinceLastAgree;
+				$utteranceCrossingBrackets += $crossingsSinceLastAgree;
+				$missingSinceLastAgree = $extraSinceLastAgree = 0;					
 			}
-			$trueOpen = $trueClose = 0;
+		}
+		if ($foundArray[$i] == 1)
+		{
+			$foundTotalWords++;
 		}
 	}
-	print "\nScore for $line against $goldLine:\n";
-	print "\tOver-segmentations: $overSegmentationCount\tUnder-segmentations: $underSegmentationCount\tCrossing-Brackets: $crossingBracketCount\n";
+	
+	$missingBoundaries += $utteranceMissingBoundaries;
+	$extraBoundaries += $utteranceExtraBoundaries;
+	$crossingBracketCount += $utteranceCrossingBrackets;
+	
+	if ($opt_v)
+	{
+		print "\nScore for [$foundLine] against [$trueLine]:\n";
+		print "\tExtra boundaries: $utteranceExtraBoundaries\tMissing boundaries: $utteranceMissingBoundaries\tCrossing brackets: $utteranceCrossingBrackets\n";
+	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print "\nStats\n---------\nExtra boundaries: $extraBoundaries\n" . 
+	"Missing boundaries: $missingBoundaries\n" . 
+	"Crossing brackets: $crossingBracketCount\n" .
+	"Crossing brackets: $crossingBracketCount\n" .
+	"True total words: $trueTotalWords\n" .
+	"Found total words: $foundTotalWords\n";
