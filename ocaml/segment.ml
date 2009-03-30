@@ -787,7 +787,6 @@ let two_pass_processor utteranceList =
 				end
 		)
 		utteranceList;
-	totalWords := 0;
 	Hashtbl.clear lexicon;
 	Hashtbl.add lexicon !utteranceDelimiter 0;
 	totalWords := 0;
