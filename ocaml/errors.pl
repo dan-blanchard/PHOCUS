@@ -14,7 +14,7 @@ my $trueLine;
 my $foundLine;
 my $missingBoundaries = 0;
 my $extraBoundaries = 0;
-my $crossingBracketCount = 0;
+my $crossingBrackets = 0;
 my $trueTotalBoundaries = 0;
 my $foundTotalBoundaries = 0;
 my $trueTotalWords = 0;
@@ -91,16 +91,20 @@ while ($trueLine = <GOLDFILE>)
 		my @trueArray = stringToSegArray($trueLine);
 		my @foundArray = stringToSegArray($foundLine);
 
-		my $missingSinceLastAgree = 0;
-		my $extraSinceLastAgree = 0;
-		my $crossingsSinceLastAgree = 0;
-
-		my $missingFromWord = 0;
-		my $extraInWord = 0;
-
+		my $previousErrorType = 0;	# 0 = no error, 1 = missing boundary, 2 = extra boundary
+		my $extraSinceLastTrueBoundary = 0;
+		
+		my $utteranceUnderSegmentedWords = 0;
+		my $utteranceOverSegmentedWords = 0;
+		my $utterancePerfectWords = 0;
+		my $utteranceFoundTotalWords = 0;
+		my $utteranceTrueTotalWords = 0;
+		
 		my $utteranceMissingBoundaries = 0;
 		my $utteranceExtraBoundaries = 0;
 		my $utteranceCrossingBrackets = 0;
+		my $utteranceMatchedBoundaries = 0;
+		my $utteranceMatchedLackOfBoundaries = 0;
 
 		# Loop through both segmentation arrays at the same time.
 		for (my $i = 0; $i < scalar(@trueArray); $i++) 
@@ -111,83 +115,130 @@ while ($trueLine = <GOLDFILE>)
 				# See if found corpus disagrees
 				if ($foundArray[$i] == 1)
 				{
+					$extraSinceLastTrueBoundary++;
 					# Check for crossing-brackets
-					if ($missingSinceLastAgree > 0)
+					if ($previousErrorType == 1)
 					{
-						$missingSinceLastAgree--;
-						$crossingsSinceLastAgree++;
+						$utteranceCrossingBrackets++;
 					}
-					else
-					{
-						$extraSinceLastAgree++;
-					}
+					$previousErrorType = 2;
 				}
 				else
 				{
-					$matchedLackOfBoundaries++;
+					$utteranceMatchedLackOfBoundaries++;
 				}
 			}
 			else
 			{
-				$trueTotalWords++;
 				# See if found corpus disagrees
 				if ($foundArray[$i] == 0)
 				{
+					$utteranceMissingBoundaries++;
 					# Check for crossing-brackets
-					if ($extraSinceLastAgree > 0)
+					if ($previousErrorType == 2)
 					{
-						$crossingsSinceLastAgree++;
-						$extraSinceLastAgree--;
+						$utteranceCrossingBrackets++;
+						$utteranceUnderSegmentedWords++;
 					}
 					else
 					{
-						$missingSinceLastAgree++;						
+						$utteranceUnderSegmentedWords += 2;	
 					}
+					$previousErrorType = 1;
 				}
 				# Update utterance error counts when found and true agree on a word boundary.
 				else
 				{
-					if (($extraSinceLastAgree == 0) && ($missingSinceLastAgree == 0) && ($crossingsSinceLastAgree == 0))
+					if ($previousErrorType == 0)
 					{
-						$perfectWords++;
+						$utterancePerfectWords++;
 					}
-					$matchedBoundaries++;
-					$utteranceMissingBoundaries += $missingSinceLastAgree;
-					$utteranceExtraBoundaries += $extraSinceLastAgree;
-					$utteranceCrossingBrackets += $crossingsSinceLastAgree;
-					$missingSinceLastAgree = $extraSinceLastAgree = 0;					
+					$utteranceMatchedBoundaries++;
+					$previousErrorType = 0;
 				}
 				
+				$utteranceTrueTotalWords++;
+				if ($extraSinceLastTrueBoundary > 0)
+				{
+					$utteranceOverSegmentedWords++;
+				}
+				$utteranceExtraBoundaries += $extraSinceLastTrueBoundary;
+				$extraSinceLastTrueBoundary = 0;
 			}
 			if ($foundArray[$i] == 1)
 			{
-				$foundTotalWords++;
+				$utteranceFoundTotalWords++;
 			}
 		}
 
+		$utteranceMatchedBoundaries++; # For extra boundary at start of sentence
 		$missingBoundaries += $utteranceMissingBoundaries;
 		$extraBoundaries += $utteranceExtraBoundaries;
-		$crossingBracketCount += $utteranceCrossingBrackets;
-
+		$crossingBrackets += $utteranceCrossingBrackets;
+		$overSegmentedWords += $utteranceOverSegmentedWords;
+		$underSegmentedWords += $utteranceUnderSegmentedWords;
+		$perfectWords += $utterancePerfectWords;
+		$matchedBoundaries += $utteranceMatchedBoundaries;
+		$matchedLackOfBoundaries += $utteranceMatchedLackOfBoundaries;
+		$foundTotalWords += $utteranceFoundTotalWords;
+		$trueTotalWords += $utteranceTrueTotalWords;
+		$foundTotalBoundaries += ($utteranceFoundTotalWords + 1);
+		$trueTotalBoundaries += ($utteranceTrueTotalWords + 1);
+				
 		if ($opt_v)
 		{
-			print "\nScore for [$foundLine] against [$trueLine]:\n";
-			print "\tExtra boundaries: $utteranceExtraBoundaries\tMissing boundaries: $utteranceMissingBoundaries\tCrossing brackets: $utteranceCrossingBrackets\n";
+			print "\nScores for [$foundLine] against [$trueLine]:\n";
+			print "\tBoundaries\n" .
+				  "\t----------\n" .
+				  "\tMissing (false neg.): $utteranceMissingBoundaries\n" .
+				  "\tExtra (false pos.): $utteranceExtraBoundaries\n" .
+				  "\tCorrect (true pos.): " . $utteranceMatchedBoundaries . "\n" .
+				  "\tIncorrect: " . (($utteranceTrueTotalWords + 1) - $utteranceMatchedBoundaries) . "\n" .
+				  "\tTrue Total: " . ($utteranceTrueTotalWords + 1) . "\n" .
+				  "\tFound Total: " . ($utteranceFoundTotalWords + 1) . "\n" .
+				  "\tPrecision: " . ($utteranceMatchedBoundaries / ($utteranceMatchedBoundaries + $utteranceExtraBoundaries)) . "\n" .
+				  "\tRecall: " . ($utteranceMatchedBoundaries / ($utteranceMatchedBoundaries + $utteranceMissingBoundaries)) . "\n\n" .
+				  "\tWords\n" .
+				  "\t----------\n" .
+				  "\tOver-segmented: $utteranceOverSegmentedWords\n" .
+				  "\tUnder-segmented: $utteranceUnderSegmentedWords\n" .
+				  "\tCrossing Brackets: $utteranceCrossingBrackets\n" .
+				  "\tCorrect (true pos.): $utterancePerfectWords\n" .
+				  "\tExtra (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
+				  "\tMissing (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n" .
+				  "\tTrue Total: $utteranceTrueTotalWords\n" .
+				  "\tFound Total: $utteranceFoundTotalWords\n" .
+				  "\tPrecision: " . ($utterancePerfectWords / $utteranceFoundTotalWords) . "\n" .
+				  "\tRecall: " . ($utterancePerfectWords / $utteranceTrueTotalWords) . "\n";
 		}
 	}
 }
 
-print "\nResults for $ARGV[1]";
+print "\n\nResults for $ARGV[1]:";
 if ($opt_i)
 {
 	print " (ignoring first $opt_i utterances)";
 }
-print "\n---------\n" .
-	"Crossing brackets: $crossingBracketCount\n" .
-	"Extra boundaries: $extraBoundaries\n" . 
-	"Missing boundaries: $missingBoundaries\n" . 
-	"Matched boundaries: $matchedBoundaries\n" .
-	"Matched lack of boundaries: $matchedLackOfBoundaries\n" .
-	"Correct words: $perfectWords\n" .
-	"True total words: $trueTotalWords\n" .
-	"Found total words: $foundTotalWords\n";
+print "\n=====================\n\n" .
+	  "Boundaries\n" .
+	  "----------\n" .
+	  "Missing (false neg.): $missingBoundaries\n" .
+	  "Extra (false pos.): $extraBoundaries\n" .
+	  "Correct (true pos.): " . $matchedBoundaries . "\n" .
+	  "Incorrect: " . ($trueTotalBoundaries - $matchedBoundaries) . "\n" .
+	  "True Total: " . $trueTotalBoundaries . "\n" .
+	  "Found Total: " . $foundTotalBoundaries . "\n" .
+	  "Precision: " . ($matchedBoundaries / ($matchedBoundaries + $extraBoundaries)) . "\n" .
+	  "Recall: " . ($matchedBoundaries / ($matchedBoundaries + $missingBoundaries)) . "\n\n" .
+	  "Words\n" .
+	  "----------\n" .
+	  "Over-segmented: $overSegmentedWords\n" .
+	  "Under-segmented: $underSegmentedWords\n" .
+	  "Crossing Brackets: $crossingBrackets\n" .
+	  "Correct (true pos.): $perfectWords\n" .
+	  "Extra (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
+	  "Missing (false neg.): " . ($trueTotalWords - $perfectWords) . "\n" .
+	  "True Total: $trueTotalWords\n" .
+	  "Found Total: $foundTotalWords\n" .
+	  "Precision: " . ($perfectWords / $foundTotalWords) . "\n" .
+	  "Recall: " . ($perfectWords / $trueTotalWords) . "\n";
