@@ -219,7 +219,7 @@ if ($opt_i)
 {
 	print " (ignoring first $opt_i utterances)";
 }
-print "\n=====================\n\n" .
+print "\n============================\n\n" .
 	  "Boundaries\n" .
 	  "----------\n" .
 	  "Missing (false neg.): $missingBoundaries\n" .
@@ -232,9 +232,9 @@ print "\n=====================\n\n" .
 	  "Recall: " . ($matchedBoundaries / ($matchedBoundaries + $missingBoundaries)) . "\n\n" .
 	  "Words\n" .
 	  "----------\n" .
-	  "Over-segmented: $overSegmentedWords\n" .
-	  "Under-segmented: $underSegmentedWords\n" .
-	  "Crossing Brackets: $crossingBrackets\n" .
+	  "Over-segmented: $overSegmentedWords (" . (($overSegmentedWords / ($trueTotalWords - $perfectWords)) * 100). "%)\n" .
+	  "Under-segmented: $underSegmentedWords (" . (($underSegmentedWords / ($trueTotalWords - $perfectWords)) * 100). "%)\n" .
+	  "Crossing Brackets: $crossingBrackets (" . (($crossingBrackets / ($trueTotalWords - $perfectWords)) * 100) . "%)\n" .
 	  "Correct (true pos.): $perfectWords\n" .
 	  "Extra (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
 	  "Missing (false neg.): " . ($trueTotalWords - $perfectWords) . "\n" .
