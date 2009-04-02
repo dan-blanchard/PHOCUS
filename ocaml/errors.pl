@@ -96,9 +96,9 @@ while ($trueLine = <GOLDFILE>)
 		my @trueArray = stringToSegArray($trueLine);
 		my @foundArray = stringToSegArray($foundLine);
 
-		my $previousErrorType = 0;	# 0 = no error, 1 = missing boundary, 2 = extra boundary
 		my $extraSinceLastTrueBoundary = 0;
-		my $missingBoundariesInARow = 0;
+		my $previousBoundaryMissing = 0;
+		my $currentBoundaryMissing = 0;
 		
 		my $utteranceUnderSegmentedWords = 0;
 		my $utteranceOverSegmentedWords = 0;
@@ -122,12 +122,6 @@ while ($trueLine = <GOLDFILE>)
 				if ($foundArray[$i] == 1)
 				{
 					$extraSinceLastTrueBoundary++;
-					# Check for crossing-brackets
-					if ($previousErrorType == 1)
-					{
-						$utteranceCrossingBrackets++;
-					}
-					$previousErrorType = 2;
 				}
 				else
 				{
@@ -140,46 +134,48 @@ while ($trueLine = <GOLDFILE>)
 				if ($foundArray[$i] == 0)
 				{
 					$utteranceMissingBoundaries++;
-					$missingBoundariesInARow++;
-					# Check for crossing-brackets
-					if ($previousErrorType == 2)
-					{
-						$utteranceCrossingBrackets++;
-					}
-					$previousErrorType = 1;
+					$currentBoundaryMissing = 1;
 				}
-				# Update utterance error counts when found and true agree on a word boundary.
+				# Found and true agree on a word boundary.
 				else
 				{
-					if ($previousErrorType == 0)
+					if (($previousBoundaryMissing == 0) && ($extraSinceLastTrueBoundary == 0))
 					{
 						$utterancePerfectWords++;
 					}
 					$utteranceMatchedBoundaries++;
-					$previousErrorType = 0;
-					if ($missingBoundariesInARow > 0)
-					{
-						$utteranceUnderSegmentedWords += $missingBoundariesInARow + 1;	
-					}
-					$missingBoundariesInARow = 0;
 				}
 				
 				$utteranceTrueTotalWords++;
-				if ($extraSinceLastTrueBoundary > 0)
+				if ($currentBoundaryMissing || $previousBoundaryMissing)
 				{
-					$utteranceOverSegmentedWords++;
+					if ($extraSinceLastTrueBoundary > 0)
+					{
+						$utteranceCrossingBrackets++;
+					}
+					else
+					{
+						$utteranceUnderSegmentedWords++;
+					}
+					$previousBoundaryMissing = $currentBoundaryMissing;
+					$currentBoundaryMissing = 0;
+				}
+				else
+				{
+					if ($extraSinceLastTrueBoundary > 0)
+					{
+						$utteranceOverSegmentedWords++;
+					}
 				}
 				$utteranceExtraBoundaries += $extraSinceLastTrueBoundary;
 				$extraSinceLastTrueBoundary = 0;
+				
 			}
 			if ($foundArray[$i] == 1)
 			{
 				$utteranceFoundTotalWords++;
 			}
 		}
-
-		$utteranceOverSegmentedWords -= $utteranceCrossingBrackets;
-		$utteranceUnderSegmentedWords -= $utteranceCrossingBrackets;
 
 		$utteranceMatchedBoundaries--; # Only count phrase-internal boundaries
 		$missingBoundaries += $utteranceMissingBoundaries;
@@ -232,6 +228,8 @@ while ($trueLine = <GOLDFILE>)
 		}
 	}
 }
+die "Ignored more than length of file!\n" if ($trueTotalWords == 0);
+
 
 print "\n\nResults for $ARGV[1]:";
 if ($opt_i)
@@ -245,6 +243,7 @@ my $boundaryF = (($boundaryPrecision + $boundaryRecall) > 0) ? ((2 * $boundaryPr
 my $wordPrecision = ($perfectWords / $foundTotalWords);
 my $wordRecall = ($perfectWords / $trueTotalWords);
 my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
+my $wordFalseNeg = $trueTotalWords - $perfectWords;
 
 print "\n============================\n\n" .
 	  "Boundaries\n" .
@@ -260,9 +259,9 @@ print "\n============================\n\n" .
 	  "F: " . $boundaryF * 100 . "%\n\n" .
 	  "Words\n" .
 	  "----------\n" .
-	  "Only Over-segmented: $overSegmentedWords (" . (($overSegmentedWords / ($trueTotalWords - $perfectWords)) * 100). "%)\n" .
-	  "Only Under-segmented: $underSegmentedWords (" . (($underSegmentedWords / ($trueTotalWords - $perfectWords)) * 100). "%)\n" .
-	  "Both Over- and Under-segmented: $crossingBrackets (" . (($crossingBrackets / ($trueTotalWords - $perfectWords)) * 100) . "%)\n" .
+	  "Only Over-segmented: $overSegmentedWords (" . (($overSegmentedWords / $wordFalseNeg) * 100). "%)\n" .
+	  "Only Under-segmented: $underSegmentedWords (" . (($underSegmentedWords / $wordFalseNeg) * 100). "%)\n" .
+	  "Both Over- and Under-segmented: $crossingBrackets (" . (($crossingBrackets / $wordFalseNeg) * 100) . "%)\n" .
 	  "Correct (true pos.): $perfectWords\n" .
 	  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
 	  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n" .
