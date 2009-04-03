@@ -5,6 +5,8 @@
 
 # usage: ./errors.pl [OPTIONS] GOLD-CORPUS FILE 
 
+# TODO: Double-check/fix method for counting specific types of over and under segmentations. 
+
 use strict;
 use Getopt::Std;
 
@@ -28,6 +30,9 @@ my $overSegmentedWords = 0;
 my %affixes;
 my %determiners;
 my %vowels;
+my %overSegmentedWordFrequencies;
+my %underSegmentedWordFrequencies;
+my %bothErrorsWordFrequencies;
 
 my $determinerUnderSegmentations = 0;
 my $vowelOverSegmentations = 0;
@@ -207,6 +212,14 @@ while ($trueLine = <GOLDFILE>)
 					if ($extraSinceLastTrueBoundary > 0)
 					{
 						$utteranceCrossingBrackets++;
+						if (exists $bothErrorsWordFrequencies{$currentTrueWord})
+						{
+							$bothErrorsWordFrequencies{$currentTrueWord}++;
+						}
+						else
+						{
+							$bothErrorsWordFrequencies{$currentTrueWord} = 1;
+						}
 						if (exists $determiners{$currentTrueWord})
 						{
 							$utteranceDeterminerUnderSegmentationsInCrossingBrackets++;
@@ -223,6 +236,14 @@ while ($trueLine = <GOLDFILE>)
 					else
 					{
 						$utteranceUnderSegmentedWords++;
+						if (exists $underSegmentedWordFrequencies{$currentTrueWord})
+						{
+							$underSegmentedWordFrequencies{$currentTrueWord}++;
+						}
+						else
+						{
+							$underSegmentedWordFrequencies{$currentTrueWord} = 1;
+						}
 						if (exists $determiners{$currentTrueWord})
 						{
 							$utteranceDeterminerUnderSegmentations++;
@@ -236,6 +257,14 @@ while ($trueLine = <GOLDFILE>)
 					if ($extraSinceLastTrueBoundary > 0)
 					{
 						$utteranceOverSegmentedWords++;
+						if (exists $overSegmentedWordFrequencies{$currentTrueWord})
+						{
+							$overSegmentedWordFrequencies{$currentTrueWord}++;
+						}
+						else
+						{
+							$overSegmentedWordFrequencies{$currentTrueWord} = 1;
+						}						
 						if ($vowelOverSegmentationsSinceLastTrueBoundary > 0)
 						{
 							$utteranceVowelOverSegmentations++;
@@ -248,8 +277,6 @@ while ($trueLine = <GOLDFILE>)
 				}
 				$utteranceExtraBoundaries += $extraSinceLastTrueBoundary;
 				$affixOverSegmentationsSinceLastTrueBoundary = $vowelOverSegmentationsSinceLastTrueBoundary = $extraSinceLastTrueBoundary = 0;
-				
-				
 			} 
 		}
 
@@ -393,4 +420,21 @@ print "Correct (true pos.): $perfectWords\n" .
 	  "True Total: $trueTotalWords\n" .
 	  "Found Total: $foundTotalWords\n";
 printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
-	  
+
+print "\nUndersegmented words\n------------------\n";
+foreach my $key (sort (keys %underSegmentedWordFrequencies))
+{
+	print $key . "\t" . $underSegmentedWordFrequencies{$key} . "\n";
+}
+
+print "\nOversegmented words\n------------------\n";
+foreach my $key (sort (keys %overSegmentedWordFrequencies))
+{
+	print $key . "\t" . $overSegmentedWordFrequencies{$key} . "\n";
+}
+
+print "\nWords with both types of errors\n------------------\n";
+foreach my $key (sort (keys %bothErrorsWordFrequencies))
+{
+	print $key . "\t" . $bothErrorsWordFrequencies{$key} . "\n";
+}
