@@ -291,39 +291,43 @@ while ($trueLine = <GOLDFILE>)
 				  "  Correct (true pos.): " . $utteranceMatchedBoundaries . "\n" .
 				  "  Incorrect: " . (($utteranceTrueTotalWords + 1) - $utteranceMatchedBoundaries) . "\n" .
 				  "  True Total: " . ($utteranceTrueTotalWords + 1) . "\n" .
-				  "  Found Total: " . ($utteranceFoundTotalWords + 1) . "\n" .
-				  "  Precision: " . $boundaryPrecision * 100 . "%\n" .
-				  "  Recall: " . $boundaryRecall * 100 . "%\n" .
-				  "  F: " . $boundaryF * 100 . "%\n\n" .
-				  "  Words\n" .
+				  "  Found Total: " . ($utteranceFoundTotalWords + 1) . "\n";
+			printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n\n", $boundaryPrecision*100, $boundaryRecall*100, $boundaryF*100;
+			print "  Words\n" .
 				  "  ----------\n" .
-				  "  Only Over-segmented: $utteranceOverSegmentedWords (" . (($utteranceOverSegmentedWords / $utteranceWordFalseNeg) * 100). "%)\n";
+				  "  Only Over-segmented: $overSegmentedWords (";
+			printf "%1.2f\%)\n", ($utteranceWordFalseNeg > 0) ? (($utteranceOverSegmentedWords / $utteranceWordFalseNeg) * 100) : 0;
 			if ($utteranceOverSegmentedWords > 0)
 			{
-			  	print "    Vowel over-segmentations: $utteranceVowelOverSegmentations (" . (($utteranceVowelOverSegmentations / $utteranceOverSegmentedWords) * 100) . "%)\n";
-				print "    Affix over-segmentations: $utteranceAffixOverSegmentations (" . (($utteranceAffixOverSegmentations / $utteranceOverSegmentedWords) * 100) . "%)\n";
-				
+			  	print "    Vowel over-segmentations: $utteranceVowelOverSegmentations (";
+				printf "%1.2f\%)\n", (($utteranceVowelOverSegmentations / $utteranceOverSegmentedWords) * 100);
+				print "    Affix over-segmentations: $utteranceAffixOverSegmentations (";
+				printf "%1.2f\%)\n", (($utteranceAffixOverSegmentations / $utteranceOverSegmentedWords) * 100);
 			}
-			print "  Only Under-segmented: $utteranceUnderSegmentedWords (" . (($utteranceUnderSegmentedWords / $utteranceWordFalseNeg) * 100). "%)\n";
+			print "  Only Under-segmented: $utteranceUnderSegmentedWords (";
+			printf "%1.2f\%)\n", ($utteranceWordFalseNeg > 0) ? (($utteranceUnderSegmentedWords / $utteranceWordFalseNeg) * 100) : 0;
 			if ($utteranceUnderSegmentedWords > 0)
 			{
-				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentations (" . (($utteranceDeterminerUnderSegmentations / $utteranceUnderSegmentedWords) * 100) . "%)\n";
+				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentations (";
+				printf "%1.2f\%)\n", (($utteranceDeterminerUnderSegmentations / $utteranceUnderSegmentedWords) * 100);
 			}
-			print "  Both Over- and Under-segmented: $utteranceCrossingBrackets (" . (($utteranceCrossingBrackets / $utteranceWordFalseNeg) * 100). "%)\n";
+			print "  Both Over- and Under-segmented: $utteranceCrossingBrackets (";
+			printf "%1.2f\%)\n", ($utteranceWordFalseNeg > 0) ? (($utteranceCrossingBrackets / $utteranceWordFalseNeg) * 100) : 0;
 			if ($utteranceCrossingBrackets > 0)
 			{
-				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentationsInCrossingBrackets (" . (($utteranceDeterminerUnderSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
-				print "    Vowel over-segmentations: $utteranceVowelOverSegmentationsInCrossingBrackets (" . (($utteranceVowelOverSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
-				print "    Affix over-segmentations: $utteranceAffixOverSegmentationsInCrossingBrackets (" . (($utteranceAffixOverSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
+				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentationsInCrossingBrackets (";
+				printf "%1.2f\%)\n", (($utteranceDeterminerUnderSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100);
+				print "    Vowel over-segmentations: $utteranceVowelOverSegmentationsInCrossingBrackets (";
+				printf "%1.2f\%)\n", (($utteranceVowelOverSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100);
+				print "    Affix over-segmentations: $utteranceAffixOverSegmentationsInCrossingBrackets (";
+				printf "%1.2f\%)\n", (($utteranceAffixOverSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100);
 			}
 			print "  Correct (true pos.): $utterancePerfectWords\n" .
 				  "  Incorrect found words (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
-				  "  Missing true words (false neg.): " . $utteranceWordFalseNeg . "\n" .
+				  "  Missing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n" .
 				  "  True Total: $utteranceTrueTotalWords\n" .
-				  "  Found Total: $utteranceFoundTotalWords\n" .
-				  "  Precision: " . $wordPrecision * 100 . "%\n" .
-				  "  Recall: " . $wordRecall * 100 . "%\n" . 
-				  "  F: " . $wordF * 100 . "%\n"; 
+				  "  Found Total: $utteranceFoundTotalWords\n";
+			printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
 		}
 	}
 }
@@ -352,37 +356,41 @@ print "\n============================\n\n" .
 	  "Correct (true pos.): " . $matchedBoundaries . "\n" .
 	  "Incorrect: " . ($trueTotalBoundaries - $matchedBoundaries) . "\n" .
 	  "True Total: " . $trueTotalBoundaries . "\n" .
-	  "Found Total: " . $foundTotalBoundaries . "\n" .
-	  "Precision: " . $boundaryPrecision * 100 . "%\n" .
-	  "Recall: " . $boundaryRecall * 100 . "%\n" .
-	  "F: " . $boundaryF * 100 . "%\n\n" .
-	  "Words\n" .
+	  "Found Total: " . $foundTotalBoundaries . "\n";
+printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n\n", $boundaryPrecision*100, $boundaryRecall*100, $boundaryF*100;
+print "Words\n" .
 	  "----------\n" .
-	  "Only Over-segmented: $overSegmentedWords (" . (($overSegmentedWords / $wordFalseNeg) * 100). "%)\n";
+	  "Only Over-segmented: $overSegmentedWords (";
+printf "%1.2f\%)\n", ($wordFalseNeg > 0) ? (($overSegmentedWords / $wordFalseNeg) * 100) : 0;
 if ($overSegmentedWords > 0)
 {
-  	print "  Vowel over-segmentations: $vowelOverSegmentations (" . (($vowelOverSegmentations / $overSegmentedWords) * 100) . "%)\n";
-	print "  Affix over-segmentations: $affixOverSegmentations (" . (($affixOverSegmentations / $overSegmentedWords) * 100) . "%)\n";
-	
+  	print "  Vowel over-segmentations: $vowelOverSegmentations (";
+	printf "%1.2f\%)\n", (($vowelOverSegmentations / $overSegmentedWords) * 100);
+	print "  Affix over-segmentations: $affixOverSegmentations (";
+	printf "%1.2f\%)\n", (($affixOverSegmentations / $overSegmentedWords) * 100);
 }
-print "Only Under-segmented: $underSegmentedWords (" . (($underSegmentedWords / $wordFalseNeg) * 100). "%)\n";
+print "Only Under-segmented: $underSegmentedWords (";
+printf "%1.2f\%)\n", ($wordFalseNeg > 0) ? (($underSegmentedWords / $wordFalseNeg) * 100) : 0;
 if ($underSegmentedWords > 0)
 {
-	print "  Determiner under-segmentations: $determinerUnderSegmentations (" . (($determinerUnderSegmentations / $underSegmentedWords) * 100) . "%)\n";
+	print "  Determiner under-segmentations: $determinerUnderSegmentations (";
+	printf "%1.2f\%)\n", (($determinerUnderSegmentations / $underSegmentedWords) * 100);
 }
-print "Both Over- and Under-segmented: $crossingBrackets (" . (($crossingBrackets / $wordFalseNeg) * 100). "%)\n";
+print "Both Over- and Under-segmented: $crossingBrackets (";
+printf "%1.2f\%)\n", ($wordFalseNeg > 0) ? (($crossingBrackets / $wordFalseNeg) * 100) : 0;
 if ($crossingBrackets > 0)
 {
-	print "  Determiner under-segmentations: $determinerUnderSegmentationsInCrossingBrackets (" . (($determinerUnderSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
-	print "  Vowel over-segmentations: $vowelOverSegmentationsInCrossingBrackets (" . (($vowelOverSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
-	print "  Affix over-segmentations: $affixOverSegmentationsInCrossingBrackets (" . (($affixOverSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
+	print "  Determiner under-segmentations: $determinerUnderSegmentationsInCrossingBrackets (";
+	printf "%1.2f\%)\n", (($determinerUnderSegmentationsInCrossingBrackets / $crossingBrackets) * 100);
+	print "  Vowel over-segmentations: $vowelOverSegmentationsInCrossingBrackets (";
+	printf "%1.2f\%)\n", (($vowelOverSegmentationsInCrossingBrackets / $crossingBrackets) * 100);
+	print "  Affix over-segmentations: $affixOverSegmentationsInCrossingBrackets (";
+	printf "%1.2f\%)\n", (($affixOverSegmentationsInCrossingBrackets / $crossingBrackets) * 100);
 }
 print "Correct (true pos.): $perfectWords\n" .
 	  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
 	  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n" .
 	  "True Total: $trueTotalWords\n" .
-	  "Found Total: $foundTotalWords\n" .
-	  "Precision: " . $wordPrecision * 100 . "%\n" .
-	  "Recall: " . $wordRecall * 100 . "%\n" . 
-	  "F: " . $wordF * 100 . "%\n"; 
+	  "Found Total: $foundTotalWords\n";
+printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
 	  
