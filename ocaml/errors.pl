@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # Dan Blanchard
-# Error Analyzer
+# Segmentation Error Analyzer
 
 # usage: ./errors.pl [OPTIONS] GOLD-CORPUS FILE 
 
@@ -25,7 +25,27 @@ my $matchedLackOfBoundaries = 0;
 my $lineNumber = 0;
 my $underSegmentedWords = 0;
 my $overSegmentedWords = 0;
+my %affixes;
+my %determiners;
+my %vowels;
 
+my $determinerUnderSegmentations = 0;
+my $vowelOverSegmentations = 0;
+my $affixOverSegmentations = 0;
+my $affixGloms = 0;
+my $determinerUnderSegmentationsInCrossingBrackets = 0;
+my $vowelOverSegmentationsInCrossingBrackets = 0;
+my $affixOverSegmentationsInCrossingBrackets = 0;
+my $affixGlomsInCrossingBrackets = 0;
+
+
+
+# Initialize Hashes
+$affixes{"IN"} = $affixes{"z"} = $affixes{"s"} = $affixes{"In"} = $affixes{"~t"} = $affixes{"nt"} = $affixes{"li"} = $affixes{"6v"} = $affixes{"Id"} = $affixes{"d"} = 1;
+$affixes{"In"} = 1;
+$determiners{"D6"} = $determiners{"6"} = 1;
+$vowels{"&"} = $vowels{"6"} = $vowels{"9"} = $vowels{"A"} = $vowels{"E"} = $vowels{"I"} = $vowels{"O"} = $vowels{"U"} = $vowels{"a"} = $vowels{"e"} = $vowels{"i"} = $vowels{"o"} = $vowels{"u"} = 1;
+$vowels{"9I"} = $vowels{"9U"} = $vowels{"OI"} = 1; # diphthongs
 # Handle arguments
 getopts('vd:i:');
 
@@ -40,9 +60,9 @@ die "\nSegmentation Error Analyzer\nusage: ./errors.pl [-d WORD_DELIMITER] [-i I
 # Take a segmented utterance, and returns an array of binary values that specify whether there is 
 # a break in the string after the indexed position in the array.  The indices match up with an unsegmented
 # version of the string. 
-#
+#									   y,u,w,a,n,t,t,u
 # Example: "yu want tu" should return [0,1,0,0,0,1,0,1]
-
+# 									   0,1,2,3,4,5,6,7
 sub stringToSegArray
 {
 	my $utterance = shift;
@@ -106,22 +126,54 @@ while ($trueLine = <GOLDFILE>)
 		my $utteranceFoundTotalWords = 0;
 		my $utteranceTrueTotalWords = 0;
 		
+		my $vowelOverSegmentationsSinceLastTrueBoundary = 0;
+		my $affixOverSegmentationsSinceLastTrueBoundary = 0;
+		my $affixGlomsSinceLastTrueBoundary = 0;
+		my $utteranceDeterminerUnderSegmentations = 0;
+		my $utteranceVowelOverSegmentations = 0;
+		my $utteranceAffixOverSegmentations = 0;
+		my $utteranceAffixGloms = 0;
+		my $utteranceDeterminerUnderSegmentationsInCrossingBrackets = 0;
+		my $utteranceVowelOverSegmentationsInCrossingBrackets = 0;
+		my $utteranceAffixOverSegmentationsInCrossingBrackets = 0;
+		
 		my $utteranceMissingBoundaries = 0;
 		my $utteranceExtraBoundaries = 0;
 		my $utteranceCrossingBrackets = 0;
 		my $utteranceMatchedBoundaries = 0;
 		my $utteranceMatchedLackOfBoundaries = 0;
+		
+		my $previousTrueBoundary = -1;
+		my $previousFoundBoundary = -1;
+		my $currentFoundWord = "";
+		my $currentTrueWord = "";
 
 		# Loop through both segmentation arrays at the same time.
 		for (my $i = 0; $i < scalar(@trueArray); $i++) 
 		{
-			# Check for word boundary in true corpus
+			# Check if this is the end/start of a new found word
+			if ($foundArray[$i] == 1)
+			{
+				$currentFoundWord = substr($unsegFoundLine, $previousFoundBoundary + 1, $i - $previousFoundBoundary);
+				$previousFoundBoundary = $i;
+				$utteranceFoundTotalWords++;
+			}
+			
+			# Check for word boundary in true segmentation
 			if ($trueArray[$i] == 0)
 			{
-				# See if found corpus disagrees
+				# See if found segmentation disagrees
 				if ($foundArray[$i] == 1)
 				{
 					$extraSinceLastTrueBoundary++;
+					if (exists $vowels{$currentFoundWord})
+					{
+						$vowelOverSegmentationsSinceLastTrueBoundary++;
+					}
+					elsif (exists $affixes{$currentFoundWord})
+					{
+						$affixOverSegmentationsSinceLastTrueBoundary++;
+					}
 				}
 				else
 				{
@@ -130,7 +182,10 @@ while ($trueLine = <GOLDFILE>)
 			}
 			else
 			{
-				# See if found corpus disagrees
+				$currentTrueWord = substr($unsegTrueLine, $previousTrueBoundary + 1, $i - $previousTrueBoundary);
+				$previousTrueBoundary = $i;
+							
+				# See if found segmentation disagrees
 				if ($foundArray[$i] == 0)
 				{
 					$utteranceMissingBoundaries++;
@@ -152,10 +207,26 @@ while ($trueLine = <GOLDFILE>)
 					if ($extraSinceLastTrueBoundary > 0)
 					{
 						$utteranceCrossingBrackets++;
+						if (exists $determiners{$currentTrueWord})
+						{
+							$utteranceDeterminerUnderSegmentationsInCrossingBrackets++;
+						}
+						if ($vowelOverSegmentationsSinceLastTrueBoundary > 0)
+						{
+							$utteranceVowelOverSegmentationsInCrossingBrackets++;
+						}
+						if ($affixOverSegmentationsSinceLastTrueBoundary > 0)
+						{
+							$utteranceAffixOverSegmentationsInCrossingBrackets++;
+						}
 					}
 					else
 					{
 						$utteranceUnderSegmentedWords++;
+						if (exists $determiners{$currentTrueWord})
+						{
+							$utteranceDeterminerUnderSegmentations++;
+						}
 					}
 					$previousBoundaryMissing = $currentBoundaryMissing;
 					$currentBoundaryMissing = 0;
@@ -165,16 +236,21 @@ while ($trueLine = <GOLDFILE>)
 					if ($extraSinceLastTrueBoundary > 0)
 					{
 						$utteranceOverSegmentedWords++;
+						if ($vowelOverSegmentationsSinceLastTrueBoundary > 0)
+						{
+							$utteranceVowelOverSegmentations++;
+						}
+						if ($affixOverSegmentationsSinceLastTrueBoundary > 0)
+						{
+							$utteranceAffixOverSegmentations++;
+						}
 					}
 				}
 				$utteranceExtraBoundaries += $extraSinceLastTrueBoundary;
-				$extraSinceLastTrueBoundary = 0;
+				$affixOverSegmentationsSinceLastTrueBoundary = $vowelOverSegmentationsSinceLastTrueBoundary = $extraSinceLastTrueBoundary = 0;
 				
-			}
-			if ($foundArray[$i] == 1)
-			{
-				$utteranceFoundTotalWords++;
-			}
+				
+			} 
 		}
 
 		$utteranceMatchedBoundaries--; # Only count phrase-internal boundaries
@@ -190,6 +266,13 @@ while ($trueLine = <GOLDFILE>)
 		$trueTotalWords += $utteranceTrueTotalWords;
 		$foundTotalBoundaries += ($utteranceFoundTotalWords - 1);
 		$trueTotalBoundaries += ($utteranceTrueTotalWords - 1);
+		$determinerUnderSegmentations += $utteranceDeterminerUnderSegmentations;
+		$affixGloms += $utteranceAffixGloms;
+		$affixOverSegmentations += $utteranceAffixOverSegmentations;
+		$vowelOverSegmentations += $utteranceVowelOverSegmentations;
+		$determinerUnderSegmentationsInCrossingBrackets += $utteranceDeterminerUnderSegmentationsInCrossingBrackets;
+		$affixOverSegmentationsInCrossingBrackets += $utteranceAffixOverSegmentationsInCrossingBrackets;
+		$vowelOverSegmentationsInCrossingBrackets += $utteranceVowelOverSegmentationsInCrossingBrackets;
 		
 		if ($opt_v)
 		{
@@ -201,30 +284,46 @@ while ($trueLine = <GOLDFILE>)
 			my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
 			
 			print "\nScores for [$foundLine] against [$trueLine]:\n";
-			print "\tBoundaries\n" .
-				  "\t----------\n" .
-				  "\tMissing (false neg.): $utteranceMissingBoundaries\n" .
-				  "\tExtra (false pos.): $utteranceExtraBoundaries\n" .
-				  "\tCorrect (true pos.): " . $utteranceMatchedBoundaries . "\n" .
-				  "\tIncorrect: " . (($utteranceTrueTotalWords + 1) - $utteranceMatchedBoundaries) . "\n" .
-				  "\tTrue Total: " . ($utteranceTrueTotalWords + 1) . "\n" .
-				  "\tFound Total: " . ($utteranceFoundTotalWords + 1) . "\n" .
-				  "\tPrecision: " . $boundaryPrecision * 100 . "%\n" .
-				  "\tRecall: " . $boundaryRecall * 100 . "%\n" .
-				  "\tF: " . $boundaryF * 100 . "%\n\n" .
-				  "\tWords\n" .
-				  "\t----------\n" .
-				  "\tOnly Over-segmented: $utteranceOverSegmentedWords\n" .
-				  "\tOnly Under-segmented: $utteranceUnderSegmentedWords\n" .
-				  "\tBoth Over- and Under-segmented: $utteranceCrossingBrackets\n" .
-				  "\tCorrect (true pos.): $utterancePerfectWords\n" .
-				  "\tIncorrect found words (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
-				  "\tMissing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n" .
-				  "\tTrue Total: $utteranceTrueTotalWords\n" .
-				  "\tFound Total: $utteranceFoundTotalWords\n" .
-				  "\tPrecision: " . $wordPrecision * 100 . "%\n" .
-				  "\tRecall: " . $wordRecall * 100 . "%\n" . 
-				  "\tF: " . $wordF * 100 . "%\n"; 
+			print "  Boundaries\n" .
+				  "  ----------\n" .
+				  "  Missing (false neg.): $utteranceMissingBoundaries\n" .
+				  "  Extra (false pos.): $utteranceExtraBoundaries\n" .
+				  "  Correct (true pos.): " . $utteranceMatchedBoundaries . "\n" .
+				  "  Incorrect: " . (($utteranceTrueTotalWords + 1) - $utteranceMatchedBoundaries) . "\n" .
+				  "  True Total: " . ($utteranceTrueTotalWords + 1) . "\n" .
+				  "  Found Total: " . ($utteranceFoundTotalWords + 1) . "\n" .
+				  "  Precision: " . $boundaryPrecision * 100 . "%\n" .
+				  "  Recall: " . $boundaryRecall * 100 . "%\n" .
+				  "  F: " . $boundaryF * 100 . "%\n\n" .
+				  "  Words\n" .
+				  "  ----------\n" .
+				  "  Only Over-segmented: $utteranceOverSegmentedWords\n";
+			if ($utteranceOverSegmentedWords > 0)
+			{
+			  	print "    Vowel over-segmentations: $utteranceVowelOverSegmentations (" . (($utteranceVowelOverSegmentations / $utteranceOverSegmentedWords) * 100) . "%)\n";
+				print "    Affix over-segmentations: $utteranceAffixOverSegmentations (" . (($utteranceAffixOverSegmentations / $utteranceOverSegmentedWords) * 100) . "%)\n";
+				
+			}
+			print "  Only Under-segmented: $utteranceUnderSegmentedWords\n";
+			if ($utteranceUnderSegmentedWords > 0)
+			{
+				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentations (" . (($utteranceDeterminerUnderSegmentations / $utteranceUnderSegmentedWords) * 100) . "%)\n";
+			}
+			print "  Both Over- and Under-segmented: $utteranceCrossingBrackets\n";
+			if ($utteranceCrossingBrackets > 0)
+			{
+				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentationsInCrossingBrackets (" . (($utteranceDeterminerUnderSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
+				print "    Vowel over-segmentations: $utteranceVowelOverSegmentationsInCrossingBrackets (" . (($utteranceVowelOverSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
+				print "    Affix over-segmentations: $utteranceAffixOverSegmentationsInCrossingBrackets (" . (($utteranceAffixOverSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
+			}
+			print "  Correct (true pos.): $utterancePerfectWords\n" .
+				  "  Incorrect found words (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
+				  "  Missing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n" .
+				  "  True Total: $utteranceTrueTotalWords\n" .
+				  "  Found Total: $utteranceFoundTotalWords\n" .
+				  "  Precision: " . $wordPrecision * 100 . "%\n" .
+				  "  Recall: " . $wordRecall * 100 . "%\n" . 
+				  "  F: " . $wordF * 100 . "%\n"; 
 		}
 	}
 }
@@ -259,10 +358,26 @@ print "\n============================\n\n" .
 	  "F: " . $boundaryF * 100 . "%\n\n" .
 	  "Words\n" .
 	  "----------\n" .
-	  "Only Over-segmented: $overSegmentedWords (" . (($overSegmentedWords / $wordFalseNeg) * 100). "%)\n" .
-	  "Only Under-segmented: $underSegmentedWords (" . (($underSegmentedWords / $wordFalseNeg) * 100). "%)\n" .
-	  "Both Over- and Under-segmented: $crossingBrackets (" . (($crossingBrackets / $wordFalseNeg) * 100) . "%)\n" .
-	  "Correct (true pos.): $perfectWords\n" .
+	  "Only Over-segmented: $overSegmentedWords (" . (($overSegmentedWords / $wordFalseNeg) * 100). "%)\n";
+if ($overSegmentedWords > 0)
+{
+  	print "  Vowel over-segmentations: $vowelOverSegmentations (" . (($vowelOverSegmentations / $overSegmentedWords) * 100) . "%)\n";
+	print "  Affix over-segmentations: $affixOverSegmentations (" . (($affixOverSegmentations / $overSegmentedWords) * 100) . "%)\n";
+	
+}
+print "Only Under-segmented: $underSegmentedWords\n";
+if ($underSegmentedWords > 0)
+{
+	print "  Determiner under-segmentations: $determinerUnderSegmentations (" . (($determinerUnderSegmentations / $underSegmentedWords) * 100) . "%)\n";
+}
+print "Both Over- and Under-segmented: $crossingBrackets\n";
+if ($crossingBrackets > 0)
+{
+	print "  Determiner under-segmentations: $determinerUnderSegmentationsInCrossingBrackets (" . (($determinerUnderSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
+	print "  Vowel over-segmentations: $vowelOverSegmentationsInCrossingBrackets (" . (($vowelOverSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
+	print "  Affix over-segmentations: $affixOverSegmentationsInCrossingBrackets (" . (($affixOverSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
+}
+print "Correct (true pos.): $perfectWords\n" .
 	  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
 	  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n" .
 	  "True Total: $trueTotalWords\n" .
