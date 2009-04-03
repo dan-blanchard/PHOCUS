@@ -282,7 +282,7 @@ while ($trueLine = <GOLDFILE>)
 			my $wordPrecision = ($utterancePerfectWords / $utteranceFoundTotalWords);
 			my $wordRecall = ($utterancePerfectWords / $utteranceTrueTotalWords);
 			my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
-			
+			my $utteranceWordFalseNeg = $utteranceTrueTotalWords - $utterancePerfectWords;
 			print "\nScores for [$foundLine] against [$trueLine]:\n";
 			print "  Boundaries\n" .
 				  "  ----------\n" .
@@ -297,19 +297,19 @@ while ($trueLine = <GOLDFILE>)
 				  "  F: " . $boundaryF * 100 . "%\n\n" .
 				  "  Words\n" .
 				  "  ----------\n" .
-				  "  Only Over-segmented: $utteranceOverSegmentedWords\n";
+				  "  Only Over-segmented: $utteranceOverSegmentedWords (" . (($utteranceOverSegmentedWords / $utteranceWordFalseNeg) * 100). "%)\n";
 			if ($utteranceOverSegmentedWords > 0)
 			{
 			  	print "    Vowel over-segmentations: $utteranceVowelOverSegmentations (" . (($utteranceVowelOverSegmentations / $utteranceOverSegmentedWords) * 100) . "%)\n";
 				print "    Affix over-segmentations: $utteranceAffixOverSegmentations (" . (($utteranceAffixOverSegmentations / $utteranceOverSegmentedWords) * 100) . "%)\n";
 				
 			}
-			print "  Only Under-segmented: $utteranceUnderSegmentedWords\n";
+			print "  Only Under-segmented: $utteranceUnderSegmentedWords (" . (($utteranceUnderSegmentedWords / $utteranceWordFalseNeg) * 100). "%)\n";
 			if ($utteranceUnderSegmentedWords > 0)
 			{
 				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentations (" . (($utteranceDeterminerUnderSegmentations / $utteranceUnderSegmentedWords) * 100) . "%)\n";
 			}
-			print "  Both Over- and Under-segmented: $utteranceCrossingBrackets\n";
+			print "  Both Over- and Under-segmented: $utteranceCrossingBrackets (" . (($utteranceCrossingBrackets / $utteranceWordFalseNeg) * 100). "%)\n";
 			if ($utteranceCrossingBrackets > 0)
 			{
 				print "    Determiner under-segmentations: $utteranceDeterminerUnderSegmentationsInCrossingBrackets (" . (($utteranceDeterminerUnderSegmentationsInCrossingBrackets / $utteranceCrossingBrackets) * 100) . "%)\n";
@@ -318,7 +318,7 @@ while ($trueLine = <GOLDFILE>)
 			}
 			print "  Correct (true pos.): $utterancePerfectWords\n" .
 				  "  Incorrect found words (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
-				  "  Missing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n" .
+				  "  Missing true words (false neg.): " . $utteranceWordFalseNeg . "\n" .
 				  "  True Total: $utteranceTrueTotalWords\n" .
 				  "  Found Total: $utteranceFoundTotalWords\n" .
 				  "  Precision: " . $wordPrecision * 100 . "%\n" .
@@ -365,12 +365,12 @@ if ($overSegmentedWords > 0)
 	print "  Affix over-segmentations: $affixOverSegmentations (" . (($affixOverSegmentations / $overSegmentedWords) * 100) . "%)\n";
 	
 }
-print "Only Under-segmented: $underSegmentedWords\n";
+print "Only Under-segmented: $underSegmentedWords (" . (($underSegmentedWords / $wordFalseNeg) * 100). "%)\n";
 if ($underSegmentedWords > 0)
 {
 	print "  Determiner under-segmentations: $determinerUnderSegmentations (" . (($determinerUnderSegmentations / $underSegmentedWords) * 100) . "%)\n";
 }
-print "Both Over- and Under-segmented: $crossingBrackets\n";
+print "Both Over- and Under-segmented: $crossingBrackets (" . (($crossingBrackets / $wordFalseNeg) * 100). "%)\n";
 if ($crossingBrackets > 0)
 {
 	print "  Determiner under-segmentations: $determinerUnderSegmentationsInCrossingBrackets (" . (($determinerUnderSegmentationsInCrossingBrackets / $crossingBrackets) * 100) . "%)\n";
