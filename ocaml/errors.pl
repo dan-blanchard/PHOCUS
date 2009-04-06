@@ -97,6 +97,45 @@ sub stringToSegArray
 	return @segArray;
 }
 
+# Takes an unsegmented utterance, a start index, an end index, and a segmentation array for that utterance, and returns all words that intersect that span.
+# Example: wordsInUtterance("yuwanttuit", 5, 7, [0,1,0,0,0,1,0,1,0,1]) returns ("want","tu")
+#							 0123456789
+#							      ^ ^
+sub wordsInSubUtterance
+{
+	my $utterance = " " . shift;
+	my $startIndex = shift;
+	my $endIndex = shift;
+	my @segArray = (1);
+	push @segArray, @_;
+	$startIndex++;
+	$endIndex++;
+	my @wordArray = ();
+	my $currentWord = "";
+	my $currentWordStart;
+	my $currentWordEnd = scalar(@segArray) - 1;
+
+	# This loop (and this whole function really) should be rewritten to work from the beginning to end of utterance, since that would be more efficient.
+	for (my $i = scalar(@segArray) - 1; $i >= 0; $i--) 
+	{
+		if (($segArray[$i] == 1) && ($currentWordEnd > $i)) 
+		{
+			$currentWordStart = $i + 1;
+			$currentWord = substr($utterance, $currentWordStart, $currentWordEnd - $i);
+			if ((($currentWordStart <= $endIndex) && ($currentWordStart >= $startIndex)) || (($currentWordEnd <= $endIndex) && ($currentWordEnd >= $startIndex)))
+			{
+				push @wordArray, $currentWord;
+			}
+			elsif (scalar(@wordArray) > 0) # If we're no longer in the span, and we've already added stuff to the word array, we're done.
+			{
+				last;
+			}
+			$currentWordEnd = $i;
+		}
+		
+	}	return reverse @wordArray;
+}
+
 open(GOLDFILE, $ARGV[0]);
 open(FILE, $ARGV[1]);
 
