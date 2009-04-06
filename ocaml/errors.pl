@@ -10,7 +10,7 @@
 use strict;
 use Getopt::Std;
 
-our ($opt_d,$opt_v,$opt_i);
+our ($opt_d,$opt_v,$opt_i,$opt_e);
 my $wordDelimiter = ' ';
 my $trueLine;
 my $foundLine;
@@ -42,7 +42,7 @@ $determiners{"D6"} = $determiners{"6"} = 1;
 $vowels{"&"} = $vowels{"6"} = $vowels{"9"} = $vowels{"A"} = $vowels{"E"} = $vowels{"I"} = $vowels{"O"} = $vowels{"U"} = $vowels{"a"} = $vowels{"e"} = $vowels{"i"} = $vowels{"o"} = $vowels{"u"} = 1;
 $vowels{"9I"} = $vowels{"9U"} = $vowels{"OI"} = 1; # diphthongs
 # Handle arguments
-getopts('vd:i:');
+getopts('ved:i:');
 
 # Check for word delimiter argument
 if ($opt_d)
@@ -50,7 +50,7 @@ if ($opt_d)
 	$wordDelimiter = $opt_d;
 }
 
-die "\nSegmentation Error Analyzer\nusage: ./errors.pl [-d WORD_DELIMITER] [-i IGNORE_LINE_NUM] GOLD-CORPUS FILE\n" if @ARGV < 2;
+die "\nSegmentation Error Analyzer\nUsage: ./errors.pl [-v] [-e] [-d WORD_DELIMITER] [-i IGNORE_LINE_NUM] GOLD-CORPUS FILE\n" if @ARGV < 2;
 
 # Take a segmented utterance, and returns an array of binary values that specify whether there is 
 # a break in the string after the indexed position in the array.  The indices match up with an unsegmented
@@ -184,20 +184,20 @@ while ($trueLine = <GOLDFILE>)
 				$trueLength = $i - $previousTrueBoundary;
 				$currentTrueWord = substr($unsegTrueLine, $previousTrueBoundary + 1, $trueLength);
 				@foundWordArray = wordsInSubUtterance($unsegTrueLine, $previousTrueBoundary + 1, $i,@foundArray);
-				$foundSpan = join("",@foundWordArray);
-				$foundLength = length($foundSpan);
+				$foundSpan = join($wordDelimiter,@foundWordArray);
+				$foundLength = length($foundSpan) - (scalar(@foundWordArray) - 1);
 				if (scalar(@foundWordArray) > 1) # Check for over-segmentation
 				{
 					if ($foundLength > $trueLength) # Check if this is also under-segmented
 					{
 						$utteranceCrossingBrackets++;
-						if (exists $bothErrorsWordFrequencies{$currentTrueWord})
+						if (exists $bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan})
 						{
-							$bothErrorsWordFrequencies{$currentTrueWord}++;
+							$bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan}++;
 						}
 						else
 						{
-							$bothErrorsWordFrequencies{$currentTrueWord} = 1;
+							$bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
 						}
 						if (exists $determiners{$currentTrueWord})
 						{
@@ -207,13 +207,13 @@ while ($trueLine = <GOLDFILE>)
 					else
 					{
 						$utteranceOverSegmentedWords++;
-						if (exists $overSegmentedWordFrequencies{$currentTrueWord})
+						if (exists $overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan})
 						{
-							$overSegmentedWordFrequencies{$currentTrueWord}++;
+							$overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan}++;
 						}
 						else
 						{
-							$overSegmentedWordFrequencies{$currentTrueWord} = 1;
+							$overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
 						}						
 					}
 					foreach my $currentFoundWord (@foundWordArray) # Examine each over-segmented word
@@ -237,13 +237,13 @@ while ($trueLine = <GOLDFILE>)
 					{
 						$utteranceDeterminerUnderSegmentations++;
 					}
-					if (exists $underSegmentedWordFrequencies{$currentTrueWord})
+					if (exists $underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan})
 					{
-						$underSegmentedWordFrequencies{$currentTrueWord}++;
+						$underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan}++;
 					}
 					else
 					{
-						$underSegmentedWordFrequencies{$currentTrueWord} = 1;
+						$underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
 					}
 				}
 				else # Otherwise, word is correctly segmented
@@ -341,20 +341,36 @@ print "Correct (true pos.): $perfectWords\n" .
 	  "Found Total: $foundTotalWords\n";
 printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
 
-# print "\nUndersegmented words\n------------------\n";
-# foreach my $key (sort (keys %underSegmentedWordFrequencies))
-# {
-# 	print $key . "\t" . $underSegmentedWordFrequencies{$key} . "\n";
-# }
-# 
-# print "\nOversegmented words\n------------------\n";
-# foreach my $key (sort (keys %overSegmentedWordFrequencies))
-# {
-# 	print $key . "\t" . $overSegmentedWordFrequencies{$key} . "\n";
-# }
-# 
-# print "\nWords with both types of errors\n------------------\n";
-# foreach my $key (sort (keys %bothErrorsWordFrequencies))
-# {
-# 	print $key . "\t" . $bothErrorsWordFrequencies{$key} . "\n";
-# }
+if ($opt_e) # Print errors, if asked
+{
+	print "\nUndersegmented words\n------------------\n";
+	foreach my $key (sort (keys %underSegmentedWordFrequencies))
+	{
+		print $key . ":\n";
+		foreach my $subKey (sort (keys %{$underSegmentedWordFrequencies{$key}}))
+		{
+			print "\t$subKey\t" . $underSegmentedWordFrequencies{$key}{$subKey} . "\n";
+		}
+	
+	}
+
+	print "\nOversegmented words\n------------------\n";
+	foreach my $key (sort (keys %overSegmentedWordFrequencies))
+	{
+		print $key . ":\n";
+		foreach my $subKey (sort (keys %{$overSegmentedWordFrequencies{$key}}))
+		{
+			print "\t$subKey\t" . $overSegmentedWordFrequencies{$key}{$subKey} . "\n";
+		}
+	}
+
+	print "\nWords with both types of errors\n------------------\n";
+	foreach my $key (sort (keys %bothErrorsWordFrequencies))
+	{
+		print $key . ":\n";
+		foreach my $subKey (sort (keys %{$bothErrorsWordFrequencies{$key}}))
+		{
+			print "\t$subKey\t" . $bothErrorsWordFrequencies{$key}{$subKey} . "\n";
+		}
+	}
+}
