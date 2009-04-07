@@ -38,8 +38,9 @@ my $foundWordDeterminerUnderSegmentations = 0;
 my $foundWordVowelOverSegmentations = 0;
 my $foundWordAffixOverSegmentations = 0;
 
-
-
+my $utterancePerfectWords = 0;
+my $utteranceFoundTotalWords = 0;
+my $utteranceTrueTotalWords = 0;
 
 # Initialize Hashes
 $affixes{"IN"} = $affixes{"z"} = $affixes{"s"} = $affixes{"In"} = $affixes{"~t"} = $affixes{"nt"} = $affixes{"li"} = $affixes{"6v"} = $affixes{"Id"} = $affixes{"d"} = 1;
@@ -161,201 +162,13 @@ while ($trueLine = <GOLDFILE>)
 	# Ignores first x lines specified by the -i argument
 	if ($opt_i < $lineNumber)
 	{
-		my @trueArray = stringToSegArray($trueLine);
-		my @foundArray = stringToSegArray($foundLine);
-
-		my $utteranceFoundWordCrossingBrackets = 0;
-		my $utteranceFoundWordUnderSegmentedWords = 0;
-		my $utteranceFoundWordOverSegmentedWords = 0;
-		my $utteranceTrueWordCrossingBrackets = 0;
-		my $utteranceTrueWordUnderSegmentedWords = 0;
-		my $utteranceTrueWordOverSegmentedWords = 0;
-		my $utterancePerfectWords = 0;
-		my $utteranceFoundTotalWords = 0;
-		my $utteranceTrueTotalWords = 0;
-		
-		my $utteranceTrueWordDeterminerUnderSegmentations = 0;
-		my $utteranceTrueWordVowelOverSegmentations = 0;
-		my $utteranceTrueWordAffixOverSegmentations = 0;
-
-		my $utteranceFoundWordDeterminerUnderSegmentations = 0;
-		my $utteranceFoundWordVowelOverSegmentations = 0;
-		my $utteranceFoundWordAffixOverSegmentations = 0;
-			
-		my $previousTrueBoundary = -1;
-		my $currentTrueWord = "";
-
-		my $previousFoundBoundary = -1;
-		my $currentFoundWord = "";
-		
-		my @foundWordArray = ();
-		my @trueWordArray = ();
-		my $foundLength;
-		my $trueLength;
-		my $foundSpan;
-		my $trueSpan;
-		
-		my $trueWordVowelOverSegmentation = 0;
-		my $trueWordAffixOverSegmentation = 0;
-		my $foundWordDeterminerUnderSegmentation = 0;
-		
-		
-		# Loop through true segmentation array to gather stats with respect to true words.
-		for (my $i = 0; $i < scalar(@trueArray); $i++)
+		if ($opt_v)
 		{
-			# Check if this is the end/start of a new true word
-			if ($trueArray[$i] == 1)
-			{
-				$trueLength = $i - $previousTrueBoundary;
-				$currentTrueWord = substr($unsegTrueLine, $previousTrueBoundary + 1, $trueLength);
-				@foundWordArray = wordsInSubUtterance($unsegTrueLine, $previousTrueBoundary + 1, $i,@foundArray);
-				$foundSpan = join($wordDelimiter,@foundWordArray);
-				$foundLength = length($foundSpan) - (scalar(@foundWordArray) - 1);
-				if (scalar(@foundWordArray) > 1) # Check for over-segmentation
-				{
-					if ($foundLength > $trueLength) # Check if this is also under-segmented
-					{
-						$utteranceTrueWordCrossingBrackets++;
-						if (exists $bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan})
-						{
-							$bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan}++;
-						}
-						else
-						{
-							$bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
-						}
-						if (exists $determiners{$currentTrueWord})
-						{
-							$utteranceTrueWordDeterminerUnderSegmentations++;
-						}
-					}
-					else
-					{
-						$utteranceTrueWordOverSegmentedWords++;
-						if (exists $overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan})
-						{
-							$overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan}++;
-						}
-						else
-						{
-							$overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
-						}						
-					}
-					foreach $currentFoundWord (@foundWordArray) # Examine each over-segmented word
-					{
-						if (exists $vowels{$currentFoundWord})
-						{
-							$trueWordVowelOverSegmentation = 1;
-						}
-						if (exists $affixes{$currentFoundWord})
-						{
-							$trueWordAffixOverSegmentation = 1;
-						}						
-					}
-					$utteranceTrueWordVowelOverSegmentations += $trueWordVowelOverSegmentation;
-					$utteranceTrueWordAffixOverSegmentations += $trueWordAffixOverSegmentation;
-				}
-				elsif ($foundLength > $trueLength) # Check for only under-segmentation
-				{
-					$utteranceTrueWordUnderSegmentedWords++;					
-					if (exists $determiners{$currentTrueWord})
-					{
-						$utteranceTrueWordDeterminerUnderSegmentations++;
-					}
-					if (exists $underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan})
-					{
-						$underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan}++;
-					}
-					else
-					{
-						$underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
-					}
-				}
-				else # Otherwise, word is correctly segmented
-				{
-					die "Supposedly correct word is actually wrong!  Found [$foundSpan] instead of [$currentTrueWord] when comparing [$foundLine] to [$trueLine]!\n\tFound Seg Array: @foundArray\n\tTrue Seg Array:  @trueArray\n" if ($currentTrueWord ne $foundSpan);
-					$utterancePerfectWords++;					
-				}				
-				
-				$trueWordVowelOverSegmentation = 0;
-				$trueWordAffixOverSegmentation = 0;
-				$utteranceTrueTotalWords++;
-				$previousTrueBoundary = $i;						
-			} 
+			print "\nScores for [$foundLine] against [$trueLine]:";
 		}
 
-		# Loop through found segmentation to calculate stats with respect to found words.
-		for (my $i = 0; $i < scalar(@foundArray); $i++)
-		{
-			# Check if this is the end/start of a new found word
-			if ($foundArray[$i] == 1)
-			{
-				$foundLength = $i - $previousFoundBoundary;
-				$currentFoundWord = substr($unsegTrueLine, $previousFoundBoundary + 1, $foundLength);
-				@trueWordArray = wordsInSubUtterance($unsegTrueLine, $previousFoundBoundary + 1, $i,@trueArray);
-				$trueSpan = join($wordDelimiter,@trueWordArray);
-				$trueLength = length($trueSpan) - (scalar(@trueWordArray) - 1);
-				if (scalar(@trueWordArray) > 1) # Check if this found word contains under-segmented true words
-				{
-					if ($trueLength > $foundLength) # Check if this is also over-segmented
-					{
-						$utteranceFoundWordCrossingBrackets++;
-						if (exists $vowels{$currentFoundWord})
-						{
-							$utteranceFoundWordVowelOverSegmentations++;
-						}
-						if (exists $affixes{$currentFoundWord})
-						{
-							$utteranceFoundWordAffixOverSegmentations++;
-						}						
-					}
-					else
-					{
-						$utteranceFoundWordUnderSegmentedWords++;					
-					}
-					foreach $currentTrueWord (@trueWordArray) # Examine each under-segmented word
-					{
-						if (exists $determiners{$currentTrueWord})
-						{
-							$foundWordDeterminerUnderSegmentation = 1;
-						}
-					}
-				}
-				elsif ($trueLength > $foundLength) # Check for only over-segmentation
-				{
-					$utteranceFoundWordOverSegmentedWords++;					
-					if (exists $vowels{$currentFoundWord})
-					{
-						$utteranceFoundWordVowelOverSegmentations++;
-					}
-					if (exists $affixes{$currentFoundWord})
-					{
-						$utteranceFoundWordAffixOverSegmentations++;
-					}						
-				}
-				$utteranceFoundWordDeterminerUnderSegmentations += $foundWordDeterminerUnderSegmentation;
-				$foundWordDeterminerUnderSegmentation = 0;
-				$utteranceFoundTotalWords++;
-				$previousFoundBoundary = $i;
-			} 
-		}
-
-
-		$trueWordCrossingBrackets += $utteranceTrueWordCrossingBrackets;
-		$trueWordOverSegmentedWords += $utteranceTrueWordOverSegmentedWords;
-		$trueWordUnderSegmentedWords += $utteranceTrueWordUnderSegmentedWords;
-		$foundWordCrossingBrackets += $utteranceFoundWordCrossingBrackets;
-		$foundWordOverSegmentedWords += $utteranceFoundWordOverSegmentedWords;
-		$foundWordUnderSegmentedWords += $utteranceFoundWordUnderSegmentedWords;
-		$perfectWords += $utterancePerfectWords;
-		$foundTotalWords += $utteranceFoundTotalWords;
-		$trueTotalWords += $utteranceTrueTotalWords;
-		$trueWordDeterminerUnderSegmentations += $utteranceTrueWordDeterminerUnderSegmentations;
-		$foundWordDeterminerUnderSegmentations += $utteranceFoundWordDeterminerUnderSegmentations;		
-		$trueWordAffixOverSegmentations += $utteranceTrueWordAffixOverSegmentations;
-		$trueWordVowelOverSegmentations += $utteranceTrueWordVowelOverSegmentations;
-		$foundWordAffixOverSegmentations += $utteranceFoundWordAffixOverSegmentations;
-		$foundWordVowelOverSegmentations += $utteranceFoundWordVowelOverSegmentations;
+		calculateFoundWordStats($unsegTrueLine);
+		calculateTrueWordStats($unsegTrueLine);
 		
 		if ($opt_v)
 		{
@@ -363,37 +176,6 @@ while ($trueLine = <GOLDFILE>)
 			my $wordRecall = ($utterancePerfectWords / $utteranceTrueTotalWords);
 			my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
 			my $utteranceWordFalseNeg = $utteranceTrueTotalWords - $utterancePerfectWords;
-			print "\nScores for [$foundLine] against [$trueLine]:";
-			print "\n  Found Words\n" .
-				  "  -----------\n" .
-				  "  Over-segmented section of a true word: $utteranceFoundWordOverSegmentedWords (";
-			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordOverSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
-			print "  Contained multiple whole true words: $utteranceFoundWordUnderSegmentedWords (";
-			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordUnderSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
-			print "  Contained partial true words: $utteranceFoundWordCrossingBrackets (";
-			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordCrossingBrackets / $utteranceFoundTotalWords) * 100) : 0;
-		  	print "  Over-segmented vowel from a true word: $utteranceFoundWordVowelOverSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceFoundWordVowelOverSegmentations / $utteranceFoundTotalWords) * 100);
-			print "  Over-segmented affixes from true words: $utteranceFoundWordAffixOverSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceFoundWordAffixOverSegmentations / $utteranceFoundTotalWords) * 100);
-			print "  Contained an under-segmented determiner: $utteranceFoundWordDeterminerUnderSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceFoundWordDeterminerUnderSegmentations / $utteranceFoundTotalWords) * 100);
-			print  "  Total: $utteranceFoundTotalWords\n";
-			print "\n  True Words\n" .
-				  "  ----------\n" .
-				  "  Found just over-segmented: $utteranceTrueWordOverSegmentedWords (";
-			printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordOverSegmentedWords / $utteranceTrueTotalWords) * 100) : 0;
-			print "  Found just under-segmented: $utteranceTrueWordUnderSegmentedWords (";
-			printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordUnderSegmentedWords / $utteranceTrueTotalWords) * 100) : 0;
-			print "  Found both over- and under-segmented: $utteranceTrueWordCrossingBrackets (";
-			printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordCrossingBrackets / $utteranceTrueTotalWords) * 100) : 0;
-		  	print "  Found with over-segmented vowels: $utteranceTrueWordVowelOverSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceTrueWordVowelOverSegmentations / $utteranceTrueTotalWords) * 100);
-			print "  Found with over-segmented affixes: $utteranceTrueWordAffixOverSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceTrueWordAffixOverSegmentations / $utteranceTrueTotalWords) * 100);
-			print "  Determiners that were found under-segmented: $utteranceTrueWordDeterminerUnderSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceTrueWordDeterminerUnderSegmentations / $utteranceTrueTotalWords) * 100);
-			print  "  Total: $utteranceTrueTotalWords\n";
 			print "\n  Word Stats\n" .
 				  "  ----------\n";
 			print "  Correct (true pos.): $utterancePerfectWords\n" .
@@ -433,7 +215,254 @@ if (!$opt_b && $opt_s)
 {
 	print "WP\tWR\tWF\n";
 }
-printCurrentTotalResults($lineNumber); 
+printCurrentTotalResults($opt_b ? $lineNumber : 0); 
+
+sub calculateTrueWordStats
+{
+	my $unsegTrueLine = shift;
+
+	my @trueArray = stringToSegArray($trueLine);
+	my @foundArray = stringToSegArray($foundLine);
+
+	my $utteranceTrueWordCrossingBrackets = 0;
+	my $utteranceTrueWordUnderSegmentedWords = 0;
+	my $utteranceTrueWordOverSegmentedWords = 0;
+	$utteranceTrueTotalWords = 0;	
+	$utterancePerfectWords = 0;
+	my $utteranceTrueWordDeterminerUnderSegmentations = 0;
+	my $utteranceTrueWordVowelOverSegmentations = 0;
+	my $utteranceTrueWordAffixOverSegmentations = 0;
+
+	my $previousTrueBoundary = -1;
+	my $currentTrueWord = "";
+
+	my @foundWordArray = ();
+	my $foundLength;
+	my $trueLength;
+	my $foundSpan;
+	
+	my $trueWordVowelOverSegmentation = 0;
+	my $trueWordAffixOverSegmentation = 0;
+	
+	# Loop through true segmentation array to gather stats with respect to true words.
+	for (my $i = 0; $i < scalar(@trueArray); $i++)
+	{
+		# Check if this is the end/start of a new true word
+		if ($trueArray[$i] == 1)
+		{
+			$trueLength = $i - $previousTrueBoundary;
+			$currentTrueWord = substr($unsegTrueLine, $previousTrueBoundary + 1, $trueLength);
+			@foundWordArray = wordsInSubUtterance($unsegTrueLine, $previousTrueBoundary + 1, $i,@foundArray);
+			$foundSpan = join($wordDelimiter,@foundWordArray);
+			$foundLength = length($foundSpan) - (scalar(@foundWordArray) - 1);
+			if (scalar(@foundWordArray) > 1) # Check for over-segmentation
+			{
+				if ($foundLength > $trueLength) # Check if this is also under-segmented
+				{
+					$utteranceTrueWordCrossingBrackets++;
+					if (exists $bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan})
+					{
+						$bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan}++;
+					}
+					else
+					{
+						$bothErrorsWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
+					}
+					if (exists $determiners{$currentTrueWord})
+					{
+						$utteranceTrueWordDeterminerUnderSegmentations++;
+					}
+				}
+				else
+				{
+					$utteranceTrueWordOverSegmentedWords++;
+					if (exists $overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan})
+					{
+						$overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan}++;
+					}
+					else
+					{
+						$overSegmentedWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
+					}						
+				}
+				foreach my $currentFoundWord (@foundWordArray) # Examine each over-segmented word
+				{
+					if (exists $vowels{$currentFoundWord})
+					{
+						$trueWordVowelOverSegmentation = 1;
+					}
+					if (exists $affixes{$currentFoundWord})
+					{
+						$trueWordAffixOverSegmentation = 1;
+					}						
+				}
+				$utteranceTrueWordVowelOverSegmentations += $trueWordVowelOverSegmentation;
+				$utteranceTrueWordAffixOverSegmentations += $trueWordAffixOverSegmentation;
+			}
+			elsif ($foundLength > $trueLength) # Check for only under-segmentation
+			{
+				$utteranceTrueWordUnderSegmentedWords++;					
+				if (exists $determiners{$currentTrueWord})
+				{
+					$utteranceTrueWordDeterminerUnderSegmentations++;
+				}
+				if (exists $underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan})
+				{
+					$underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan}++;
+				}
+				else
+				{
+					$underSegmentedWordFrequencies{$currentTrueWord}{$foundSpan} = 1;
+				}
+			}
+			else # Otherwise, word is correctly segmented
+			{
+				die "Supposedly correct word is actually wrong!  Found [$foundSpan] instead of [$currentTrueWord] when comparing [$foundLine] to [$trueLine]!\n\tFound Seg Array: @foundArray\n\tTrue Seg Array:  @trueArray\n" if ($currentTrueWord ne $foundSpan);
+				$utterancePerfectWords++;					
+			}				
+			
+			$trueWordVowelOverSegmentation = 0;
+			$trueWordAffixOverSegmentation = 0;
+			$utteranceTrueTotalWords++;
+			$previousTrueBoundary = $i;						
+		} 
+	}
+	$trueWordCrossingBrackets += $utteranceTrueWordCrossingBrackets;
+	$trueWordOverSegmentedWords += $utteranceTrueWordOverSegmentedWords;
+	$trueWordUnderSegmentedWords += $utteranceTrueWordUnderSegmentedWords;
+	$trueTotalWords += $utteranceTrueTotalWords;
+	$trueWordDeterminerUnderSegmentations += $utteranceTrueWordDeterminerUnderSegmentations;
+	$trueWordAffixOverSegmentations += $utteranceTrueWordAffixOverSegmentations;
+	$trueWordVowelOverSegmentations += $utteranceTrueWordVowelOverSegmentations;
+	$perfectWords += $utterancePerfectWords;
+	
+	if ($opt_v)
+	{
+		print "\n  True Words\n" .
+			  "  ----------\n" .
+			  "  Found just over-segmented: $utteranceTrueWordOverSegmentedWords (";
+		printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordOverSegmentedWords / $utteranceTrueTotalWords) * 100) : 0;
+		print "  Found just under-segmented: $utteranceTrueWordUnderSegmentedWords (";
+		printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordUnderSegmentedWords / $utteranceTrueTotalWords) * 100) : 0;
+		print "  Found both over- and under-segmented: $utteranceTrueWordCrossingBrackets (";
+		printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordCrossingBrackets / $utteranceTrueTotalWords) * 100) : 0;
+	  	print "  Found with over-segmented vowels: $utteranceTrueWordVowelOverSegmentations (";
+		printf "%1.2f\%)\n", (($utteranceTrueWordVowelOverSegmentations / $utteranceTrueTotalWords) * 100);
+		print "  Found with over-segmented affixes: $utteranceTrueWordAffixOverSegmentations (";
+		printf "%1.2f\%)\n", (($utteranceTrueWordAffixOverSegmentations / $utteranceTrueTotalWords) * 100);
+		print "  Determiners that were found under-segmented: $utteranceTrueWordDeterminerUnderSegmentations (";
+		printf "%1.2f\%)\n", (($utteranceTrueWordDeterminerUnderSegmentations / $utteranceTrueTotalWords) * 100);
+		print  "  Total: $utteranceTrueTotalWords\n";		
+	}
+}
+
+sub calculateFoundWordStats
+{
+	my $unsegTrueLine = shift;
+	my @trueArray = stringToSegArray($trueLine);
+	my @foundArray = stringToSegArray($foundLine);
+
+	my $utteranceFoundWordCrossingBrackets = 0;
+	my $utteranceFoundWordUnderSegmentedWords = 0;
+	my $utteranceFoundWordOverSegmentedWords = 0;
+	$utteranceFoundTotalWords = 0;
+	my $utteranceFoundWordDeterminerUnderSegmentations = 0;
+	my $utteranceFoundWordVowelOverSegmentations = 0;
+	my $utteranceFoundWordAffixOverSegmentations = 0;
+		
+	my $previousFoundBoundary = -1;
+	my $currentFoundWord = "";
+	
+	my @trueWordArray = ();
+	my $foundLength;
+	my $trueLength;
+	my $trueSpan;
+	
+	my $foundWordDeterminerUnderSegmentation = 0;
+	
+	
+	# Loop through found segmentation to calculate stats with respect to found words.
+	for (my $i = 0; $i < scalar(@foundArray); $i++)
+	{
+		# Check if this is the end/start of a new found word
+		if ($foundArray[$i] == 1)
+		{
+			$foundLength = $i - $previousFoundBoundary;
+			$currentFoundWord = substr($unsegTrueLine, $previousFoundBoundary + 1, $foundLength);
+			@trueWordArray = wordsInSubUtterance($unsegTrueLine, $previousFoundBoundary + 1, $i,@trueArray);
+			$trueSpan = join($wordDelimiter,@trueWordArray);
+			$trueLength = length($trueSpan) - (scalar(@trueWordArray) - 1);
+			if (scalar(@trueWordArray) > 1) # Check if this found word contains under-segmented true words
+			{
+				if ($trueLength > $foundLength) # Check if this is also over-segmented
+				{
+					$utteranceFoundWordCrossingBrackets++;
+					if (exists $vowels{$currentFoundWord})
+					{
+						$utteranceFoundWordVowelOverSegmentations++;
+					}
+					if (exists $affixes{$currentFoundWord})
+					{
+						$utteranceFoundWordAffixOverSegmentations++;
+					}						
+				}
+				else
+				{
+					$utteranceFoundWordUnderSegmentedWords++;					
+				}
+				foreach my $currentTrueWord (@trueWordArray) # Examine each under-segmented word
+				{
+					if (exists $determiners{$currentTrueWord})
+					{
+						$foundWordDeterminerUnderSegmentation = 1;
+					}
+				}
+			}
+			elsif ($trueLength > $foundLength) # Check for only over-segmentation
+			{
+				$utteranceFoundWordOverSegmentedWords++;					
+				if (exists $vowels{$currentFoundWord})
+				{
+					$utteranceFoundWordVowelOverSegmentations++;
+				}
+				if (exists $affixes{$currentFoundWord})
+				{
+					$utteranceFoundWordAffixOverSegmentations++;
+				}						
+			}
+			$utteranceFoundWordDeterminerUnderSegmentations += $foundWordDeterminerUnderSegmentation;
+			$foundWordDeterminerUnderSegmentation = 0;
+			$utteranceFoundTotalWords++;
+			$previousFoundBoundary = $i;
+		} 
+	}
+	$foundWordCrossingBrackets += $utteranceFoundWordCrossingBrackets;
+	$foundWordOverSegmentedWords += $utteranceFoundWordOverSegmentedWords;
+	$foundWordUnderSegmentedWords += $utteranceFoundWordUnderSegmentedWords;
+	$foundTotalWords += $utteranceFoundTotalWords;
+	$foundWordDeterminerUnderSegmentations += $utteranceFoundWordDeterminerUnderSegmentations;		
+	$foundWordAffixOverSegmentations += $utteranceFoundWordAffixOverSegmentations;
+	$foundWordVowelOverSegmentations += $utteranceFoundWordVowelOverSegmentations;
+	
+	if ($opt_v)
+	{
+		print "\n  Found Words\n" .
+			  "  -----------\n" .
+			  "  Over-segmented section of a true word: $utteranceFoundWordOverSegmentedWords (";
+		printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordOverSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
+		print "  Contained multiple whole true words: $utteranceFoundWordUnderSegmentedWords (";
+		printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordUnderSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
+		print "  Contained partial true words: $utteranceFoundWordCrossingBrackets (";
+		printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordCrossingBrackets / $utteranceFoundTotalWords) * 100) : 0;
+	  	print "  Over-segmented vowel from a true word: $utteranceFoundWordVowelOverSegmentations (";
+		printf "%1.2f\%)\n", (($utteranceFoundWordVowelOverSegmentations / $utteranceFoundTotalWords) * 100);
+		print "  Over-segmented affixes from true words: $utteranceFoundWordAffixOverSegmentations (";
+		printf "%1.2f\%)\n", (($utteranceFoundWordAffixOverSegmentations / $utteranceFoundTotalWords) * 100);
+		print "  Contained an under-segmented determiner: $utteranceFoundWordDeterminerUnderSegmentations (";
+		printf "%1.2f\%)\n", (($utteranceFoundWordDeterminerUnderSegmentations / $utteranceFoundTotalWords) * 100);
+		print  "  Total: $utteranceFoundTotalWords\n";		
+	}
+}
 
 sub printCurrentTotalResults
 {
