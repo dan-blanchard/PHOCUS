@@ -302,17 +302,17 @@ while ($trueLine = <GOLDFILE>)
 						{
 							$utteranceFoundWordAffixOverSegmentations++;
 						}						
-						foreach $currentTrueWord (@trueWordArray) # Examine each under-segmented word
-						{
-							if (exists $determiners{$currentTrueWord})
-							{
-								$foundWordDeterminerUnderSegmentation = 1;
-							}
-						}
 					}
 					else
 					{
 						$utteranceFoundWordUnderSegmentedWords++;					
+					}
+					foreach $currentTrueWord (@trueWordArray) # Examine each under-segmented word
+					{
+						if (exists $determiners{$currentTrueWord})
+						{
+							$foundWordDeterminerUnderSegmentation = 1;
+						}
 					}
 				}
 				elsif ($trueLength > $foundLength) # Check for only over-segmentation
@@ -326,15 +326,7 @@ while ($trueLine = <GOLDFILE>)
 					{
 						$utteranceFoundWordAffixOverSegmentations++;
 					}						
-					foreach $currentTrueWord (@trueWordArray) # Examine each under-segmented word
-					{
-						if (exists $determiners{$currentTrueWord})
-						{
-							$foundWordDeterminerUnderSegmentation = 1;
-						}
-					}
 				}
-				
 				$utteranceFoundWordDeterminerUnderSegmentations += $foundWordDeterminerUnderSegmentation;
 				$foundWordDeterminerUnderSegmentation = 0;
 				$utteranceFoundTotalWords++;
@@ -353,6 +345,7 @@ while ($trueLine = <GOLDFILE>)
 		$foundTotalWords += $utteranceFoundTotalWords;
 		$trueTotalWords += $utteranceTrueTotalWords;
 		$trueWordDeterminerUnderSegmentations += $utteranceTrueWordDeterminerUnderSegmentations;
+		$foundWordDeterminerUnderSegmentations += $utteranceFoundWordDeterminerUnderSegmentations;		
 		$trueWordAffixOverSegmentations += $utteranceTrueWordAffixOverSegmentations;
 		$trueWordVowelOverSegmentations += $utteranceTrueWordVowelOverSegmentations;
 		$foundWordAffixOverSegmentations += $utteranceFoundWordAffixOverSegmentations;
@@ -364,8 +357,23 @@ while ($trueLine = <GOLDFILE>)
 			my $wordRecall = ($utterancePerfectWords / $utteranceTrueTotalWords);
 			my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
 			my $utteranceWordFalseNeg = $utteranceTrueTotalWords - $utterancePerfectWords;
-			print "\nScores for [$foundLine] against [$trueLine]:\n";
-			print "  True Words\n" .
+			print "\nScores for [$foundLine] against [$trueLine]:";
+			print "\n  Found Words\n" .
+				  "  -----------\n" .
+				  "  Over-segmented section of a true word: $utteranceFoundWordOverSegmentedWords (";
+			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordOverSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
+			print "  Contained multiple whole true words: $utteranceFoundWordUnderSegmentedWords (";
+			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordUnderSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
+			print "  Contained partial true words: $utteranceFoundWordCrossingBrackets (";
+			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordCrossingBrackets / $utteranceFoundTotalWords) * 100) : 0;
+		  	print "  Over-segmented vowel from a true word: $utteranceFoundWordVowelOverSegmentations (";
+			printf "%1.2f\%)\n", (($utteranceFoundWordVowelOverSegmentations / $utteranceFoundTotalWords) * 100);
+			print "  Over-segmented affixes from true words: $utteranceFoundWordAffixOverSegmentations (";
+			printf "%1.2f\%)\n", (($utteranceFoundWordAffixOverSegmentations / $utteranceFoundTotalWords) * 100);
+			print "  Contained an under-segmented determiner: $utteranceFoundWordDeterminerUnderSegmentations (";
+			printf "%1.2f\%)\n", (($utteranceFoundWordDeterminerUnderSegmentations / $utteranceFoundTotalWords) * 100);
+			print  "  Total: $utteranceFoundTotalWords\n";
+			print "\n  True Words\n" .
 				  "  ----------\n" .
 				  "  Found just over-segmented: $utteranceTrueWordOverSegmentedWords (";
 			printf "%1.2f\%)\n", ($utteranceTrueTotalWords > 0) ? (($utteranceTrueWordOverSegmentedWords / $utteranceTrueTotalWords) * 100) : 0;
@@ -380,21 +388,6 @@ while ($trueLine = <GOLDFILE>)
 			print "  Determiners that were found under-segmented: $utteranceTrueWordDeterminerUnderSegmentations (";
 			printf "%1.2f\%)\n", (($utteranceTrueWordDeterminerUnderSegmentations / $utteranceTrueTotalWords) * 100);
 			print  "  Total: $utteranceTrueTotalWords\n";
-			print "\n  Found Words\n" .
-				  "  -----------\n" .
-				  "  Over-segmented section of a true word: $utteranceFoundWordOverSegmentedWords (";
-			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordOverSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
-			print "  Contained multiple whole true words: $utteranceFoundWordUnderSegmentedWords (";
-			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordUnderSegmentedWords / $utteranceFoundTotalWords) * 100) : 0;
-			print "  Contained multiple partial true words: $utteranceFoundWordCrossingBrackets (";
-			printf "%1.2f\%)\n", ($utteranceFoundTotalWords > 0) ? (($utteranceFoundWordCrossingBrackets / $utteranceFoundTotalWords) * 100) : 0;
-		  	print "  Over-segmented vowel from a true word: $utteranceFoundWordVowelOverSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceFoundWordVowelOverSegmentations / $utteranceFoundTotalWords) * 100);
-			print "  Over-segmented affixes from true words: $utteranceFoundWordAffixOverSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceFoundWordAffixOverSegmentations / $utteranceFoundTotalWords) * 100);
-			print "  Contained an under-segmented determiner: $utteranceFoundWordDeterminerUnderSegmentations (";
-			printf "%1.2f\%)\n", (($utteranceFoundWordDeterminerUnderSegmentations / $utteranceFoundTotalWords) * 100);
-			print  "  Total: $utteranceFoundTotalWords\n";
 			print "\n  Word Stats\n" .
 				  "  ----------\n";
 			print "  Correct (true pos.): $utterancePerfectWords\n" .
@@ -418,8 +411,23 @@ my $wordRecall = ($perfectWords / $trueTotalWords);
 my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
 my $wordFalseNeg = $trueTotalWords - $perfectWords;
 
-print "\n============================\n\n";
-print "True Words\n" .
+print "\n============================\n";
+print "\nFound Words\n" .
+	  "-----------\n" .
+	  "Over-segmented section of a true word: $foundWordOverSegmentedWords (";
+printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordOverSegmentedWords / $foundTotalWords) * 100) : 0;
+print "Contained multiple whole true words: $foundWordUnderSegmentedWords (";
+printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordUnderSegmentedWords / $foundTotalWords) * 100) : 0;
+print "Contained partial true words: $foundWordCrossingBrackets (";
+printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordCrossingBrackets / $foundTotalWords) * 100) : 0;
+print "Over-segmented vowel from a true word: $foundWordVowelOverSegmentations (";
+printf "%1.2f\%)\n", (($foundWordVowelOverSegmentations / $foundTotalWords) * 100);
+print "Over-segmented affixes from true words: $foundWordAffixOverSegmentations (";
+printf "%1.2f\%)\n", (($foundWordAffixOverSegmentations / $foundTotalWords) * 100);
+print "Contained an under-segmented determiner: $foundWordDeterminerUnderSegmentations (";
+printf "%1.2f\%)\n", (($foundWordDeterminerUnderSegmentations / $foundTotalWords) * 100);
+print "Total: $foundTotalWords\n";
+print "\nTrue Words\n" .
 	  "----------\n" .
 	  "Found just over-segmented: $trueWordOverSegmentedWords (";
 printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordOverSegmentedWords / $trueTotalWords) * 100) : 0;
@@ -434,21 +442,6 @@ printf "%1.2f\%)\n", (($trueWordAffixOverSegmentations / $trueTotalWords) * 100)
 print "Determiners that were found under-segmented: $trueWordDeterminerUnderSegmentations (";
 printf "%1.2f\%)\n", (($trueWordDeterminerUnderSegmentations / $trueTotalWords) * 100);
 print "Total: $trueTotalWords\n";
-print "\nFound Words\n" .
-	  "-----------\n" .
-	  "Over-segmented section of a true word: $foundWordOverSegmentedWords (";
-printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordOverSegmentedWords / $foundTotalWords) * 100) : 0;
-print "Contained multiple whole true words: $foundWordUnderSegmentedWords (";
-printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordUnderSegmentedWords / $foundTotalWords) * 100) : 0;
-print "Contained multiple partial true words: $foundWordCrossingBrackets (";
-printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordCrossingBrackets / $foundTotalWords) * 100) : 0;
-print "Over-segmented vowel from a true word: $foundWordVowelOverSegmentations (";
-printf "%1.2f\%)\n", (($foundWordVowelOverSegmentations / $foundTotalWords) * 100);
-print "Over-segmented affixes from true words: $foundWordAffixOverSegmentations (";
-printf "%1.2f\%)\n", (($foundWordAffixOverSegmentations / $foundTotalWords) * 100);
-print "Contained an under-segmented determiner: $foundWordDeterminerUnderSegmentations (";
-printf "%1.2f\%)\n", (($foundWordDeterminerUnderSegmentations / $foundTotalWords) * 100);
-print "Total: $foundTotalWords\n";
 print "\nWord Stats\n" .
 	  "----------\n";
 print "Correct (true pos.): $perfectWords\n" .
