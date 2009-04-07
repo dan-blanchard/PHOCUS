@@ -10,7 +10,7 @@
 use strict;
 use Getopt::Std;
 
-our ($opt_d,$opt_v,$opt_i,$opt_e);
+our ($opt_d,$opt_v,$opt_i,$opt_e,$opt_b,$opt_s);
 my $wordDelimiter = ' ';
 my $trueLine;
 my $foundLine;
@@ -48,7 +48,7 @@ $determiners{"D6"} = $determiners{"6"} = 1;
 $vowels{"&"} = $vowels{"6"} = $vowels{"9"} = $vowels{"A"} = $vowels{"E"} = $vowels{"I"} = $vowels{"O"} = $vowels{"U"} = $vowels{"a"} = $vowels{"e"} = $vowels{"i"} = $vowels{"o"} = $vowels{"u"} = 1;
 $vowels{"9I"} = $vowels{"9U"} = $vowels{"OI"} = 1; # diphthongs
 # Handle arguments
-getopts('ved:i:');
+getopts('sved:i:b:');
 
 # Check for word delimiter argument
 if ($opt_d)
@@ -56,7 +56,7 @@ if ($opt_d)
 	$wordDelimiter = $opt_d;
 }
 
-die "\nSegmentation Error Analyzer\nUsage: ./errors.pl [-v] [-e] [-d WORD_DELIMITER] [-i IGNORE_LINE_NUM] GOLD-CORPUS FILE\n" if @ARGV < 2;
+die "\nSegmentation Error Analyzer\nUsage: ./errors.pl [-s] [-v] [-e] [-d WORD_DELIMITER] [-i IGNORE_LINE_NUM] [-b BLOCK_SIZE] GOLD_CORPUS FILE\n" if @ARGV < 2;
 
 # Take a segmented utterance, and returns an array of binary values that specify whether there is 
 # a break in the string after the indexed position in the array.  The indices match up with an unsegmented
@@ -132,6 +132,12 @@ sub wordsInSubUtterance
 		}
 		
 	}	return reverse @wordArray;
+}
+
+print "\n\nResults for $ARGV[1]:\n";
+if ($opt_i)
+{
+	print " (ignoring first $opt_i utterances)";
 }
 
 open(GOLDFILE, $ARGV[0]);
@@ -395,90 +401,135 @@ while ($trueLine = <GOLDFILE>)
 				  "  Missing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n";
 			printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
 		}
+		
+		if (($opt_b) && ($lineNumber % $opt_b == 0))
+		{
+			printCurrentTotalResults($lineNumber);
+			$trueWordCrossingBrackets = 0;
+			$foundWordCrossingBrackets = 0;
+			$trueTotalWords = 0;
+			$foundTotalWords = 0;
+			$perfectWords = 0;
+			$trueWordUnderSegmentedWords = 0;
+			$trueWordOverSegmentedWords = 0;
+			$foundWordUnderSegmentedWords = 0;
+			$foundWordOverSegmentedWords = 0;
+			%affixes = ();
+			%determiners = ();
+			%vowels = ();
+			%overSegmentedWordFrequencies = ();
+			%underSegmentedWordFrequencies = ();
+			%bothErrorsWordFrequencies = ();           
+			$trueWordDeterminerUnderSegmentations = 0;
+			$trueWordVowelOverSegmentations = 0;
+			$trueWordAffixOverSegmentations = 0;
+			$foundWordDeterminerUnderSegmentations = 0;
+			$foundWordVowelOverSegmentations = 0;
+			$foundWordAffixOverSegmentations = 0;
+		}
 	}
 }
-die "Ignored more than length of file!\n" if ($trueTotalWords == 0);
-
-
-print "\n\nResults for $ARGV[1]:";
-if ($opt_i)
+if (!$opt_b && $opt_s)
 {
-	print " (ignoring first $opt_i utterances)";
+	print "WP\tWR\tWF\n";
 }
+printCurrentTotalResults($lineNumber); 
 
-my $wordPrecision = ($perfectWords / $foundTotalWords);
-my $wordRecall = ($perfectWords / $trueTotalWords);
-my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
-my $wordFalseNeg = $trueTotalWords - $perfectWords;
-
-print "\n============================\n";
-print "\nFound Words\n" .
-	  "-----------\n" .
-	  "Over-segmented section of a true word: $foundWordOverSegmentedWords (";
-printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordOverSegmentedWords / $foundTotalWords) * 100) : 0;
-print "Contained multiple whole true words: $foundWordUnderSegmentedWords (";
-printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordUnderSegmentedWords / $foundTotalWords) * 100) : 0;
-print "Contained partial true words: $foundWordCrossingBrackets (";
-printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordCrossingBrackets / $foundTotalWords) * 100) : 0;
-print "Over-segmented vowel from a true word: $foundWordVowelOverSegmentations (";
-printf "%1.2f\%)\n", (($foundWordVowelOverSegmentations / $foundTotalWords) * 100);
-print "Over-segmented affixes from true words: $foundWordAffixOverSegmentations (";
-printf "%1.2f\%)\n", (($foundWordAffixOverSegmentations / $foundTotalWords) * 100);
-print "Contained an under-segmented determiner: $foundWordDeterminerUnderSegmentations (";
-printf "%1.2f\%)\n", (($foundWordDeterminerUnderSegmentations / $foundTotalWords) * 100);
-print "Total: $foundTotalWords\n";
-print "\nTrue Words\n" .
-	  "----------\n" .
-	  "Found just over-segmented: $trueWordOverSegmentedWords (";
-printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordOverSegmentedWords / $trueTotalWords) * 100) : 0;
-print "Found just under-segmented: $trueWordUnderSegmentedWords (";
-printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordUnderSegmentedWords / $trueTotalWords) * 100) : 0;
-print "Found both over- and under-segmented: $trueWordCrossingBrackets (";
-printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordCrossingBrackets / $trueTotalWords) * 100) : 0;
-print "Found with over-segmented vowels: $trueWordVowelOverSegmentations (";
-printf "%1.2f\%)\n", (($trueWordVowelOverSegmentations / $trueTotalWords) * 100);
-print "Found with over-segmented affixes: $trueWordAffixOverSegmentations (";
-printf "%1.2f\%)\n", (($trueWordAffixOverSegmentations / $trueTotalWords) * 100);
-print "Determiners that were found under-segmented: $trueWordDeterminerUnderSegmentations (";
-printf "%1.2f\%)\n", (($trueWordDeterminerUnderSegmentations / $trueTotalWords) * 100);
-print "Total: $trueTotalWords\n";
-print "\nWord Stats\n" .
-	  "----------\n";
-print "Correct (true pos.): $perfectWords\n" .
-	  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
-	  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n";
-printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
-
-if ($opt_e) # Print errors, if asked
+sub printCurrentTotalResults
 {
-	print "\nUndersegmented words\n------------------\n";
-	foreach my $key (sort (keys %underSegmentedWordFrequencies))
+	my $utteranceNum = shift;
+	die "Ignored more than length of file!\n" if ($trueTotalWords == 0);
+	my $wordPrecision = ($perfectWords / $foundTotalWords);
+	my $wordRecall = ($perfectWords / $trueTotalWords);
+	my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
+	my $wordFalseNeg = $trueTotalWords - $perfectWords;
+	if (!$opt_s) # Print long error analysis by default
 	{
-		print $key . ":\n";
-		foreach my $subKey (sort (keys %{$underSegmentedWordFrequencies{$key}}))
+		print "\n==============" . (($utteranceNum) ? $utteranceNum : "") . "==============\n";
+		print "\nFound Words\n" .
+			  "-----------\n" .
+			  "Over-segmented section of a true word: $foundWordOverSegmentedWords (";
+		printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordOverSegmentedWords / $foundTotalWords) * 100) : 0;
+		print "Contained multiple whole true words: $foundWordUnderSegmentedWords (";
+		printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordUnderSegmentedWords / $foundTotalWords) * 100) : 0;
+		print "Contained partial true words: $foundWordCrossingBrackets (";
+		printf "%1.2f\%)\n", ($foundTotalWords > 0) ? (($foundWordCrossingBrackets / $foundTotalWords) * 100) : 0;
+		print "Over-segmented vowel from a true word: $foundWordVowelOverSegmentations (";
+		printf "%1.2f\%)\n", (($foundWordVowelOverSegmentations / $foundTotalWords) * 100);
+		print "Over-segmented affixes from true words: $foundWordAffixOverSegmentations (";
+		printf "%1.2f\%)\n", (($foundWordAffixOverSegmentations / $foundTotalWords) * 100);
+		print "Contained an under-segmented determiner: $foundWordDeterminerUnderSegmentations (";
+		printf "%1.2f\%)\n", (($foundWordDeterminerUnderSegmentations / $foundTotalWords) * 100);
+		print "Total: $foundTotalWords\n";
+		print "\nTrue Words\n" .
+			  "----------\n" .
+			  "Found just over-segmented: $trueWordOverSegmentedWords (";
+		printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordOverSegmentedWords / $trueTotalWords) * 100) : 0;
+		print "Found just under-segmented: $trueWordUnderSegmentedWords (";
+		printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordUnderSegmentedWords / $trueTotalWords) * 100) : 0;
+		print "Found both over- and under-segmented: $trueWordCrossingBrackets (";
+		printf "%1.2f\%)\n", ($trueTotalWords > 0) ? (($trueWordCrossingBrackets / $trueTotalWords) * 100) : 0;
+		print "Found with over-segmented vowels: $trueWordVowelOverSegmentations (";
+		printf "%1.2f\%)\n", (($trueWordVowelOverSegmentations / $trueTotalWords) * 100);
+		print "Found with over-segmented affixes: $trueWordAffixOverSegmentations (";
+		printf "%1.2f\%)\n", (($trueWordAffixOverSegmentations / $trueTotalWords) * 100);
+		print "Determiners that were found under-segmented: $trueWordDeterminerUnderSegmentations (";
+		printf "%1.2f\%)\n", (($trueWordDeterminerUnderSegmentations / $trueTotalWords) * 100);
+		print "Total: $trueTotalWords\n";
+		print "\nWord Stats\n" .
+			  "----------\n";
+		print "Correct (true pos.): $perfectWords\n" .
+			  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
+			  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n";
+		printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
+	}
+	else
+	{
+		if ($opt_b)
 		{
-			print "\t$subKey\t" . $underSegmentedWordFrequencies{$key}{$subKey} . "\n";
+			if ($opt_b == $lineNumber)
+			{
+				print "\tWP\tWR\tWF\n";
+			}
+			print "$lineNumber\t";
 		}
+		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
+	}
 	
-	}
-
-	print "\nOversegmented words\n------------------\n";
-	foreach my $key (sort (keys %overSegmentedWordFrequencies))
+	if ($opt_e) # Print errors, if asked
 	{
-		print $key . ":\n";
-		foreach my $subKey (sort (keys %{$overSegmentedWordFrequencies{$key}}))
+		print "\nUndersegmented words\n------------------\n";
+		foreach my $key (sort (keys %underSegmentedWordFrequencies))
 		{
-			print "\t$subKey\t" . $overSegmentedWordFrequencies{$key}{$subKey} . "\n";
+			print $key . ":\n";
+			foreach my $subKey (sort (keys %{$underSegmentedWordFrequencies{$key}}))
+			{
+				print "\t$subKey\t" . $underSegmentedWordFrequencies{$key}{$subKey} . "\n";
+			}
+
 		}
-	}
 
-	print "\nWords with both types of errors\n------------------\n";
-	foreach my $key (sort (keys %bothErrorsWordFrequencies))
-	{
-		print $key . ":\n";
-		foreach my $subKey (sort (keys %{$bothErrorsWordFrequencies{$key}}))
+		print "\nOversegmented words\n------------------\n";
+		foreach my $key (sort (keys %overSegmentedWordFrequencies))
 		{
-			print "\t$subKey\t" . $bothErrorsWordFrequencies{$key}{$subKey} . "\n";
+			print $key . ":\n";
+			foreach my $subKey (sort (keys %{$overSegmentedWordFrequencies{$key}}))
+			{
+				print "\t$subKey\t" . $overSegmentedWordFrequencies{$key}{$subKey} . "\n";
+			}
+		}
+
+		print "\nWords with both types of errors\n------------------\n";
+		foreach my $key (sort (keys %bothErrorsWordFrequencies))
+		{
+			print $key . ":\n";
+			foreach my $subKey (sort (keys %{$bothErrorsWordFrequencies{$key}}))
+			{
+				print "\t$subKey\t" . $bothErrorsWordFrequencies{$key}{$subKey} . "\n";
+			}
 		}
 	}
 }
+
+
+
