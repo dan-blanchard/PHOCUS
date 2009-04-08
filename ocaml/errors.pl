@@ -65,6 +65,8 @@ my @differenceCharNgramCounts = ();
 
 my %trueLexicon;
 my %foundLexicon;
+my $lexiconPrecision = 0;
+my $lexiconRecall = 0;
 
 # Initialize Hashes
 $affixes{"IN"} = $affixes{"z"} = $affixes{"s"} = $affixes{"In"} = $affixes{"~t"} = $affixes{"nt"} = $affixes{"li"} = $affixes{"6v"} = $affixes{"Id"} = $affixes{"d"} = 1;
@@ -470,6 +472,21 @@ sub normalizeCharNgramCounts
 	}	
 }
 
+sub scoreLexicon
+{
+	my $matched = 0;
+	foreach my $word (keys %foundLexicon)
+	{
+		if (exists $trueLexicon{$word})
+		{
+			$matched++;
+		}
+	}
+	
+	$lexiconPrecision = $matched / scalar(keys %foundLexicon);
+	$lexiconRecall = $matched / scalar(keys %trueLexicon);
+}
+
 sub printCurrentTotalResults
 {
 	my $utteranceNum = shift;
@@ -477,6 +494,8 @@ sub printCurrentTotalResults
 	my $wordPrecision = ($perfectWords / $foundTotalWords);
 	my $wordRecall = ($perfectWords / $trueTotalWords);
 	my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
+	scoreLexicon();
+	my $lexiconF = (($lexiconPrecision + $lexiconRecall) > 0) ? ((2 * $lexiconPrecision * $lexiconRecall) / ($lexiconPrecision + $lexiconRecall)) : 0;
 	my $wordFalseNeg = $trueTotalWords - $perfectWords;
 	if (!$opt_s) # Print long error analysis by default
 	{
@@ -517,6 +536,9 @@ sub printCurrentTotalResults
 			  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
 			  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n";
 		printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
+		print "\nLexicon Stats\n" .
+			  "-------------\n";
+		printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
 	}
 	else
 	{
@@ -524,11 +546,11 @@ sub printCurrentTotalResults
 		{
 			if ($opt_b == $lineNumber)
 			{
-				print "\tWP\tWR\tWF\n";
+				print "\tWP\tWR\tWF\tLP\tLR\tLF\n";
 			}
 			print "$lineNumber\t";
 		}
-		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
+		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100, $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
 	}
 	
 	if ($opt_e) # Print errors, if asked
@@ -673,12 +695,14 @@ while ($trueLine = <GOLDFILE>)
 			@trueCharNgramCounts = ();
 			@foundCharNgramCounts = ();
 			@differenceCharNgramCounts = ();
+			$lexiconPrecision = 0;
+			$lexiconRecall = 0;
 		}
 	}
 }
 if (!$opt_b && $opt_s)
 {
-	print "WP\tWR\tWF\n";
+	print "WP\tWR\tWF\tLP\tLR\tLF\n";
 }
 printCurrentTotalResults($opt_b ? $lineNumber : 0); 
 
