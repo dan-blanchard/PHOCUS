@@ -10,7 +10,21 @@
 use strict;
 use Getopt::Std;
 
-our ($opt_d,$opt_v,$opt_i,$opt_e,$opt_b,$opt_s);
+our ($opt_d,$opt_v,$opt_i,$opt_e,$opt_b,$opt_s,$opt_t,$opt_n,$opt_c);
+my $usage = "\nSegmentation Error Analyzer\n\n" . 
+			"Usage: ./errors.pl [OPTIONS] TRUE_CORPUS FOUND_CORPUS\n\n" . 
+			"TRUE_CORPUS = The correctly segmented reference corpus.\n" .
+			"FOUND_CORPUS = The corpus you want to evaluate.\n\n" .
+			"Options:\n" . 
+			"\t-s\t\tShort summary mode.  Only outputs and WP, WR, WF in a simple table format.\n" .
+			"\t-v\t\tVerbose mode.  Prints results for each utterance, instead of just for the entire corpus (or block when -b is specified).\n" .
+			"\t-e\t\tDumps all errors in the found corpus and their counts.\n" .
+			"\t-c\t\tOutputs n-gram frequency differences between true and found corpora, with frequencies normalized to the true corpus.\n" .
+			"\t-t\t\tCalculate character n-gram frequencies once per word token instead of per word type.\n" .
+			"\t-n NGRAM_SIZE\tSets greatest character n-gram size to keep track of to NGRAM_SIZE. (Default = 2 for character bigrams and unigrams.)\n" .
+			"\t-d DELIMITER\tSets the word delimiter character to DELIMITER.\n" .
+			"\t-i NUM_LINES\tIgnores the first NUM_LINES lines in the corpora.\n" .
+			"\t-b BLOCK_SIZE\tCalculates scores over blocks of size BLOCK_SIZE.  For example, -b 500 will output results for block of 500 utterances.\n\n";
 my $wordDelimiter = ' ';
 my $trueLine;
 my $foundLine;
@@ -42,14 +56,30 @@ my $utterancePerfectWords = 0;
 my $utteranceFoundTotalWords = 0;
 my $utteranceTrueTotalWords = 0;
 
+my @trueCharNgramCounts = ();
+my @trueCharNgramTotals = ();
+my @foundCharNgramCounts = ();
+my @foundCharNgramTotals = ();
+my $charWindowSize = 2;
+my @differenceCharNgramCounts = ();
+
+my %trueLexicon;
+my %foundLexicon;
+
 # Initialize Hashes
 $affixes{"IN"} = $affixes{"z"} = $affixes{"s"} = $affixes{"In"} = $affixes{"~t"} = $affixes{"nt"} = $affixes{"li"} = $affixes{"6v"} = $affixes{"Id"} = $affixes{"d"} = 1;
 $affixes{"In"} = 1;
 $determiners{"D6"} = $determiners{"6"} = 1;
 $vowels{"&"} = $vowels{"6"} = $vowels{"9"} = $vowels{"A"} = $vowels{"E"} = $vowels{"I"} = $vowels{"O"} = $vowels{"U"} = $vowels{"a"} = $vowels{"e"} = $vowels{"i"} = $vowels{"o"} = $vowels{"u"} = 1;
 $vowels{"9I"} = $vowels{"9U"} = $vowels{"OI"} = 1; # diphthongs
+for (my $i = 0; $i < $charWindowSize; $i++) 
+{
+	push @trueCharNgramTotals, 0;
+	push @foundCharNgramTotals, 0;
+}
+
 # Handle arguments
-getopts('sved:i:b:');
+getopts('svectn:d:i:b:');
 
 # Check for word delimiter argument
 if ($opt_d)
@@ -57,7 +87,12 @@ if ($opt_d)
 	$wordDelimiter = $opt_d;
 }
 
-die "\nSegmentation Error Analyzer\nUsage: ./errors.pl [-s] [-v] [-e] [-d WORD_DELIMITER] [-i IGNORE_LINE_NUM] [-b BLOCK_SIZE] GOLD_CORPUS FILE\n" if @ARGV < 2;
+if ($opt_n)
+{
+	$charWindowSize = $opt_n;
+}
+
+die $usage if @ARGV < 2;
 
 # Take a segmented utterance, and returns an array of binary values that specify whether there is 
 # a break in the string after the indexed position in the array.  The indices match up with an unsegmented
@@ -135,88 +170,6 @@ sub wordsInSubUtterance
 	}	return reverse @wordArray;
 }
 
-print "\n\nResults for $ARGV[1]:\n";
-if ($opt_i)
-{
-	print " (ignoring first $opt_i utterances)";
-}
-
-open(GOLDFILE, $ARGV[0]);
-open(FILE, $ARGV[1]);
-
-while ($trueLine = <GOLDFILE>)
-{
-	$lineNumber++;
-	chomp $trueLine;
-	$foundLine = <FILE>;
-	chomp $foundLine;
-	
-	my $unsegFoundLine = $foundLine;
-	$unsegFoundLine =~ s/\Q$wordDelimiter\E//g;
-	
-	my $unsegTrueLine = $trueLine;
-	$unsegTrueLine =~ s/\Q$wordDelimiter\E//g;
-	
-	die "Utterances do not match!\n" if ($unsegTrueLine ne $unsegFoundLine);
-	
-	# Ignores first x lines specified by the -i argument
-	if ($opt_i < $lineNumber)
-	{
-		if ($opt_v)
-		{
-			print "\nScores for [$foundLine] against [$trueLine]:";
-		}
-
-		calculateFoundWordStats($unsegTrueLine);
-		calculateTrueWordStats($unsegTrueLine);
-		
-		if ($opt_v)
-		{
-			my $wordPrecision = ($utterancePerfectWords / $utteranceFoundTotalWords);
-			my $wordRecall = ($utterancePerfectWords / $utteranceTrueTotalWords);
-			my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
-			my $utteranceWordFalseNeg = $utteranceTrueTotalWords - $utterancePerfectWords;
-			print "\n  Word Stats\n" .
-				  "  ----------\n";
-			print "  Correct (true pos.): $utterancePerfectWords\n" .
-				  "  Incorrect found words (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
-				  "  Missing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n";
-			printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
-		}
-		
-		if (($opt_b) && ($lineNumber % $opt_b == 0))
-		{
-			printCurrentTotalResults($lineNumber);
-			$trueWordCrossingBrackets = 0;
-			$foundWordCrossingBrackets = 0;
-			$trueTotalWords = 0;
-			$foundTotalWords = 0;
-			$perfectWords = 0;
-			$trueWordUnderSegmentedWords = 0;
-			$trueWordOverSegmentedWords = 0;
-			$foundWordUnderSegmentedWords = 0;
-			$foundWordOverSegmentedWords = 0;
-			%affixes = ();
-			%determiners = ();
-			%vowels = ();
-			%overSegmentedWordFrequencies = ();
-			%underSegmentedWordFrequencies = ();
-			%bothErrorsWordFrequencies = ();           
-			$trueWordDeterminerUnderSegmentations = 0;
-			$trueWordVowelOverSegmentations = 0;
-			$trueWordAffixOverSegmentations = 0;
-			$foundWordDeterminerUnderSegmentations = 0;
-			$foundWordVowelOverSegmentations = 0;
-			$foundWordAffixOverSegmentations = 0;
-		}
-	}
-}
-if (!$opt_b && $opt_s)
-{
-	print "WP\tWR\tWF\n";
-}
-printCurrentTotalResults($opt_b ? $lineNumber : 0); 
-
 sub calculateTrueWordStats
 {
 	my $unsegTrueLine = shift;
@@ -252,6 +205,7 @@ sub calculateTrueWordStats
 		{
 			$trueLength = $i - $previousTrueBoundary;
 			$currentTrueWord = substr($unsegTrueLine, $previousTrueBoundary + 1, $trueLength);
+			updateCharNgramStats($currentTrueWord,\@trueCharNgramCounts,\@trueCharNgramTotals,\%trueLexicon);
 			@foundWordArray = wordsInSubUtterance($unsegTrueLine, $previousTrueBoundary + 1, $i,@foundArray);
 			$foundSpan = join($wordDelimiter,@foundWordArray);
 			$foundLength = length($foundSpan) - (scalar(@foundWordArray) - 1);
@@ -389,6 +343,7 @@ sub calculateFoundWordStats
 		{
 			$foundLength = $i - $previousFoundBoundary;
 			$currentFoundWord = substr($unsegTrueLine, $previousFoundBoundary + 1, $foundLength);
+			updateCharNgramStats($currentFoundWord,\@foundCharNgramCounts,\@foundCharNgramTotals,\%foundLexicon);
 			@trueWordArray = wordsInSubUtterance($unsegTrueLine, $previousFoundBoundary + 1, $i,@trueArray);
 			$trueSpan = join($wordDelimiter,@trueWordArray);
 			$trueLength = length($trueSpan) - (scalar(@trueWordArray) - 1);
@@ -462,6 +417,57 @@ sub calculateFoundWordStats
 		printf "%1.2f\%)\n", (($utteranceFoundWordDeterminerUnderSegmentations / $utteranceFoundTotalWords) * 100);
 		print  "  Total: $utteranceFoundTotalWords\n";		
 	}
+}
+
+sub updateCharNgramStats
+{
+	my $word = shift;
+	my $wordPlusBoundaries = $wordDelimiter . $word . $wordDelimiter;
+	my $ngramCountArrayRef = shift;
+	my $ngramCountTotalArrayRef = shift;
+	my $lexiconRef = shift;
+	my $ngram;
+	if (!(exists $$lexiconRef{$word}) || ($opt_t))
+	{	
+		for (my $currentWindowSize = 0; $currentWindowSize < $charWindowSize; $currentWindowSize++) 
+		{
+			for (my $currentIndex = 0; $currentIndex < length($wordPlusBoundaries) - $currentWindowSize; $currentIndex++) 
+			{
+				$ngram = substr($wordPlusBoundaries, $currentIndex, ($currentWindowSize + 1));
+				if (exists $$ngramCountArrayRef[$currentWindowSize]{$ngram})
+				{
+					$$ngramCountArrayRef[$currentWindowSize]{$ngram}++;
+				}
+				else
+				{
+					$$ngramCountArrayRef[$currentWindowSize]{$ngram} = 1;
+				}
+				$$ngramCountTotalArrayRef[$currentWindowSize]++;
+			}
+		}
+	}
+	if (exists $$lexiconRef{$word})
+	{
+		$$lexiconRef{$word}++;
+	}
+	else
+	{
+		$$lexiconRef{$word} = 1;
+	}
+}
+
+sub normalizeCharNgramCounts
+{
+	my $ngramCountArrayRef = shift;
+	my $ngramCountTotalArrayRef = shift;
+
+	for (my $currentWindowSize = 0; $currentWindowSize < $charWindowSize; $currentWindowSize++) 
+	{
+		foreach my $ngram (keys %{$$ngramCountArrayRef[$currentWindowSize]})
+		{
+			$$ngramCountArrayRef[$currentWindowSize]{$ngram} /= $$ngramCountTotalArrayRef[$currentWindowSize];
+		}
+	}	
 }
 
 sub printCurrentTotalResults
@@ -558,7 +564,121 @@ sub printCurrentTotalResults
 			}
 		}
 	}
+	
+	if ($opt_c) # Print character n-gram differences, if specified
+	{
+		normalizeCharNgramCounts(\@foundCharNgramCounts,\@foundCharNgramTotals);
+		normalizeCharNgramCounts(\@trueCharNgramCounts,\@trueCharNgramTotals);
+		
+		# Normalize frequencies, subtract, and then multiple by true n-gram count totals
+		for (my $currentWindowSize = 0; $currentWindowSize < $charWindowSize; $currentWindowSize++) 
+		{
+			foreach my $ngram (keys %{$trueCharNgramCounts[$currentWindowSize]})
+			{
+				$differenceCharNgramCounts[$currentWindowSize]{$ngram} = $trueCharNgramCounts[$currentWindowSize]{$ngram} - $foundCharNgramCounts[$currentWindowSize]{$ngram};
+				$differenceCharNgramCounts[$currentWindowSize]{$ngram} *= $trueCharNgramTotals[$currentWindowSize];
+			}
+		}
+
+		for (my $currentWindowSize = 0; $currentWindowSize < $charWindowSize; $currentWindowSize++) 
+		{
+			print "\nCharacter N-Gram Differences for N = " . ($currentWindowSize + 1) . "\n" .
+				  "--------------------------------------\n";
+			foreach my $key (sort {abs($differenceCharNgramCounts[$currentWindowSize]{$a}) <=> abs($differenceCharNgramCounts[$currentWindowSize]{$b})}(keys %{$differenceCharNgramCounts[$currentWindowSize]}))
+			{
+				print "$key\t$differenceCharNgramCounts[$currentWindowSize]{$key}\n";
+			}
+		}
+	}
 }
 
+##### MAIN PROGRAM START #####
+print "\n\nResults for $ARGV[1]:\n";
+if ($opt_i)
+{
+	print "(ignoring first $opt_i utterances)";
+}
 
+open(GOLDFILE, $ARGV[0]);
+open(FILE, $ARGV[1]);
+
+while ($trueLine = <GOLDFILE>)
+{
+	$lineNumber++;
+	chomp $trueLine;
+	$foundLine = <FILE>;
+	chomp $foundLine;
+	
+	my $unsegFoundLine = $foundLine;
+	$unsegFoundLine =~ s/\Q$wordDelimiter\E//g;
+	
+	my $unsegTrueLine = $trueLine;
+	$unsegTrueLine =~ s/\Q$wordDelimiter\E//g;
+	
+	die "Utterances do not match!\n" if ($unsegTrueLine ne $unsegFoundLine);
+	
+	# Ignores first x lines specified by the -i argument
+	if ($opt_i < $lineNumber)
+	{
+		if ($opt_v)
+		{
+			print "\nScores for [$foundLine] against [$trueLine]:";
+		}
+
+		calculateFoundWordStats($unsegTrueLine);
+		calculateTrueWordStats($unsegTrueLine);
+		
+		if ($opt_v)
+		{
+			my $wordPrecision = ($utterancePerfectWords / $utteranceFoundTotalWords);
+			my $wordRecall = ($utterancePerfectWords / $utteranceTrueTotalWords);
+			my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
+			my $utteranceWordFalseNeg = $utteranceTrueTotalWords - $utterancePerfectWords;
+			print "\n  Word Stats\n" .
+				  "  ----------\n";
+			print "  Correct (true pos.): $utterancePerfectWords\n" .
+				  "  Incorrect found words (false pos.): " . ($utteranceFoundTotalWords - $utterancePerfectWords) . "\n" .
+				  "  Missing true words (false neg.): " . ($utteranceTrueTotalWords - $utterancePerfectWords) . "\n";
+			printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
+		}
+		
+		if (($opt_b) && ($lineNumber % $opt_b == 0))
+		{
+			printCurrentTotalResults($lineNumber);
+			$trueWordCrossingBrackets = 0;
+			$foundWordCrossingBrackets = 0;
+			$trueTotalWords = 0;
+			$foundTotalWords = 0;
+			$perfectWords = 0;
+			$trueWordUnderSegmentedWords = 0;
+			$trueWordOverSegmentedWords = 0;
+			$foundWordUnderSegmentedWords = 0;
+			$foundWordOverSegmentedWords = 0;
+			%overSegmentedWordFrequencies = ();
+			%underSegmentedWordFrequencies = ();
+			%bothErrorsWordFrequencies = ();           
+			$trueWordDeterminerUnderSegmentations = 0;
+			$trueWordVowelOverSegmentations = 0;
+			$trueWordAffixOverSegmentations = 0;
+			$foundWordDeterminerUnderSegmentations = 0;
+			$foundWordVowelOverSegmentations = 0;
+			$foundWordAffixOverSegmentations = 0;
+			%trueLexicon = ();
+			%foundLexicon = ();
+			for (my $i = 0; $i < $charWindowSize; $i++) 
+			{
+				push @trueCharNgramTotals, 0;
+				push @foundCharNgramTotals, 0;
+			}
+			@trueCharNgramCounts = ();
+			@foundCharNgramCounts = ();
+			@differenceCharNgramCounts = ();
+		}
+	}
+}
+if (!$opt_b && $opt_s)
+{
+	print "WP\tWR\tWF\n";
+}
+printCurrentTotalResults($opt_b ? $lineNumber : 0); 
 
