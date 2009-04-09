@@ -12,7 +12,7 @@ my $usage = "\nSegmentation Error Analyzer\n\n" .
 			"TRUE_CORPUS = The correctly segmented reference corpus.\n" .
 			"FOUND_CORPUS = The corpus you want to evaluate.\n\n" .
 			"Options:\n" . 
-			"\t-s\t\tShort summary mode.  Only outputs WP, WR, WF, LP, LR, and LF in a simple table format.\n" .
+			"\t-s\t\tShort summary mode.  Outputs word, boundary, and lexicon precision, recall, and f in a simple table format.\n" .
 			"\t-v\t\tVerbose mode.  Prints results for each utterance, instead of just for the entire corpus (or block when -b is specified).\n" .
 			"\t-e\t\tDumps all errors in the found corpus and their counts.\n" .
 			"\t-c\t\tOutputs n-gram frequency differences between true and found corpora, with frequencies normalized to the true corpus.\n" .
