@@ -3,10 +3,6 @@
 # Dan Blanchard
 # Segmentation Error Analyzer
 
-# usage: ./errors.pl [OPTIONS] GOLD-CORPUS FILE 
-
-# TODO: Double-check/fix method for counting specific types of over and under segmentations. 
-
 use strict;
 use Getopt::Std;
 
@@ -51,6 +47,7 @@ my $trueWordAffixOverSegmentations = 0;
 my $foundWordDeterminerUnderSegmentations = 0;
 my $foundWordVowelOverSegmentations = 0;
 my $foundWordAffixOverSegmentations = 0;
+my $foundWordFrequentCollocationUnderSegmentation = 0;
 
 my $utterancePerfectWords = 0;
 my $utteranceFoundTotalWords = 0;
@@ -65,8 +62,17 @@ my @differenceCharNgramCounts = ();
 
 my %trueLexicon;
 my %foundLexicon;
-my $lexiconPrecision = 0;
-my $lexiconRecall = 0;
+
+my @trueCollocations;
+my @trueTotalCollocations;
+my @foundCollocations;
+my @foundTotalCollocations;
+my $maxCollocationSize = 5;
+my $frequentCollocationThreshold = 10;
+
+my $matchedBoundaries = 0;
+my $missingBoundaries = 0;
+my $extraBoundaries = 0;
 
 # Initialize Hashes
 $affixes{"IN"} = $affixes{"z"} = $affixes{"s"} = $affixes{"In"} = $affixes{"~t"} = $affixes{"nt"} = $affixes{"li"} = $affixes{"6v"} = $affixes{"Id"} = $affixes{"d"} = 1;
@@ -79,6 +85,12 @@ for (my $i = 0; $i < $charWindowSize; $i++)
 	push @trueCharNgramTotals, 0;
 	push @foundCharNgramTotals, 0;
 }
+for (my $i = 0; $i < $maxCollocationSize; $i++) 
+{
+	push @trueTotalCollocations, 0;
+	push @foundTotalCollocations, 0;
+}
+
 
 # Handle arguments
 getopts('svectn:d:i:b:');
@@ -325,7 +337,7 @@ sub calculateFoundWordStats
 	my $utteranceFoundWordDeterminerUnderSegmentations = 0;
 	my $utteranceFoundWordVowelOverSegmentations = 0;
 	my $utteranceFoundWordAffixOverSegmentations = 0;
-		
+	my $utteranceFoundWordFrequentCollocationUnderSegmentation = 0;
 	my $previousFoundBoundary = -1;
 	my $currentFoundWord = "";
 	
@@ -334,8 +346,9 @@ sub calculateFoundWordStats
 	my $trueLength;
 	my $trueSpan;
 	
-	my $foundWordDeterminerUnderSegmentation = 0;
-	
+	my $currentWordDeterminerUnderSegmentation = 0;
+	my $currentWordFrequentCollocationUnderSegmentation = 0;
+	my $collocation;
 	
 	# Loop through found segmentation to calculate stats with respect to found words.
 	for (my $i = 0; $i < scalar(@foundArray); $i++)
@@ -371,9 +384,22 @@ sub calculateFoundWordStats
 				{
 					if (exists $determiners{$currentTrueWord})
 					{
-						$foundWordDeterminerUnderSegmentation = 1;
+						$currentWordDeterminerUnderSegmentation = 1;
 					}
 				}
+				for (my $currentWindowSize = 1; (($currentWindowSize < $maxCollocationSize) && ($currentWindowSize <= scalar(@trueWordArray))); $currentWindowSize++) 
+				{
+					for (my $currentIndex = 0; $currentIndex < scalar(@trueWordArray) - $currentWindowSize; $currentIndex++) 
+					{
+						$collocation = join($wordDelimiter, @trueWordArray[$currentIndex..($currentIndex+$currentWindowSize)]);
+						# if (($trueCollocations[$currentWindowSize]{$collocation} / ($trueTotalCollocations[$currentWindowSize] + 1)) >= ((1/(scalar(keys %trueLexicon) + 1))**($currentWindowSize + 1)))
+						if ($trueCollocations[$currentWindowSize]{$collocation} >= $frequentCollocationThreshold)
+						{
+							$currentWordFrequentCollocationUnderSegmentation = 1;
+						}
+					}	
+				}
+				
 			}
 			elsif ($trueLength > $foundLength) # Check for only over-segmentation
 			{
@@ -387,8 +413,10 @@ sub calculateFoundWordStats
 					$utteranceFoundWordAffixOverSegmentations++;
 				}						
 			}
-			$utteranceFoundWordDeterminerUnderSegmentations += $foundWordDeterminerUnderSegmentation;
-			$foundWordDeterminerUnderSegmentation = 0;
+			$utteranceFoundWordDeterminerUnderSegmentations += $currentWordDeterminerUnderSegmentation;
+			$utteranceFoundWordFrequentCollocationUnderSegmentation += $currentWordFrequentCollocationUnderSegmentation;
+			$currentWordDeterminerUnderSegmentation = 0;
+			$currentWordFrequentCollocationUnderSegmentation = 0;
 			$utteranceFoundTotalWords++;
 			$previousFoundBoundary = $i;
 		} 
@@ -397,7 +425,8 @@ sub calculateFoundWordStats
 	$foundWordOverSegmentedWords += $utteranceFoundWordOverSegmentedWords;
 	$foundWordUnderSegmentedWords += $utteranceFoundWordUnderSegmentedWords;
 	$foundTotalWords += $utteranceFoundTotalWords;
-	$foundWordDeterminerUnderSegmentations += $utteranceFoundWordDeterminerUnderSegmentations;		
+	$foundWordDeterminerUnderSegmentations += $utteranceFoundWordDeterminerUnderSegmentations;
+	$foundWordFrequentCollocationUnderSegmentation += $utteranceFoundWordFrequentCollocationUnderSegmentation;
 	$foundWordAffixOverSegmentations += $utteranceFoundWordAffixOverSegmentations;
 	$foundWordVowelOverSegmentations += $utteranceFoundWordVowelOverSegmentations;
 	
@@ -417,7 +446,50 @@ sub calculateFoundWordStats
 		printf "%1.2f\%)\n", (($utteranceFoundWordAffixOverSegmentations / $utteranceFoundTotalWords) * 100);
 		print "  Contained an under-segmented determiner: $utteranceFoundWordDeterminerUnderSegmentations (";
 		printf "%1.2f\%)\n", (($utteranceFoundWordDeterminerUnderSegmentations / $utteranceFoundTotalWords) * 100);
+		print "  Contained an under-segmented collocation: $utteranceFoundWordFrequentCollocationUnderSegmentation (";
+		printf "%1.2f\%)\n", (($utteranceFoundWordFrequentCollocationUnderSegmentation / $utteranceFoundTotalWords) * 100);
 		print  "  Total: $utteranceFoundTotalWords\n";		
+	}
+}
+
+sub calculateBoundaryStats
+{
+	my @trueArray = stringToSegArray($trueLine);
+	my @foundArray = stringToSegArray($foundLine);
+	my $truePos = 0;
+	my $falsePos = 0;
+	my $falseNeg = 0;
+	my $prec = 0;
+	my $recall = 0;
+	for (my $i = 0; $i < (scalar(@trueArray) - 1); $i++) # - 1 to miss extra boundary on right end
+	{
+		if ($foundArray[$i] == 1)
+		{
+			if ($trueArray[$i] == 1)
+			{
+				$truePos++;
+			}
+			else
+			{
+				$falsePos++;
+			}
+		}
+		elsif ($trueArray[$i] == 1)
+		{
+			$falseNeg++;
+		}
+	}
+	
+	$missingBoundaries += $falseNeg;
+	$matchedBoundaries += $truePos;
+	$extraBoundaries += $falsePos;
+	$prec = (($truePos + $falsePos) > 0) ? ($truePos / ($truePos + $falsePos)) : 0;
+	$recall = (($truePos + $falseNeg) > 0) ? ($truePos / ($truePos + $falseNeg)) : 0;
+	if ($opt_v)
+	{
+		print "\n  Boundary Stats\n" .
+			  "  --------------\n";
+		printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n", $prec*100, $recall*100, ((($prec + $recall) > 0) ? ((2 * $prec * $recall) / ($prec + $recall)) : 0)*100;	
 	}
 }
 
@@ -458,6 +530,34 @@ sub updateCharNgramStats
 	}
 }
 
+sub updateWordCollocationStats
+{
+	my $utterance = shift;
+	$utterance =~ s/^\Q$wordDelimiter\E*(.+[^\Q$wordDelimiter\E])\Q$wordDelimiter\E*/\1/;
+	my @words = split /\Q$wordDelimiter\E/,$utterance;
+	my $collocationsRef = shift;
+	my $collocationTotalsRef = shift;
+	my $collocation;
+	
+	# Collocations of length 1 are just lexical entries, so skip those.
+	for (my $currentWindowSize = 1; $currentWindowSize < $maxCollocationSize; $currentWindowSize++) 
+	{
+		for (my $currentIndex = 0; $currentIndex < scalar(@words) - $currentWindowSize; $currentIndex++) 
+		{
+			$collocation = $words[$currentIndex] . $wordDelimiter . $words[$currentIndex + 1];
+			if (exists $$collocationsRef[$currentWindowSize]{$collocation})
+			{
+				$$collocationsRef[$currentWindowSize]{$collocation}++;
+			}
+			else
+			{
+				$$collocationsRef[$currentWindowSize]{$collocation} = 1;
+			}
+			$$collocationTotalsRef[$currentWindowSize]++;
+		}
+	}
+}
+
 sub normalizeCharNgramCounts
 {
 	my $ngramCountArrayRef = shift;
@@ -472,8 +572,14 @@ sub normalizeCharNgramCounts
 	}	
 }
 
-sub scoreLexicon
+sub printCurrentTotalResults
 {
+	my $utteranceNum = shift;
+	die "Ignored more than length of file!\n" if ($trueTotalWords == 0);
+	my $wordPrecision = ($perfectWords / $foundTotalWords);
+	my $wordRecall = ($perfectWords / $trueTotalWords);
+	my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
+	my $wordFalseNeg = $trueTotalWords - $perfectWords;
 	my $matched = 0;
 	foreach my $word (keys %foundLexicon)
 	{
@@ -483,20 +589,13 @@ sub scoreLexicon
 		}
 	}
 	
-	$lexiconPrecision = $matched / scalar(keys %foundLexicon);
-	$lexiconRecall = $matched / scalar(keys %trueLexicon);
-}
-
-sub printCurrentTotalResults
-{
-	my $utteranceNum = shift;
-	die "Ignored more than length of file!\n" if ($trueTotalWords == 0);
-	my $wordPrecision = ($perfectWords / $foundTotalWords);
-	my $wordRecall = ($perfectWords / $trueTotalWords);
-	my $wordF = (($wordPrecision + $wordRecall) > 0) ? ((2 * $wordPrecision * $wordRecall) / ($wordPrecision + $wordRecall)) : 0;
-	scoreLexicon();
+	my $lexiconPrecision = $matched / scalar(keys %foundLexicon);
+	my $lexiconRecall = $matched / scalar(keys %trueLexicon);
 	my $lexiconF = (($lexiconPrecision + $lexiconRecall) > 0) ? ((2 * $lexiconPrecision * $lexiconRecall) / ($lexiconPrecision + $lexiconRecall)) : 0;
-	my $wordFalseNeg = $trueTotalWords - $perfectWords;
+	
+	my $boundaryPrecision = $matchedBoundaries / ($matchedBoundaries + $extraBoundaries);
+	my $boundaryRecall = $matchedBoundaries / ($matchedBoundaries + $missingBoundaries);
+	my $boundaryF = (($boundaryPrecision + $boundaryRecall) > 0) ? ((2 * $boundaryPrecision * $boundaryRecall) / ($boundaryPrecision + $boundaryRecall)) : 0;
 	if (!$opt_s) # Print long error analysis by default
 	{
 		print "\n==============" . (($utteranceNum) ? $utteranceNum : "") . "==============\n";
@@ -514,6 +613,8 @@ sub printCurrentTotalResults
 		printf "%1.2f\%)\n", (($foundWordAffixOverSegmentations / $foundTotalWords) * 100);
 		print "Contained an under-segmented determiner: $foundWordDeterminerUnderSegmentations (";
 		printf "%1.2f\%)\n", (($foundWordDeterminerUnderSegmentations / $foundTotalWords) * 100);
+		print "Contained an under-segmented collocation: $foundWordFrequentCollocationUnderSegmentation (";
+		printf "%1.2f\%)\n", (($foundWordFrequentCollocationUnderSegmentation / $foundTotalWords) * 100);
 		print "Total: $foundTotalWords\n";
 		print "\nTrue Words\n" .
 			  "----------\n" .
@@ -536,6 +637,9 @@ sub printCurrentTotalResults
 			  "Incorrect found words (false pos.): " . ($foundTotalWords - $perfectWords) . "\n" .
 			  "Missing true words (false neg.): " . ($trueTotalWords - $perfectWords) . "\n";
 		printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
+		print "\nBoundary Stats\n" .
+			  "--------------\n";
+		printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $boundaryPrecision*100, $boundaryRecall*100, $boundaryF*100;
 		print "\nLexicon Stats\n" .
 			  "-------------\n";
 		printf "Precision: %1.2f\%\nRecall: %1.2f\%\nF: %1.2f\%\n", $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
@@ -546,11 +650,11 @@ sub printCurrentTotalResults
 		{
 			if ($opt_b == $lineNumber)
 			{
-				print "\tWP\tWR\tWF\tLP\tLR\tLF\n";
+				print "block\tWP\tWR\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
 			}
 			print "$lineNumber\t";
 		}
-		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100, $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
+		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100, $boundaryPrecision*100, $boundaryRecall*100, $boundaryF*100, $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
 	}
 	
 	if ($opt_e) # Print errors, if asked
@@ -630,7 +734,7 @@ while ($trueLine = <GOLDFILE>)
 	chomp $trueLine;
 	$foundLine = <FILE>;
 	chomp $foundLine;
-	
+
 	my $unsegFoundLine = $foundLine;
 	$unsegFoundLine =~ s/\Q$wordDelimiter\E//g;
 	
@@ -638,6 +742,9 @@ while ($trueLine = <GOLDFILE>)
 	$unsegTrueLine =~ s/\Q$wordDelimiter\E//g;
 	
 	die "Utterances do not match!\n" if ($unsegTrueLine ne $unsegFoundLine);
+	
+	updateWordCollocationStats($trueLine,\@trueCollocations,\@trueTotalCollocations);
+	updateWordCollocationStats($foundLine,\@foundCollocations,\@foundTotalCollocations);
 	
 	# Ignores first x lines specified by the -i argument
 	if ($opt_i < $lineNumber)
@@ -664,6 +771,8 @@ while ($trueLine = <GOLDFILE>)
 			printf "  Precision: %1.2f\%\n  Recall: %1.2f\%\n  F: %1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100;
 		}
 		
+		calculateBoundaryStats();
+		
 		if (($opt_b) && ($lineNumber % $opt_b == 0))
 		{
 			printCurrentTotalResults($lineNumber);
@@ -687,6 +796,8 @@ while ($trueLine = <GOLDFILE>)
 			$foundWordAffixOverSegmentations = 0;
 			%trueLexicon = ();
 			%foundLexicon = ();
+			@trueCharNgramTotals = ();
+			@foundCharNgramTotals = ();
 			for (my $i = 0; $i < $charWindowSize; $i++) 
 			{
 				push @trueCharNgramTotals, 0;
@@ -695,14 +806,25 @@ while ($trueLine = <GOLDFILE>)
 			@trueCharNgramCounts = ();
 			@foundCharNgramCounts = ();
 			@differenceCharNgramCounts = ();
-			$lexiconPrecision = 0;
-			$lexiconRecall = 0;
+			@trueCollocations = ();
+			@foundCollocations = ();
+			@trueTotalCollocations = ();
+			@foundTotalCollocations = ();
+			$matchedBoundaries = 0;
+			$missingBoundaries = 0;
+			$extraBoundaries = 0;
+			for (my $i = 0; $i < $maxCollocationSize; $i++) 
+			{
+				push @trueTotalCollocations, 0;
+				push @foundTotalCollocations, 0;
+			}
+			
 		}
 	}
 }
 if (!$opt_b && $opt_s)
 {
-	print "WP\tWR\tWF\tLP\tLR\tLF\n";
+	print "WP\tWR\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
 }
 printCurrentTotalResults($opt_b ? $lineNumber : 0); 
 
