@@ -773,6 +773,8 @@ while ($trueLine = <GOLDFILE>)
 		
 		calculateBoundaryStats();
 		
+		# Reset any global counters when reaching the end of a block.
+		# (As this list is getting rather unwiedly, should probably refactor this to not have global variables.)
 		if (($opt_b) && ($lineNumber % $opt_b == 0))
 		{
 			printCurrentTotalResults($lineNumber);
@@ -813,6 +815,7 @@ while ($trueLine = <GOLDFILE>)
 			$matchedBoundaries = 0;
 			$missingBoundaries = 0;
 			$extraBoundaries = 0;
+			$foundWordFrequentCollocationUnderSegmentation = 0;
 			for (my $i = 0; $i < $maxCollocationSize; $i++) 
 			{
 				push @trueTotalCollocations, 0;
