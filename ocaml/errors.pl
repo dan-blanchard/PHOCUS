@@ -648,7 +648,7 @@ sub printCurrentTotalResults
 	{
 		if ($opt_b)
 		{
-			if ($opt_b == $lineNumber)
+			if ($opt_b + $opt_i == $lineNumber)
 			{
 				print "block\tWP\tWR\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
 			}
