@@ -722,7 +722,7 @@ sub printCurrentTotalResults
 print "\n\nResults for $ARGV[1]:\n";
 if ($opt_i)
 {
-	print "(ignoring first $opt_i utterances)";
+	print "(ignoring first $opt_i utterances)\n";
 }
 
 open(GOLDFILE, $ARGV[0]);
