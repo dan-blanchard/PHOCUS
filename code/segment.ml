@@ -28,11 +28,12 @@ let windowSize = ref 1
 let jointProb = ref false
 let smooth = ref false
 let tokenPhonotactics = ref false
-let totalWords = ref 0
+let totalWords = ref 0.0
 let mbdp = ref false
 let countProposedNgrams = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
+let addAllSegmentations = ref false
 
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 
@@ -66,6 +67,8 @@ let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word deli
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
+					"--addAllSegmentations", Arg.Set addAllSegmentations, " When updating evidence, add evidence from all possible segmentations, weighted by their probabilities. (Default = false)";
+					"-aa", Arg.Set addAllSegmentations, " Short for --addAllSegmentations";
 					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.  Should also enable --hypotheticalPhonotactics for true MBDP-1.";
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1"]
 
@@ -87,7 +90,7 @@ sig
 	val initialize : float -> unit
 	
 	(* Takes a word and updates any evidence the cue keeps track of based on another occurrence of this word. *)
-	val update_evidence : string -> unit
+	val update_evidence : string -> float -> unit
 	
 	(* Dump the table associated with this cue to a file. *)
 	val dump : string -> unit
@@ -98,8 +101,8 @@ struct
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
 		if (Hashtbl.mem lexicon word) then
-			let wordCountFloat = float (Hashtbl.find lexicon word) in
-			let totalWordsFloat = float !totalWords in 
+			let wordCountFloat = (Hashtbl.find lexicon word) in
+			let totalWordsFloat = !totalWords in 
 			if (not !mbdp) then
 				let wordTypesFloat = float ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
 					-.(log (wordCountFloat /. (totalWordsFloat +. wordTypesFloat)))
@@ -112,12 +115,12 @@ struct
 	
 	let dump dumpFile = ()
 	
-	let update_evidence (newWord:string) = 
-		totalWords := !totalWords + 1;
+	let update_evidence (newWord:string) (incrementAmount:float)= 
+		totalWords := !totalWords +. incrementAmount;
 		if Hashtbl.mem lexicon newWord then
-			Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) + 1)
+			Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) +. incrementAmount)
 		else
-			Hashtbl.add lexicon newWord 1;;		
+			Hashtbl.add lexicon newWord incrementAmount;;		
 end
 
 module PhonemeNgramCue : CUE = struct
@@ -266,7 +269,7 @@ module PhonemeNgramCue : CUE = struct
 								else 
 									word ^ !wordDelimiter) in							
 		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
-		let totalWordsFloat = float (!totalWords + (if !mbdp then 1 else 0)) in
+		let totalWordsFloat = (!totalWords +. (if !mbdp then 1. else 0.0)) in
 		let score = ref 0.0 in
 		if (String.length word) < !windowSize then
 			-. (log !badScore)
@@ -320,7 +323,7 @@ module PhonemeNgramCue : CUE = struct
 					end
 			end
 		
-	let update_evidence (newWord:string) = 
+	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			let wordWithBoundary = (if !windowSize > 1 then 
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
@@ -339,9 +342,9 @@ module PhonemeNgramCue : CUE = struct
 						(fun firstChar ->
 							let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
 							if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
-								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +. 1.0)
+								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +. incrementAmount)
 							else
-								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram 1.0;
+								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram incrementAmount;
 						)
 						ngramFirstCharList;
 					Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
@@ -556,7 +559,7 @@ module FeatureNgramCue : CUE = struct
 				!phonemeScore
 			end
 	
-	let update_evidence (newWord:string) = 
+	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			let wordWithBoundary = (if !windowSize > 1 then 
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
@@ -613,10 +616,10 @@ module FeatureNgramCue : CUE = struct
 							StringSet.iter
 								(fun featureGram ->
 									if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
-										Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) +. 1.0)
+										Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) +. incrementAmount)
 									else
-										Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) featureGram 1.0;
-									Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. 1.0)
+										Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) featureGram incrementAmount;
+									Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. incrementAmount)
 								)
 								ngramFeatureSet;							
 						)
@@ -663,24 +666,24 @@ if !featureFile <> "" then
 	Featurechart.read_feature_file !featureFile;;
 
 (* Setup initial value for utteranceDelimiter in the lexicon *)
-Hashtbl.add lexicon !utteranceDelimiter 0;;
+Hashtbl.add lexicon !utteranceDelimiter 0.0;;
 
 (* Function lists store which functions will be called during word evaluation and updating *)
 let wordEvalFunctions = [PhonemeNgramCue.eval_word; FamiliarWordCue.eval_word];;
 
 
 (* Updates lexicon with newly segmented words, and prints out segmented utterance *)
-let rec lexicon_updater segmentation sentence updateFunctions =
+let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:float) =
 	if (List.length segmentation) > 1 then
 		begin
 			let startChar = List.nth segmentation 0 in
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
-			List.iter (fun updateFunc -> (updateFunc newWord)) updateFunctions; (* Calls all of the update functions in the list *)
+			List.iter (fun updateFunc -> (updateFunc newWord incrementAmount)) updateFunctions; (* Calls all of the update functions in the list *)
 			printf "%s" newWord;
 			if (List.length segmentation > 2) then
 				printf "%s" !wordDelimiter;
-			lexicon_updater (List.tl segmentation) sentence updateFunctions
+			lexicon_updater (List.tl segmentation) sentence updateFunctions incrementAmount
 		end
 	else
 		();;
@@ -753,12 +756,12 @@ let incremental_processor utteranceList =
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
-					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence]; 
+					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence] 1.0; 
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
 					flush stdout;
-					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0)
 				end
 		)
 		utteranceList;;
@@ -780,16 +783,16 @@ let two_pass_processor utteranceList =
 															0) 
 													segmentedChars in
 					let segmentation = [0] @ (List.mapi (fun index boundary -> boundary - index) ((List.remove_all boundaryIndexes 0) @ [(String.length segmentedSentence)])) in
-					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence]; 
+					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence] 1.0; 
 					printf "\n";
 					flush stdout;
-					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0)
 				end
 		)
 		utteranceList;
 	Hashtbl.clear lexicon;
-	Hashtbl.add lexicon !utteranceDelimiter 0;
-	totalWords := 0;
+	Hashtbl.add lexicon !utteranceDelimiter 0.0;
+	totalWords := 0.0;
 	printf "\nSegmentation Pass:\n";
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
@@ -800,12 +803,12 @@ let two_pass_processor utteranceList =
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
-					lexicon_updater segmentation sentence [FamiliarWordCue.update_evidence]; 
+					lexicon_updater segmentation sentence [FamiliarWordCue.update_evidence] 1.0; 
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
 					flush stdout;
-					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) + 1)
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0)
 				end
 		)
 		utteranceList;;
@@ -820,7 +823,7 @@ sentence_processor !sentenceList;;
 (* Dump lexicon if requested *)
 if !lexiconOut <> "" then
 	let oc = open_out !lexiconOut in
-	hash_fprint_int oc lexicon;
+	hash_fprint_float oc lexicon;
 	close_out oc;;
 
 (* Dump n-gram counts if requested *)
