@@ -2,6 +2,9 @@
    Segmentation Framework *)
 
 (*	NOTES:
+		-	To implement addAllSegmentations flag, need to generate list of all possible segmentations, score segmentation in list (caching word scores), 
+			and then add all segmentations to lexicon, weighting phoneme n-grams and words themselves by ratio to top score (this will be tricky since lowest
+			log prob score is best).
 		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance with Venkataraman.
 		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
 		-	Consider functor implementation of ngram cues to clean up redundant code.
@@ -727,7 +730,7 @@ let mbdp_outer sentence =
 		[||]
 		lastCharList
 	in
-	(* List.iter (fun (x, y) -> printf "(%F, %d)" x y) bestList; *)
+	(* Array.iter (fun (x, y) -> printf "(%F, %d)" x y) bestList; *)
 	Array.map
 	 	snd
 		bestList;;
