@@ -16,6 +16,7 @@ open ExtString
 open ExtArray
 
 let svnRevision = "UNKNOWN"
+let e = 2.71828183
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
@@ -701,6 +702,44 @@ let default_evidence_combiner word =
 		phonemeScore;;
 
 let eval_word = default_evidence_combiner;;
+
+let score_all_segmentations utterance = 
+	let wordScoreCache = Hashtbl.create 300 in
+	let utteranceLength = String.length utterance in
+	let bestScore = ref infinity in 
+	let lastCharList = Array.init utteranceLength (fun a -> a) in
+	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int utteranceLength))) - 1) (fun a -> a) in
+	Array.fold_left
+		(fun oldSegmentationList currentSegmentation -> 
+			let segScore = e ** -.(fst (Array.fold_left
+				(fun (currentScore, currentWord) currentIndex ->
+					let currentChar = String.sub utterance currentIndex 1 in 
+					let newWord = currentWord ^ currentChar in
+					let indexPowerOfTwo = int_of_float (2.0 ** (float_of_int currentIndex)) in
+					if ((indexPowerOfTwo land currentSegmentation) = indexPowerOfTwo) then
+						begin
+							let wordScore = (if (Hashtbl.mem wordScoreCache newWord) then
+												Hashtbl.find wordScoreCache newWord
+											else
+												begin
+													Hashtbl.add wordScoreCache newWord (eval_word newWord);
+													Hashtbl.find wordScoreCache newWord
+												end) in
+							let newScore = wordScore +. currentScore in
+							if (newScore < !bestScore) then
+								bestScore := newScore;	
+							(newScore, "")
+						end
+					else
+						(currentScore, newWord)
+				)
+				(0.0,"")
+				lastCharList))
+			in
+			Array.append oldSegmentationList [|((segScore /. (e ** -.(!bestScore))), currentSegmentation)|]
+		)
+		[||]
+		possibleSegmentations;;
 		
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
@@ -752,7 +791,7 @@ let rec find_segmentation bestStartList firstChar path =
 let incremental_processor utteranceList = 
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
-			if ((!utteranceLimit == 0) || (utteranceCount < !utteranceLimit)) then
+			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 					let bestStartList = evalUtterance sentence in
@@ -774,13 +813,13 @@ let two_pass_processor utteranceList =
 	printf "\nPhonotactic Pass:\n";
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
-			if ((!utteranceLimit == 0) || (utteranceCount < !utteranceLimit)) then
+			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 					let segmentedChars = (String.explode segmentedSentence) in
 					let boundaryChar = List.nth (String.explode !wordDelimiter) 0 in
 					let boundaryIndexes = List.mapi (fun index character -> 
-														if (character == boundaryChar) then 
+														if (character = boundaryChar) then 
 															index 
 														else 
 															0) 
@@ -799,7 +838,7 @@ let two_pass_processor utteranceList =
 	printf "\nSegmentation Pass:\n";
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
-			if ((!utteranceLimit == 0) || (utteranceCount < !utteranceLimit)) then
+			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 					let bestStartList = evalUtterance sentence in
