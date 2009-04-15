@@ -593,8 +593,8 @@ sub printCurrentTotalResults
 	my $lexiconRecall = $matched / scalar(keys %trueLexicon);
 	my $lexiconF = (($lexiconPrecision + $lexiconRecall) > 0) ? ((2 * $lexiconPrecision * $lexiconRecall) / ($lexiconPrecision + $lexiconRecall)) : 0;
 	
-	my $boundaryPrecision = $matchedBoundaries / ($matchedBoundaries + $extraBoundaries);
-	my $boundaryRecall = $matchedBoundaries / ($matchedBoundaries + $missingBoundaries);
+	my $boundaryPrecision = ($matchedBoundaries > 0) ? $matchedBoundaries / ($matchedBoundaries + $extraBoundaries) : 0;
+	my $boundaryRecall = ($matchedBoundaries > 0) ? $matchedBoundaries / ($matchedBoundaries + $missingBoundaries) : 0;
 	my $boundaryF = (($boundaryPrecision + $boundaryRecall) > 0) ? ((2 * $boundaryPrecision * $boundaryRecall) / ($boundaryPrecision + $boundaryRecall)) : 0;
 	if (!$opt_s) # Print long error analysis by default
 	{

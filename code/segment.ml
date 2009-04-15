@@ -239,30 +239,6 @@ module PhonemeNgramCue : CUE = struct
 		|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
 		| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
 	
-	(* Gets the substrings necessary for string extension learning *)
-	let rec get_substrings windowVector word =
-		match windowVector with
-		| currentWindow::windowTail -> 
-			let windowSum = (List.fold_left (+) 0 windowVector) in
-			if ((String.length word) >= windowSum) then
-				let firstCharList = List.init ((String.length word) - (windowSum - 1)) (fun a -> a) in
-				List.flatten
-					(List.map
-						(fun firstChar -> 
-							let prefix = String.sub word firstChar currentWindow in
-							List.map
-								(fun suffix ->
-									prefix ^ suffix
-								)
-								(get_substrings windowTail (String.slice ~first:(firstChar + currentWindow) word))
-
-						)
-						firstCharList)
-			else
-				[""]
-		| [] -> [""];;
-
-	
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
 		let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
@@ -454,29 +430,6 @@ module FeatureNgramCue : CUE = struct
 			(false, true)  -> prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
 		|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
 		| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
-	
-	(* Gets the substrings necessary for string extension learning *)
-	let rec get_substrings windowVector word =
-		match windowVector with
-		| currentWindow::windowTail -> 
-			let windowSum = (List.fold_left (+) 0 windowVector) in
-			if ((String.length word) >= windowSum) then
-				let firstCharList = List.init ((String.length word) - (windowSum - 1)) (fun a -> a) in
-				List.flatten
-					(List.map
-						(fun firstChar -> 
-							let prefix = String.sub word firstChar currentWindow in
-							List.map
-								(fun suffix ->
-									prefix ^ suffix
-								)
-								(get_substrings windowTail (String.slice ~first:(firstChar + currentWindow) word))
-
-						)
-						firstCharList)
-			else
-				[""]
-		| [] -> [""];;
 	
 	let eval_word (word:string) combine = 
 		let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
@@ -692,6 +645,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 	else
 		();;
 
+(* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
 	let familiarScore = FamiliarWordCue.eval_word word (+.) in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
@@ -703,13 +657,25 @@ let default_evidence_combiner word =
 
 let eval_word = default_evidence_combiner;;
 
+(* Takes a segmentation bitmask such as the ones used in score_all_segmentations, and converts it to a lexicon_updater-style list. *)
+let seg_int_to_seg_list segInt utterance = 
+	let segmentation = Array.init (String.length utterance) (fun currentIndex -> 
+																let indexPowerOfTwo = int_of_float (2.0 ** (float_of_int currentIndex)) in
+																if ((indexPowerOfTwo land segInt) = indexPowerOfTwo) then
+																	(currentIndex + 1)
+																else
+																	0)
+	in
+	[0] @ (List.remove_all (Array.to_list segmentation) 0);;
+
+(* Creates a scored list of all segmentations, normalized with respect to the most probable segmentation (i.e., the most probable one will have a score of 1.0). *)
 let score_all_segmentations utterance = 
 	let wordScoreCache = Hashtbl.create 300 in
 	let utteranceLength = String.length utterance in
-	let bestScore = ref infinity in 
+	let bestScore = ref 0.0 in 
 	let lastCharList = Array.init utteranceLength (fun a -> a) in
-	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int utteranceLength))) - 1) (fun a -> a) in
-	Array.fold_left
+	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int utteranceLength))) - 2) (fun a -> (a + 1)) in
+	let scoredSegmentations = Array.fold_left
 		(fun oldSegmentationList currentSegmentation -> 
 			let segScore = e ** -.(fst (Array.fold_left
 				(fun (currentScore, currentWord) currentIndex ->
@@ -726,8 +692,6 @@ let score_all_segmentations utterance =
 													Hashtbl.find wordScoreCache newWord
 												end) in
 							let newScore = wordScore +. currentScore in
-							if (newScore < !bestScore) then
-								bestScore := newScore;	
 							(newScore, "")
 						end
 					else
@@ -736,11 +700,22 @@ let score_all_segmentations utterance =
 				(0.0,"")
 				lastCharList))
 			in
-			Array.append oldSegmentationList [|((segScore /. (e ** -.(!bestScore))), currentSegmentation)|]
+			if (segScore > !bestScore) then
+				bestScore := segScore;
+			Array.append oldSegmentationList [|(segScore, currentSegmentation)|]
 		)
 		[||]
-		possibleSegmentations;;
-		
+		possibleSegmentations
+	in
+	if (!bestScore > 0.0) then
+		Array.map
+			(fun (segScore, currentSegmentation) -> 
+				((segScore /. !bestScore), (seg_int_to_seg_list currentSegmentation utterance))
+			)
+			scoredSegmentations
+	else
+		[|(1.0, (seg_int_to_seg_list 1 utterance))|];;
+				
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
 		begin
@@ -774,7 +749,7 @@ let mbdp_outer sentence =
 	 	snd
 		bestList;;
 
-let evalUtterance = mbdp_outer;;
+let eval_utterance = mbdp_outer;;
 
 (* Finds the path through bestStartList which reveals the starts and stops of all hypothesized words in the utterance.
 	Make sure you call this with firstChar set to the length of the utterance*)
@@ -794,7 +769,7 @@ let incremental_processor utteranceList =
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-					let bestStartList = evalUtterance sentence in
+					let bestStartList = eval_utterance sentence in
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
@@ -841,7 +816,7 @@ let two_pass_processor utteranceList =
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-					let bestStartList = evalUtterance sentence in
+					let bestStartList = eval_utterance sentence in
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
