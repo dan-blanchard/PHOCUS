@@ -2,9 +2,7 @@
    Segmentation Framework *)
 
 (*	NOTES:
-		-	To implement addAllSegmentations flag, need to generate list of all possible segmentations, score segmentation in list (caching word scores), 
-			and then add all segmentations to lexicon, weighting phoneme n-grams and words themselves by ratio to top score (this will be tricky since lowest
-			log prob score is best).
+		-	Seems to never advance past second utterance when --addAllSegmentations flag is specified.
 		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance with Venkataraman.
 		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
 		-	Consider functor implementation of ngram cues to clean up redundant code.
@@ -637,9 +635,12 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
 			List.iter (fun updateFunc -> (updateFunc newWord incrementAmount)) updateFunctions; (* Calls all of the update functions in the list *)
-			printf "%s" newWord;
-			if (List.length segmentation > 2) then
-				printf "%s" !wordDelimiter;
+			if (incrementAmount = 1.0) then
+				begin
+					printf "%s" newWord;
+					if (List.length segmentation > 2) then
+						printf "%s" !wordDelimiter
+				end;
 			lexicon_updater (List.tl segmentation) sentence updateFunctions incrementAmount
 		end
 	else
@@ -658,46 +659,67 @@ let default_evidence_combiner word =
 let eval_word = default_evidence_combiner;;
 
 (* Takes a segmentation bitmask such as the ones used in score_all_segmentations, and converts it to a lexicon_updater-style list. *)
-let seg_int_to_seg_list segInt utterance = 
-	let segmentation = Array.init (String.length utterance) (fun currentIndex -> 
-																let indexPowerOfTwo = int_of_float (2.0 ** (float_of_int currentIndex)) in
-																if ((indexPowerOfTwo land segInt) = indexPowerOfTwo) then
-																	(currentIndex + 1)
-																else
-																	0)
+let seg_mask_to_seg_list utterance segMask = 
+	let segList = List.remove_all 
+					(Array.to_list
+						(Array.mapi
+							(fun currentIndex breakHere ->
+								if breakHere then
+									currentIndex + 1
+								else
+									0
+							)
+							segMask
+						)
+					) 
+					0
 	in
-	[0] @ (List.remove_all (Array.to_list segmentation) 0);;
+	[0] @ (List.remove_all segList 0) @ [String.length utterance];;
+
+(* Converts an integer into a array of binary values representing the phrase-internal word boundaries in the utterance. *)
+let seg_int_to_seg_mask utterance segInt =
+	let utteranceLength = String.length utterance in 
+	Array.rev (Array.init 
+		(utteranceLength - 1)
+		(fun currentIndex ->
+			let indexPowerOfTwo = int_of_float (2.0 ** (float_of_int currentIndex)) in
+			((indexPowerOfTwo land segInt) = indexPowerOfTwo)
+		));;
 
 (* Creates a scored list of all segmentations, normalized with respect to the most probable segmentation (i.e., the most probable one will have a score of 1.0). *)
 let score_all_segmentations utterance = 
 	let wordScoreCache = Hashtbl.create 300 in
 	let utteranceLength = String.length utterance in
 	let bestScore = ref 0.0 in 
-	let lastCharList = Array.init utteranceLength (fun a -> a) in
-	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int utteranceLength))) - 2) (fun a -> (a + 1)) in
+	let lastCharList = Array.init utteranceLength (fun a -> (a + 1)) in
+	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int (utteranceLength - 1)))) - 1) (seg_int_to_seg_mask utterance) in
 	let scoredSegmentations = Array.fold_left
 		(fun oldSegmentationList currentSegmentation -> 
 			let segScore = e ** -.(fst (Array.fold_left
 				(fun (currentScore, currentWord) currentIndex ->
-					let currentChar = String.sub utterance currentIndex 1 in 
-					let newWord = currentWord ^ currentChar in
-					let indexPowerOfTwo = int_of_float (2.0 ** (float_of_int currentIndex)) in
-					if ((indexPowerOfTwo land currentSegmentation) = indexPowerOfTwo) then
+					let currentChar = (if (currentIndex < utteranceLength) then	
+											String.sub utterance currentIndex 1
+										else
+											"") 
+					in 
+					if ((currentChar = "") || currentSegmentation.(currentIndex - 1)) then
 						begin
-							let wordScore = (if (Hashtbl.mem wordScoreCache newWord) then
-												Hashtbl.find wordScoreCache newWord
+							let wordScore = (if (Hashtbl.mem wordScoreCache currentWord) then
+												Hashtbl.find wordScoreCache currentWord
 											else
 												begin
-													Hashtbl.add wordScoreCache newWord (eval_word newWord);
-													Hashtbl.find wordScoreCache newWord
+													let tempScore = eval_word currentWord in
+													Hashtbl.add wordScoreCache currentWord tempScore;
+													tempScore
 												end) in
 							let newScore = wordScore +. currentScore in
-							(newScore, "")
+							(newScore, currentChar)
 						end
 					else
+						let newWord = currentWord ^ currentChar in
 						(currentScore, newWord)
 				)
-				(0.0,"")
+				(0.0, (String.sub utterance 0 1))
 				lastCharList))
 			in
 			if (segScore > !bestScore) then
@@ -710,11 +732,11 @@ let score_all_segmentations utterance =
 	if (!bestScore > 0.0) then
 		Array.map
 			(fun (segScore, currentSegmentation) -> 
-				((segScore /. !bestScore), (seg_int_to_seg_list currentSegmentation utterance))
+				((segScore /. !bestScore), (seg_mask_to_seg_list utterance currentSegmentation))
 			)
 			scoredSegmentations
 	else
-		[|(1.0, (seg_int_to_seg_list 1 utterance))|];;
+		[|(1.0, [0] @ [utteranceLength])|];;
 				
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
@@ -762,6 +784,17 @@ let rec find_segmentation bestStartList firstChar path =
 	else
 		path;;
 
+(* Use standard Viterbi-style search to just get top segmentation*)
+let fast_search sentence =
+	let bestStartList = eval_utterance sentence in
+	[|(1.0, ((List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence]))|];;
+
+
+let get_scored_segmentation_list = (if !addAllSegmentations then
+										score_all_segmentations
+									else
+										fast_search);;
+
 (* Loop through utterances *)
 let incremental_processor utteranceList = 
 	List.iteri
@@ -769,11 +802,13 @@ let incremental_processor utteranceList =
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-					let bestStartList = eval_utterance sentence in
-					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
+					let segmentations = get_scored_segmentation_list sentence in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
-					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence] 1.0; 
+					Array.iter (fun (incrementAmount, segmentation) -> 
+									lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; FamiliarWordCue.update_evidence] incrementAmount
+								) 
+								segmentations;
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
