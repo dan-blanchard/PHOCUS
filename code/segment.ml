@@ -695,6 +695,7 @@ let score_all_segmentations utterance =
 	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int (utteranceLength - 1)))) - 1) (seg_int_to_seg_mask utterance) in
 	let scoredSegmentations = Array.fold_left
 		(fun oldSegmentationList currentSegmentation -> 
+			(* Std.print currentSegmentation; *)
 			let segScore = e ** -.(fst (Array.fold_left
 				(fun (currentScore, currentWord) currentIndex ->
 					let currentChar = (if (currentIndex < utteranceLength) then	
@@ -729,6 +730,7 @@ let score_all_segmentations utterance =
 		[||]
 		possibleSegmentations
 	in
+	(* printf "\nCache size: %d\n" (Hashtbl.length wordScoreCache); *)
 	if (!bestScore > 0.0) then
 		Array.map
 			(fun (segScore, currentSegmentation) -> 
