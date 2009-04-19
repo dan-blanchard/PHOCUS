@@ -13,7 +13,6 @@ open ExtList
 open ExtString
 open ExtArray
 
-let svnRevision = "UNKNOWN"
 let e = 2.71828183
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
@@ -32,50 +31,53 @@ let smooth = ref false
 let tokenPhonotactics = ref false
 let totalWords = ref 0.0
 let mbdp = ref false
+let verbose = ref false
+let favorShort = ref false
 let countProposedNgrams = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
-let addAllSegmentations = ref false
 
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
-let arg_spec_list =["--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
-					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter";
-					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
-					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
-					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
-					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
+let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
+					"-bs", Arg.Set_float badScore, " Short for --badScore";
+					"--favorShort", Arg.Set favorShort, " Favor short familiar words, instead of longer ones.  Familiar word probabilities are divided by their length.";
+					"-fs", Arg.Set favorShort, " Short for --favorShort";					
 					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
 					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
-					"--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
-					"-bs", Arg.Set_float badScore, " Short for --badScore";
-					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
-					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
-					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
-					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
-					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
-					"-ul", Arg.Set_int utteranceLimit, " Short for --utteranceLimit";
-					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
-					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
-					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
-					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
-					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
-					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
-					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
-					"-jp", Arg.Set jointProb, " Short for --jointProbability";
-					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
-					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
-					"--addAllSegmentations", Arg.Set addAllSegmentations, " When updating evidence, add evidence from all possible segmentations, weighted by their probabilities. (Default = false)";
-					"-aa", Arg.Set addAllSegmentations, " Short for --addAllSegmentations";
+					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
+					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
+					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
+					"-jp", Arg.Set jointProb, " Short for --jointProbability";
+					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
+					"-lo", Arg.Set_string lexiconOut, " Short for --lexiconOut";
+					"--lineNumbers", Arg.Set displayLineNumbers, " Display line numbers before each segmented utterance";
+					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
 					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.  Should also enable --hypotheticalPhonotactics for true MBDP-1.";
-					"-mb", Arg.Set mbdp, " Short for --MBDP-1"]
+					"-mb", Arg.Set mbdp, " Short for --MBDP-1";
+					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
+					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
+					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
+					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
+					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
+					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
+					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
+					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
+					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
+					"-ul", Arg.Set_int utteranceLimit, " Short for --utteranceLimit";
+					"--verbose", Arg.Set verbose, " Print out scores for each possible segmentation of each utterance.";
+					"-v", Arg.Set verbose, " Short for --verbose";
+					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
+					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
+					"--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
+					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter"]
 
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
-Arg.parse arg_spec_list	process_anon_args usage;;
+Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
 
 let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
 let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
@@ -648,9 +650,11 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
-	let familiarScore = FamiliarWordCue.eval_word word (+.) in
+	let lengthPenalty = (if !favorShort then (log (float_of_int (String.length word))) else 0.0) in
+	let familiarScore = (FamiliarWordCue.eval_word word (+.)) -. lengthPenalty in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
-	(* printf "Familiar score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word phonemeScore; *)
+	if (!verbose) then
+		printf "Familiar score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word phonemeScore;
 	if (Hashtbl.mem lexicon word) then
 		familiarScore
 	else
@@ -658,88 +662,6 @@ let default_evidence_combiner word =
 
 let eval_word = default_evidence_combiner;;
 
-(* Takes a segmentation bitmask such as the ones used in score_all_segmentations, and converts it to a lexicon_updater-style list. *)
-let seg_mask_to_seg_list utterance segMask = 
-	let segList = List.remove_all 
-					(Array.to_list
-						(Array.mapi
-							(fun currentIndex breakHere ->
-								if breakHere then
-									currentIndex + 1
-								else
-									0
-							)
-							segMask
-						)
-					) 
-					0
-	in
-	[0] @ (List.remove_all segList 0) @ [String.length utterance];;
-
-(* Converts an integer into a array of binary values representing the phrase-internal word boundaries in the utterance. *)
-let seg_int_to_seg_mask utterance segInt =
-	let utteranceLength = String.length utterance in 
-	Array.rev (Array.init 
-		(utteranceLength - 1)
-		(fun currentIndex ->
-			let indexPowerOfTwo = int_of_float (2.0 ** (float_of_int currentIndex)) in
-			((indexPowerOfTwo land segInt) = indexPowerOfTwo)
-		));;
-
-(* Creates a scored list of all segmentations, normalized with respect to the most probable segmentation (i.e., the most probable one will have a score of 1.0). *)
-let score_all_segmentations utterance = 
-	let wordScoreCache = Hashtbl.create 300 in
-	let utteranceLength = String.length utterance in
-	let bestScore = ref 0.0 in 
-	let lastCharList = Array.init utteranceLength (fun a -> (a + 1)) in
-	let possibleSegmentations = Array.init ((int_of_float (2.0 ** (float_of_int (utteranceLength - 1)))) - 1) (seg_int_to_seg_mask utterance) in
-	let scoredSegmentations = Array.fold_left
-		(fun oldSegmentationList currentSegmentation -> 
-			(* Std.print currentSegmentation; *)
-			let segScore = e ** -.(fst (Array.fold_left
-				(fun (currentScore, currentWord) currentIndex ->
-					let currentChar = (if (currentIndex < utteranceLength) then	
-											String.sub utterance currentIndex 1
-										else
-											"") 
-					in 
-					if ((currentChar = "") || currentSegmentation.(currentIndex - 1)) then
-						begin
-							let wordScore = (if (Hashtbl.mem wordScoreCache currentWord) then
-												Hashtbl.find wordScoreCache currentWord
-											else
-												begin
-													let tempScore = eval_word currentWord in
-													Hashtbl.add wordScoreCache currentWord tempScore;
-													tempScore
-												end) in
-							let newScore = wordScore +. currentScore in
-							(newScore, currentChar)
-						end
-					else
-						let newWord = currentWord ^ currentChar in
-						(currentScore, newWord)
-				)
-				(0.0, (String.sub utterance 0 1))
-				lastCharList))
-			in
-			if (segScore > !bestScore) then
-				bestScore := segScore;
-			Array.append oldSegmentationList [|(segScore, currentSegmentation)|]
-		)
-		[||]
-		possibleSegmentations
-	in
-	(* printf "\nCache size: %d\n" (Hashtbl.length wordScoreCache); *)
-	if (!bestScore > 0.0) then
-		Array.map
-			(fun (segScore, currentSegmentation) -> 
-				((segScore /. !bestScore), (seg_mask_to_seg_list utterance currentSegmentation))
-			)
-			scoredSegmentations
-	else
-		[|(1.0, [0] @ [utteranceLength])|];;
-				
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
 		begin
@@ -792,10 +714,7 @@ let fast_search sentence =
 	[|(1.0, ((List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence]))|];;
 
 
-let get_scored_segmentation_list = (if !addAllSegmentations then
-										score_all_segmentations
-									else
-										fast_search);;
+let get_scored_segmentation_list = fast_search;;
 
 (* Loop through utterances *)
 let incremental_processor utteranceList = 
