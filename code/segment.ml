@@ -651,7 +651,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
 	let lengthPenalty = (if !favorShort then (log (float_of_int (String.length word))) else 0.0) in
-	let familiarScore = (FamiliarWordCue.eval_word word (+.)) -. lengthPenalty in
+	let familiarScore = (FamiliarWordCue.eval_word word (+.)) +. lengthPenalty in
 	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
 	if (!verbose) then
 		printf "Familiar score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word phonemeScore;
