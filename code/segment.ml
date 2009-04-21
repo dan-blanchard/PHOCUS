@@ -2,7 +2,6 @@
    Segmentation Framework *)
 
 (*	NOTES:
-		-	Seems to never advance past second utterance when --addAllSegmentations flag is specified.
 		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance with Venkataraman.
 		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
 		-	Consider functor implementation of ngram cues to clean up redundant code.
@@ -32,7 +31,6 @@ let tokenPhonotactics = ref false
 let totalWords = ref 0.0
 let mbdp = ref false
 let verbose = ref false
-let favorShort = ref false
 let countProposedNgrams = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
@@ -43,8 +41,6 @@ let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 let process_anon_args corpusFile = corpus := corpusFile
 let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
 					"-bs", Arg.Set_float badScore, " Short for --badScore";
-					"--favorShort", Arg.Set favorShort, " Favor short familiar words, instead of longer ones.  Familiar word probabilities are divided by their length.";
-					"-fs", Arg.Set favorShort, " Short for --favorShort";					
 					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
 					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
@@ -650,9 +646,8 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
-	let lengthPenalty = (if !favorShort then (log (float_of_int (String.length word))) else 0.0) in
-	let familiarScore = (FamiliarWordCue.eval_word word (+.)) +. lengthPenalty in
-	let phonemeScore = PhonemeNgramCue.eval_word word (+.) in
+	let familiarScore = (FamiliarWordCue.eval_word word (+.)) in
+	let phonemeScore = (PhonemeNgramCue.eval_word word (+.)) in
 	if (!verbose) then
 		printf "Familiar score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word phonemeScore;
 	if (Hashtbl.mem lexicon word) then
