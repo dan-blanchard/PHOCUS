@@ -62,7 +62,7 @@ while (<>)
 		{
 			die "Word not found: $word\n";
 		}
-		$stressedWord =~ s/[02]//g;
+		$stressedWord =~ s/[02]//g; # Remove unstressed and secondary-stress symbols
 		print "$stressedWord#"
 	}
 	print "\n";
