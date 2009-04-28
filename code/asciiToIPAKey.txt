@@ -7,15 +7,15 @@ D	ð
 E	ɛ
 G	d͡ʒ
 I	ɪ
-L	l̩
-M	m̩
+L	əl
+M	əm
 N	ŋ
 O	ɔ
-R	ɹ̩
+R	əɹ
 S	ʃ
 T	θ
 U	ʊ
-W	ʍ
+W	w
 Z	ʒ
 b	b
 c	t͡ʃ
@@ -39,4 +39,4 @@ v	v
 w	w
 y	j
 z	z
-~	n̩
+~	ən
