@@ -37,7 +37,7 @@ while (<>)
 	$line = $_;
 	for (my $i = 0; $i < scalar(@pairs); $i++) 
 	{
-		$line =~ s/\Q$pairs[$i][0]\E/\Q$pairs[$i][1]\E/g;
+		$line =~ s/$pairs[$i][0]/$pairs[$i][1]/g;
 	}
 	print $line;
 }

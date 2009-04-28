@@ -41,29 +41,26 @@ while (<>)
 	@line = split / /,$_;
 	foreach my $word (@line)
 	{
+		$stressedWord = "";
 		$word = uc($word);
 		if (exists $cmuDict{$word})
 		{
 			$stressedWord = $cmuDict{$word};
 		}
-		elsif ($word =~ m/'S$/)
+		else
 		{
 			$word =~ s/'S$/S/;
-			if (exists $cmuDict{$word})
-			{
-				$stressedWord = $cmuDict{$word};
-			}
-			else
-			{
-				die "Word not found: $word\n";
-			}
+			$stressedWord = $cmuDict{$word};
 		}
-		else
+		if (!$stressedWord)
 		{
 			die "Word not found: $word\n";
 		}
-		$stressedWord =~ s/[02]//g; # Remove unstressed and secondary-stress symbols
-		print "$stressedWord#"
+		else
+		{
+			$stressedWord =~ s/[02]//g; # Remove unstressed and secondary-stress symbols
+			print "$stressedWord#"			
+		}
 	}
 	print "\n";
 }

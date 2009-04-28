@@ -1,0 +1,54 @@
+AH1	ʌ1
+AH	ə
+ə N#	n̩#
+ə L#	l̩#
+ə M#	m̩#
+ə N Z#	n̩Z#
+ə L Z#	l̩Z#
+ə M Z#	m̩Z#
+ə N T#	n̩T#
+ə L T#	l̩T#
+ə M T#	m̩T#
+ə N D#	n̩D#
+ə L D#	l̩D#
+ə M D#	m̩D#
+UW	u
+AO	ɔ
+EH	ɛ
+IH	ɪ
+AA	ɑ
+AE	æ
+AY	aɪ
+OY	ɔɪ
+AW	aʊ
+DH	ð
+JH	d͡ʒ
+NG	ŋ
+ER	ɹ̩
+SH	ʃ
+TH	θ
+UH	ʊ
+ZH	ʒ
+CH	t͡ʃ
+EY	e
+HH	h
+IY	i
+OW	o
+W	w
+B	b
+D	d
+F	f
+G	g
+K	k
+L	l
+M	m
+N	n
+P	p
+R	ɹ
+S	s
+T	t
+V	v
+Y	j
+Z	z
+ 	
+#	 
