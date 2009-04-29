@@ -34,13 +34,16 @@ let verbose = ref false
 let countProposedNgrams = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
+let decayFactor = ref 0.0
 
 let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
-let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size";
+let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size (Default = 0.0)";
 					"-bs", Arg.Set_float badScore, " Short for --badScore";
+					"--decayFactor", Arg.Set_float decayFactor, " Exponent used to calculate memory decay.  (Default = 0.0, no decay)";
+					"-df", Arg.Set_float decayFactor, " Short for --decayFactor";
 					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
 					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
@@ -98,16 +101,21 @@ end
 
 module FamiliarWordCue : CUE = 
 struct
+	let lastSeen = Hashtbl.create 10000
+	
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
 		if (Hashtbl.mem lexicon word) then
 			let wordCountFloat = (Hashtbl.find lexicon word) in
 			let totalWordsFloat = !totalWords in 
-			if (not !mbdp) then
-				let wordTypesFloat = float ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
-					-.(log (wordCountFloat /. (totalWordsFloat +. wordTypesFloat)))
-			else
-				-.(log (((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
+			let rawScore = 
+				(if (not !mbdp) then
+					let wordTypesFloat = float ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
+						(wordCountFloat /. (totalWordsFloat +. wordTypesFloat))
+				else
+					(((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
+			in
+			-.(log (rawScore *. (((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0) -. (Hashtbl.find lastSeen word)) ** (-. !decayFactor)))
 		else
 			-.(log !badScore)
 	
@@ -120,7 +128,11 @@ struct
 		if Hashtbl.mem lexicon newWord then
 			Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) +. incrementAmount)
 		else
-			Hashtbl.add lexicon newWord incrementAmount;;		
+			Hashtbl.add lexicon newWord incrementAmount;
+		if Hashtbl.mem lastSeen newWord then
+			Hashtbl.replace lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter)
+		else
+			Hashtbl.add lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter);;		
 end
 
 module PhonemeNgramCue : CUE = struct
@@ -654,6 +666,13 @@ let default_evidence_combiner word =
 		familiarScore
 	else
 		phonemeScore;;
+
+let additive_evidence_combiner word =
+	let familiarScore = (FamiliarWordCue.eval_word word (+.)) in
+	let phonemeScore = (PhonemeNgramCue.eval_word word (+.)) in
+	if (!verbose) then
+		printf "Familiar score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word phonemeScore;
+	familiarScore +. phonemeScore;;
 
 let eval_word = default_evidence_combiner;;
 
