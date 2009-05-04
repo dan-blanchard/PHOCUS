@@ -20,7 +20,7 @@ while ($line = <>)
 	$syllables = $line;
 	$syllables =~ s/(9I)|(9U)|(OI)/--/g;  # diphthongs
 	$syllables =~ s/[&69AEIOUaeiouR~ML]/length($`)%10/eg; # vowels
-	$syllables =~ s/--/(length($`)%10) . (length($`)%10)/eg;  # diphthongs
+	$syllables =~ s/--/(length($`)%10) x 2/eg;  # diphthongs
 	# Loop until we've assigned all characters to a syllable
 	while ($syllables =~ m/[^0-9]/)
 	{
