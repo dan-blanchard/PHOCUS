@@ -3,59 +3,51 @@
 # Dan Blanchard
 # Corpus Syllabifier
 
+# TODO: Change vowels/diphthongs so they aren't hard-coded for BR corpus.  Should use feature chart to just check for +syllabic
+
 use strict;
 
-my %vowels;
-my %syllabic;
 my $line;
-my $phone;
-my $seenVowel = 0;
-my @syllables;
-my $notDone = 1;
-
-# Initialize Hashes
-$vowels{"&"} = $vowels{"6"} = $vowels{"9"} = $vowels{"A"} = $vowels{"E"} = $vowels{"I"} = $vowels{"O"} = $vowels{"U"} = $vowels{"a"} = $vowels{"e"} = $vowels{"i"} = $vowels{"o"} = $vowels{"u"} = 1;
-# $vowels{"9I"} = $vowels{"9U"} = $vowels{"OI"} = 1; # diphthongs
-$syllabic{"R"} = $syllabic{"~"} = $syllabic{"M"} = $syllabic{"L"} = 1;
+my $prevSyllable;
+my $currSyllable;
+my $syllables;
+my @breaks = ();
 
 while ($line = <>)
 {
-	@syllables = ();
+	@breaks = ();
 	chomp $line;
-	for (my $i = 0; $i < length($line); $i++) 
+	$syllables = $line;
+	$syllables =~ s/(9I)|(9U)|(OI)/--/g;  # diphthongs
+	$syllables =~ s/[&69AEIOUaeiouR~ML]/length($`)%10/eg; # vowels
+	$syllables =~ s/--/(length($`)%10) . (length($`)%10)/eg;  # diphthongs
+	# Loop until we've assigned all characters to a syllable
+	while ($syllables =~ m/[^0-9]/)
 	{
-		$phone = substr $line, $i, 1;
-		if (!$seenVowel)
-		{
-			if (exists $vowels{$phone})
-			{
-				$seenVowel = 1;
-				push @syllables, 1;
-			}
-			else
-			{
-				$seenVowel = 0;
-				push @syllables, ((exists $syllabic{$phone}) ? 1 : 0);
-			}
-		}
-		elsif (exists $vowels{$phone})
-		{
-			$seenVowel = 0;
-			push @syllables, 2;
-		}
-		else
-		{
-			$seenVowel = 0;
-			push @syllables, ((exists $syllabic{$phone}) ? 1 : 0);
-		}
+		$syllables =~ s/[^0-9>](0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)/<$1/g; # find onsets
+		$syllables =~ s/(0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)[^0-9<]/$1>/g; # find codas
+		$syllables =~ s/<([0-9])/$1$1/g;
+		$syllables =~ s/([0-9])>/$1$1/g;
 	}
-	print "line: $line\tsyllables: @syllables\n";
 	
-	while ($notDone)
+	# Find syllable break positions
+	$prevSyllable = substr($syllables,0,1);
+	for (my $i = 1; $i < length($syllables); $i++) 
 	{
-		for (my $i = 0; $i < expression; $i++) 
+		$currSyllable = substr($syllables,$i,1);
+		if ($currSyllable != $prevSyllable)
 		{
-			if ($vowel)
-		}		
+			push @breaks, $i;
+			$prevSyllable = $currSyllable;
+			
+		}
 	}
+	
+	# Insert syllable boundaries
+	for (my $i = 0; $i < scalar(@breaks); $i++) 
+	{
+		substr($line,$breaks[$i]+$i,0,".");
+	}
+	
+	print "$line\n";
 }
