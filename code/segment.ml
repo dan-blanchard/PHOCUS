@@ -25,6 +25,7 @@ let corpus = ref ""
 let sentenceList = ref []
 let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
+let syllableCountsOut = ref ""
 let phonemeWindow = ref 1
 let syllableWindow = ref 1
 let featureWindow = ref 1
@@ -61,12 +62,14 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
 					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.  Should also enable --hypotheticalPhonotactics for true MBDP-1.";
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1";
-					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
-					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
+					"--phonemeNgramsOut", Arg.Set_string phonemeCountsOut, " File to dump final phoneme n-gram counts to";
+					"-pn", Arg.Set_string phonemeCountsOut, " Short for --phonemeNgramsOut";
 					"--phonemeWindow", Arg.Set_int phonemeWindow, " Window size for phoneme n-grams";
 					"-pw", Arg.Set_int phonemeWindow, " Short for --phonemeWindow";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
+					"--syllableNgramsOut", Arg.Set_string syllableCountsOut, " File to dump final syllable n-gram counts to";
+					"-sn", Arg.Set_string syllableCountsOut, " Short for --syllableNgramsOut";
 					"--syllableWindow", Arg.Set_int syllableWindow, " Window size for syllable n-grams";
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
@@ -929,6 +932,10 @@ if !lexiconOut <> "" then
 (* Dump n-gram counts if requested *)
 if !phonemeCountsOut <> "" then
 	PhonemeNgramCue.dump !phonemeCountsOut;;
+
+(* Dump n-gram counts if requested *)
+if !syllableCountsOut <> "" then
+	SyllableNgramCue.dump !syllableCountsOut;;
 	
 
 
