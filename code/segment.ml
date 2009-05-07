@@ -100,6 +100,9 @@ sig
 	
 	(* Dump the table associated with this cue to a file. *)
 	val dump : string -> unit
+	
+	(* Check if we should back-off or use this cue*)
+	val use_score : string -> bool
 end
 
 module FamiliarWordCue : CUE = 
@@ -125,6 +128,8 @@ struct
 	let initialize initialCount = ()
 	
 	let dump dumpFile = ()
+	
+	let use_score (word:string) = Hashtbl.mem lexicon word
 	
 	let update_evidence (newWord:string) (incrementAmount:float)= 
 		totalWords := !totalWords +. incrementAmount;
@@ -270,7 +275,10 @@ struct
 			end
 		else
 			""
-		
+	
+	(* Check if we can even syllabify word *)	
+	let use_score (word:string) = ((syllabify word) = "") 
+	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount = ()
 	
@@ -516,6 +524,8 @@ struct
 				)
 				wordNgramList
 	
+	let use_score (word:string) = true
+	
 	(* Dump the table associated with this cue to a file. *)
 	let dump dumpFile = 
 		let oc = open_out dumpFile in
@@ -693,6 +703,8 @@ struct
 				)
 				wordNgramList
 	
+	let use_score (word:string) = true
+	
 	(* Dump the table associated with this cue to a file. *)
 	let dump dumpFile = 
 		let oc = open_out dumpFile in
@@ -760,10 +772,10 @@ let default_evidence_combiner word =
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word (+.)) else infinity in
 	if (!verbose) then
 		printf "Familiar score for %s = %.15F\nSyllable score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word syllableScore word phonemeScore;
-	if (Hashtbl.mem lexicon word) then
+	if (FamiliarWordCue.use_score word) then
 		familiarScore
 	else
-		if (syllableScore < infinity) then
+		if (SyllableNgramCue.use_score word) || (syllableScore < infinity) then (* Can't syllabify word or score is acceptably low. *)
 			syllableScore
 		else
 			phonemeScore;;
