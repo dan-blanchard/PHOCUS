@@ -25,7 +25,9 @@ let corpus = ref ""
 let sentenceList = ref []
 let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
-let windowSize = ref 1
+let phonemeWindow = ref 1
+let syllableWindow = ref 1
+let featureWindow = ref 1
 let jointProb = ref false
 let smooth = ref false
 let tokenPhonotactics = ref false
@@ -61,8 +63,12 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1";
 					"--ngramsOut", Arg.Set_string phonemeCountsOut, " File to dump final n-gram counts to";
 					"-no", Arg.Set_string phonemeCountsOut, " Short for --ngramsOut";
+					"--phonemeWindow", Arg.Set_int phonemeWindow, " Window size for phoneme n-grams";
+					"-pw", Arg.Set_int phonemeWindow, " Short for --phonemeWindow";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
+					"--syllableWindow", Arg.Set_int syllableWindow, " Window size for syllable n-grams";
+					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
 					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
@@ -71,8 +77,6 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-ul", Arg.Set_int utteranceLimit, " Short for --utteranceLimit";
 					"--verbose", Arg.Set verbose, " Print out scores for each possible segmentation of each utterance.";
 					"-v", Arg.Set verbose, " Short for --verbose";
-					"--windowSize", Arg.Set_int windowSize, " Window size for n-grams";
-					"-ws", Arg.Set_int windowSize, " Short for --windowSize";
 					"--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
 					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter"]
 
@@ -96,12 +100,6 @@ sig
 	
 	(* Dump the table associated with this cue to a file. *)
 	val dump : string -> unit
-end
-
-module type Sequence = 
-sig
-	type t = 
-	val sub : 
 end
 
 module FamiliarWordCue : CUE = 
@@ -140,150 +138,147 @@ struct
 			Hashtbl.add lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter);;		
 end
 
-module SyllableNgramCue : CUE = struct
-	let ngramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
-	let totalNgramsArray = Array.init (!windowSize) (fun a -> 0.0)
+module type NgramProbsSig = 
+sig
+	val prob_ngram : string -> string -> int -> (string, float) Hashtbl.t array -> float array -> int array -> (string, float) Hashtbl.t array -> float
+end
+
+module NgramProbs : NgramProbsSig =
+struct
+	(* Calculates D_n for Modified Kneser-Ney Smoothing*)
+	let rec discount n wordTypesWithCountArray = 
+		if (n = 0) then
+			wordTypesWithCountArray.(0) / (wordTypesWithCountArray.(0) + (2 * wordTypesWithCountArray.(1)))
+		else if (n < 3) then
+			n - ((n + 1) * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(n) / (wordTypesWithCountArray.(n - 1))))
+		else
+			3 - (4 * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(4) / (wordTypesWithCountArray.(3))));;
+
+	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
+	let prob_ngram_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray =
+		if (n = 0) then
+			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
+		else
+			begin
+				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
+					begin					
+						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+						else
+							!badScore
+					end
+				else 
+					begin					
+						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+						else
+							!badScore
+					end								
+			end;;
+
+	(* The implementation of this function is NOT done yet. *)
+	let prob_ngram_kneser_ney prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray = 
+		(* let d = discount n in *)
+		if (n = 0) then
+			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
+		else
+			begin
+				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
+					begin					
+						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+						else
+							!badScore
+					end
+				else 
+					begin					
+						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+						else
+							!badScore
+					end								
+			end;;
+
+	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
+	let prob_ngram_joint prefix ngram n wordNgramCountsArray wordTotalNgramsArray =
+		(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n);;
+
+	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
+	let prob_ngram prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray = 
+		match (!jointProb, !smooth) with 
+			(false, true)  -> prob_ngram_kneser_ney prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray
+		|	(false, false) -> prob_ngram_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray
+		| 	(_,_) -> prob_ngram_joint prefix ngram n wordNgramCountsArray wordTotalNgramsArray;;
+end
+
+module SyllableNgramCue : CUE =
+struct
+	open NgramProbs
+	let ngramCountsArray = Array.init (!syllableWindow) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
+	let totalNgramsArray = Array.init (!syllableWindow) (fun a -> 0.0)
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
-	let ngramList = List.init !windowSize (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
+	let ngramList = List.init !syllableWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
 	
 	let diphthongPattern = regexp "(9I)|(9U)|(OI)"
 	let vowelPattern = regexp "[&69AEIOUaeiouR~ML]"
 	let noVowelsPattern = regexp "[^&69AEIOUaeiouR~ML]"
 	let onsetPattern = regexp "[^0-9>](0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)"
 	let codaPattern = regexp "(0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)[^0-9<]"
+	let notNumPattern = regexp "[^0-9]"
 	let onsetReplace = subst "{e <$1}"
 	let codaReplace = subst "{e $1>}"
 	let onsetCleanupPattern = regexp "<([0-9])"
 	let codaCleanupPattern = regexp "([0-9])>"
 	let onsetCleanupReplace = subst "{e $1$1}"
 	let codaCleanupReplace = subst "{e $1$1}"
+	let syllableBoundaryPattern = regexp "(0[^0])|(1[^1])|(2[^2])|(3[^3])|(4[^4])|(5[^5])|(6[^6])|(7[^7])|(8[^8])|(9[^9])"
 	
 	let syllabify (word:string) = 
-		let syllCount = ref 0
-		let replace_with_count match = syllCount := (!syllCount + 1) % 10; !syllCount in
-		let noDiphWord = replace ~rex:diphthongPattern ~templ:"--" word in
-		let noVowelWord = substitute_substrings ~rex:vowelPattern ~subst:replace_with_count noDiphWord in
-		let numberedWord = substitute_substrings ~pat:"--" ~subst:replace_with_count noVowelWord in
+		let syllCount = ref 0 in
+		let replace_with_count matched = (syllCount := (!syllCount + 1) mod 10; String.init (String.length matched) (fun _ -> char_of_int !syllCount)) in
+		let workingWord = ref word in
+		workingWord := replace ~rex:diphthongPattern ~templ:"--" !workingWord;
+		workingWord := substitute ~rex:vowelPattern ~subst:replace_with_count !workingWord;
+		workingWord := substitute ~pat:"--" ~subst:replace_with_count !workingWord;
+		while pmatch ~rex:notNumPattern !workingWord do
+			workingWord := replace ~rex:onsetPattern ~itempl:onsetReplace !workingWord;
+			workingWord := replace ~rex:codaPattern ~itempl:codaReplace !workingWord;
+			workingWord := replace ~rex:onsetCleanupPattern ~itempl:onsetCleanupReplace !workingWord;
+			workingWord := replace ~rex:codaCleanupPattern ~itempl:codaCleanupReplace !workingWord
+		done;
+		workingWord := replace ~rex:syllableBoundaryPattern ~templ:" ." !workingWord;
+		List.fold_left2
+			(fun currentResult workingChar wordChar -> 
+				currentResult ^ (String.of_char wordChar) ^ (if workingChar == '.' then "." else "")
+			)
+			""
+			(String.explode !workingWord) 
+			(String.explode word);;
 		
 		
-	
-	(* Takes a list of strings and returns all permutations of them of length (n + 1) *)		
-	let rec permutations permList n = 
-		if n = 0 then
-			permList
-		else
-			List.fold_left
-				(fun resultList item -> 
-					let concatList = List.map (fun x -> x ^ item) permList in
-					resultList @ concatList
-				) 
-				[]
-				(permutations permList (n - 1));;
 		
 	(* Initialize the counts so we get a uniform distribution *)
-	let initialize initialCount =
-		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort | uniq | gsed '/[ \\t]/d'"))) in
-		List.iter 
-			(fun currentWindowSizeMinusOne ->
-				let phonemePermutationList = permutations phonemeList currentWindowSizeMinusOne in
-				List.iter
-					(fun ngram -> 
-						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCount *. (100.0 ** -.(float_of_int currentWindowSizeMinusOne)));
-					)
-					phonemePermutationList;
-				Array.set totalNgramsArray currentWindowSizeMinusOne ((float (List.length phonemePermutationList)) *. initialCount)
-			)
-			ngramList
-	
-	(* Calculates D_n for Modified Kneser-Ney Smoothing*)
-	let rec discount n wordTypesWithCountArray = 
-		if (n = 0) then
-			wordTypesWithCountArray.(0) / (wordTypesWithCountArray.(0) + (2 * wordTypesWithCountArray.(1)))
-		else if (n < 3) then
-			n - ((n + 1) * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(n) / (wordTypesWithCountArray.(n - 1))))
-		else
-			3 - (4 * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(4) / (wordTypesWithCountArray.(3))));;
-
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
-		let prefix = String.sub ngram 0 n in
-		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
-		else
-			begin
-				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
-			end;;
-
-	(* The implementation of this function is NOT done yet. *)
-	let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-		let prefix = String.sub ngram 0 n in
-		(* let d = discount n in *)
-		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
-		else
-			begin
-				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
-			end;;
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
-		(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n);;
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-		match (!jointProb, !smooth) with 
-			(false, true)  -> prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
-		|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
-		| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
+	let initialize initialCount = ()
 	
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
-		let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
-		let wordTotalNgramsArray = Array.init (!windowSize) (fun a -> 0.0) in
+		let wordNgramCountsArray = Array.init (!syllableWindow) (fun a -> Hashtbl.create 100) in
+		let wordTotalNgramsArray = Array.init (!syllableWindow) (fun a -> 0.0) in
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in		
-		let wordWithBoundary = (if !windowSize > 1 then 
+		let wordWithBoundary = (if !syllableWindow > 1 then 
 									!wordDelimiter ^ word ^ !wordDelimiter 
 								else 
 									word ^ !wordDelimiter) in							
-		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
-		let totalWordsFloat = (!totalWords +. (if !mbdp then 1. else 0.0)) in
 		let score = ref 0.0 in
-		if (String.length word) < !windowSize then
+		if (String.length word) < !syllableWindow then
 			-. (log !badScore)
 		else	
 			begin
@@ -307,44 +302,33 @@ module SyllableNgramCue : CUE = struct
 					ngramList;
 				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
-				if (not !mbdp) then
-					score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)))
-				else
-					score := 0.0;
-				score := !score +. (if !windowSize > 1 then 
+				score := 0.0;
+				score := !score +. (if !syllableWindow > 1 then 
 											-.(log 1.0)
 										else
 											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
 				(* printf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
-						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						let ngramScore = (-. (log (prob_ngram ngram (!windowSize - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray))) in
+						let ngram = String.sub wordWithBoundary firstChar !syllableWindow in
+						let ngramScore = (-. (log (prob_ngram (String.sub ngram 0 (!syllableWindow - 1)) ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray))) in
 						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
-					(List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a));
-				if (not !mbdp) then
-					!score
-				else
-					begin
-						let adjustment = -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0)) in
-						(* printf "Score adjustment = %F\n" adjustment; *)
-						(* printf "Raw phoneme score = %F\n" !score; *)
-						!score +. adjustment
-					end
+					(List.init ((String.length wordWithBoundary) - (!syllableWindow - 1)) (fun a -> a));
+				!score
 			end
 		
 	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
-			let wordWithBoundary = (if !windowSize > 1 then 
+			let wordWithBoundary = (if !syllableWindow > 1 then 
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
 									else 
 										newWord ^ !wordDelimiter) in
-			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
+			let wordWindow = (if (String.length wordWithBoundary) < !syllableWindow then
 									String.length wordWithBoundary
 							else
-								!windowSize) in
+								!syllableWindow) in
 			let wordNgramList = List.init wordWindow (fun a -> a) in
 			List.iter (* Get n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->
@@ -375,13 +359,15 @@ module SyllableNgramCue : CUE = struct
 		close_out oc
 end
 
-module PhonemeNgramCue : CUE = struct
+module PhonemeNgramCue : CUE =
+struct
+	open NgramProbs
 	let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
 	
-	let ngramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
-	let totalNgramsArray = Array.init (!windowSize) (fun a -> 0.0)
+	let ngramCountsArray = Array.init (!phonemeWindow) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
+	let totalNgramsArray = Array.init (!phonemeWindow) (fun a -> 0.0)
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
-	let ngramList = List.init !windowSize (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
+	let ngramList = List.init !phonemeWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
 	
 	(* Takes a list of strings and returns all permutations of them of length (n + 1) *)		
 	let rec permutations permList n = 
@@ -411,95 +397,19 @@ module PhonemeNgramCue : CUE = struct
 			)
 			ngramList
 	
-	(* Calculates D_n for Modified Kneser-Ney Smoothing*)
-	let rec discount n wordTypesWithCountArray = 
-		if (n = 0) then
-			wordTypesWithCountArray.(0) / (wordTypesWithCountArray.(0) + (2 * wordTypesWithCountArray.(1)))
-		else if (n < 3) then
-			n - ((n + 1) * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(n) / (wordTypesWithCountArray.(n - 1))))
-		else
-			3 - (4 * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(4) / (wordTypesWithCountArray.(3))));;
-
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
-		let prefix = String.sub ngram 0 n in
-		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
-		else
-			begin
-				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
-			end;;
-
-	(* The implementation of this function is NOT done yet. *)
-	let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-		let prefix = String.sub ngram 0 n in
-		(* let d = discount n in *)
-		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
-		else
-			begin
-				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
-			end;;
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
-		(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n);;
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-		match (!jointProb, !smooth) with 
-			(false, true)  -> prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
-		|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
-		| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
-	
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
-		let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
-		let wordTotalNgramsArray = Array.init (!windowSize) (fun a -> 0.0) in
+		let wordNgramCountsArray = Array.init (!phonemeWindow) (fun a -> Hashtbl.create 100) in
+		let wordTotalNgramsArray = Array.init (!phonemeWindow) (fun a -> 0.0) in
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in		
-		let wordWithBoundary = (if !windowSize > 1 then 
+		let wordWithBoundary = (if !phonemeWindow > 1 then 
 									!wordDelimiter ^ word ^ !wordDelimiter 
 								else 
 									word ^ !wordDelimiter) in							
 		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
 		let totalWordsFloat = (!totalWords +. (if !mbdp then 1. else 0.0)) in
 		let score = ref 0.0 in
-		if (String.length word) < !windowSize then
+		if (String.length word) < !phonemeWindow then
 			-. (log !badScore)
 		else	
 			begin
@@ -527,19 +437,19 @@ module PhonemeNgramCue : CUE = struct
 					score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)))
 				else
 					score := 0.0;
-				score := !score +. (if !windowSize > 1 then 
+				score := !score +. (if !phonemeWindow > 1 then 
 											-.(log 1.0)
 										else
 											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
 				(* printf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
-						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						let ngramScore = (-. (log (prob_ngram ngram (!windowSize - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray))) in
+						let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
+						let ngramScore = (-. (log (prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray))) in
 						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
-					(List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a));
+					(List.init ((String.length wordWithBoundary) - (!phonemeWindow - 1)) (fun a -> a));
 				if (not !mbdp) then
 					!score
 				else
@@ -553,14 +463,14 @@ module PhonemeNgramCue : CUE = struct
 		
 	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
-			let wordWithBoundary = (if !windowSize > 1 then 
+			let wordWithBoundary = (if !phonemeWindow > 1 then 
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
 									else 
 										newWord ^ !wordDelimiter) in
-			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
+			let wordWindow = (if (String.length wordWithBoundary) < !phonemeWindow then
 									String.length wordWithBoundary
 							else
-								!windowSize) in
+								!phonemeWindow) in
 			let wordNgramList = List.init wordWindow (fun a -> a) in
 			List.iter (* Get n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->
@@ -591,103 +501,27 @@ module PhonemeNgramCue : CUE = struct
 		close_out oc
 end
 
-module FeatureNgramCue : CUE = struct
-	let ngramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
-	let totalNgramsArray = Array.init (!windowSize) (fun a -> 0.0)
+module FeatureNgramCue : CUE =
+struct
+	open NgramProbs
+	let ngramCountsArray = Array.init (!featureWindow) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
+	let totalNgramsArray = Array.init (!featureWindow) (fun a -> 0.0)
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
 	let cartesianProductCache = Hashtbl.create 10000
-	let ngramList = List.init !windowSize (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
+	let ngramList = List.init !featureWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
 	module StringSet = Set.Make(String)
 	
 	let initialize initialCount = ()
-	
-	(* Calculates D_n for Modified Kneser-Ney Smoothing*)
-	let rec discount n wordTypesWithCountArray = 
-		if (n = 0) then
-			wordTypesWithCountArray.(0) / (wordTypesWithCountArray.(0) + (2 * wordTypesWithCountArray.(1)))
-		else if (n < 3) then
-			n - ((n + 1) * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(n) / (wordTypesWithCountArray.(n - 1))))
-		else
-			3 - (4 * (discount 0 wordTypesWithCountArray) * (wordTypesWithCountArray.(4) / (wordTypesWithCountArray.(3))));;
-
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray =
-		let prefix = String.sub ngram 0 n in
-		if (n = 0) then
-			let temp = (Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n) in
-			(* printf "ngram score for %s = %F\n" ngram temp; *)
-			temp
-		else
-			begin
-				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
-			end;;
-
-	(* The implementation of this function is NOT done yet. *)
-	let prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-		let prefix = String.sub ngram 0 n in
-		(* let d = discount n in *)
-		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
-		else
-			begin
-				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
-			end;;
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray =
-		(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n);;
-
-	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray = 
-		match (!jointProb, !smooth) with 
-			(false, true)  -> prob_ngram_kneser_ney ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray
-		|	(false, false) -> prob_ngram_conditional ngram n wordNgramCountsArray wordTotalNgramsArray
-		| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray;;
-	
+		
 	let eval_word (word:string) combine = 
-		let wordNgramCountsArray = Array.init (!windowSize) (fun a -> Hashtbl.create 100) in
-		let wordTotalNgramsArray = Array.init (!windowSize) (fun a -> 0.0) in
+		let wordNgramCountsArray = Array.init (!featureWindow) (fun a -> Hashtbl.create 100) in
+		let wordTotalNgramsArray = Array.init (!featureWindow) (fun a -> 0.0) in
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in		
-		let wordWithBoundary = (if !windowSize > 1 then 
+		let wordWithBoundary = (if !featureWindow > 1 then 
 									!wordDelimiter ^ word ^ !wordDelimiter 
 								else 
 									word ^ !wordDelimiter) in							
-		if (String.length word) < !windowSize then
+		if (String.length word) < !featureWindow then
 			-. (log !badScore)
 		else	
 			begin
@@ -751,29 +585,29 @@ module FeatureNgramCue : CUE = struct
 							firstCharList
 					)
 					ngramList;
-				let phonemeScore = ref (if !windowSize > 1 then 
+				let phonemeScore = ref (if !featureWindow > 1 then 
 											-.(log 1.0)
 										else
 											-.(log (1.0 /. (1.0 -. ((Hashtbl.find wordNgramCountsArray.(0) !wordDelimiter) /. wordTotalNgramsArray.(0)))))) in
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
-						let ngram = String.sub wordWithBoundary firstChar !windowSize in
-						phonemeScore := (combine !phonemeScore (-. (log (prob_ngram ngram (!windowSize - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray))))
+						let ngram = String.sub wordWithBoundary firstChar !featureWindow in
+						phonemeScore := (combine !phonemeScore (-. (log (prob_ngram (String.sub ngram 0 (!featureWindow - 1)) ngram (!featureWindow - 1) wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray))))
 					)
-					(List.init ((String.length wordWithBoundary) - (!windowSize - 1)) (fun a -> a));
+					(List.init ((String.length wordWithBoundary) - (!featureWindow - 1)) (fun a -> a));
 				!phonemeScore
 			end
 	
 	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
-			let wordWithBoundary = (if !windowSize > 1 then 
+			let wordWithBoundary = (if !featureWindow > 1 then 
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
 									else 
 										newWord ^ !wordDelimiter) in
-			let wordWindow = (if (String.length wordWithBoundary) < !windowSize then
+			let wordWindow = (if (String.length wordWithBoundary) < !featureWindow then
 									String.length wordWithBoundary
 							else
-								!windowSize) in
+								!featureWindow) in
 			let wordNgramList = List.init wordWindow (fun a -> a) in
 			List.iter (* Get feature n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->											
