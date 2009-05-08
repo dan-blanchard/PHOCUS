@@ -27,7 +27,7 @@ let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
 let syllableCountsOut = ref ""
 let phonemeWindow = ref 1
-let syllableWindow = ref 1
+let syllableWindow = ref 0
 let featureWindow = ref 1
 let jointProb = ref false
 let smooth = ref false
@@ -224,15 +224,18 @@ struct
 						else
 							!badScore
 					end
-				else 
-					begin					
-						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
-						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
-						else
-							!badScore
-					end								
+				else
+					if (Hashtbl.mem ngramCountsArray.(n) ngram) then
+						begin					
+							if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
+								(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+							else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
+								(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+							else
+								!badScore
+						end
+					else
+						!badScore
 			end;;
 
 	(* The implementation of this function is NOT done yet. *)
@@ -309,7 +312,7 @@ struct
 															else 
 																syllables @ [!wordDelimiter]) in		
 				let score = ref 0.0 in
-				if (List.length syllables) < !syllableWindow then
+				if (Array.length syllablesWithBoundary) < !syllableWindow then
 					-.(log !badScore)
 				else	
 					begin
@@ -333,7 +336,7 @@ struct
 							ngramList;
 						let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 						let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in
-						if (currentTotalNgramsArray.(0) > 0.0) && (Hashtbl.mem currentNgramCountsArray.(0) !wordDelimiter) && (!syllableWindow = 1) then
+						if (currentTotalNgramsArray.(0) > 0.0) && (Hashtbl.mem currentNgramCountsArray.(0) !wordDelimiter) then
 							begin
 								score := 0.0;
 								score := !score +. (if !syllableWindow > 1 then 
