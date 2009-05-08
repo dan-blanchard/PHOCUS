@@ -32,6 +32,7 @@ let featureWindow = ref 1
 let jointProb = ref false
 let smooth = ref false
 let tokenPhonotactics = ref false
+let interactive = ref false
 let totalWords = ref 0.0
 let mbdp = ref false
 let verbose = ref false
@@ -54,6 +55,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
 					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
 					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
+					"--interactive", Arg.Set interactive, " After reading in corpus, user can specify an utterance number to segment up to, and query scores for possible segmentations.";
+					"-i", Arg.Set interactive, " Short for --interactive";
 					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
 					"-jp", Arg.Set jointProb, " Short for --jointProbability";
 					"--lexiconOut", Arg.Set_string lexiconOut, " File to dump final lexicon to";
@@ -88,6 +91,47 @@ Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
 
 let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
 let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
+
+let diphthongPattern = regexp "(9I)|(9U)|(OI)"
+let vowelPattern = regexp "[&69AEIOUaeiouR~ML]"
+let noVowelsPattern = regexp "[^&69AEIOUaeiouR~ML]"
+let onsetPattern = regexp "[^0-9>](0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)"
+let codaPattern = regexp "(0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)[^0-9<]"
+let notNumPattern = regexp "[^0-9]"
+let onsetReplace = subst "<$1"
+let codaReplace = subst "$1>"
+let onsetCleanupPattern = regexp "<([0-9])"
+let codaCleanupPattern = regexp "([0-9])>"
+let onsetCleanupReplace = subst "$1$1"
+let codaCleanupReplace = subst "$1$1"
+
+(* Insert syllable boundaries into word by finding nucleus, then adding possible onsets and codas (in that order). 
+   If word does not contain any syllabic elements, returns "" *)
+let syllabify (word:string) = 
+	if (pmatch ~rex:vowelPattern word) then
+		begin
+			let syllCount = ref 0 in
+			let replace_with_count matched = (syllCount := (!syllCount + 1) mod 10; String.init (String.length matched) (fun i -> char_of_int (!syllCount + 48))) in (* need + 48 because char_of_int looks up by ASCII code *)
+			let workingWord = ref word in
+			workingWord := replace ~rex:diphthongPattern ~templ:"--" !workingWord;
+			workingWord := substitute ~rex:vowelPattern ~subst:replace_with_count !workingWord;
+			workingWord := substitute ~pat:"--" ~subst:replace_with_count !workingWord;
+			while pmatch ~rex:notNumPattern !workingWord do
+				workingWord := replace ~rex:onsetPattern ~itempl:onsetReplace !workingWord;
+				workingWord := replace ~rex:codaPattern ~itempl:codaReplace !workingWord;
+				workingWord := replace ~rex:onsetCleanupPattern ~itempl:onsetCleanupReplace !workingWord;
+				workingWord := replace ~rex:codaCleanupPattern ~itempl:codaCleanupReplace !workingWord;
+			done;
+			fst (List.fold_left2
+					(fun (currentResult, lastSyllable) workingChar wordChar -> 
+						((currentResult ^ (if workingChar <> lastSyllable then !syllableDelimiter else "") ^ (String.of_char wordChar)), workingChar)
+					)
+					("", '1')
+					(String.explode !workingWord) 
+					(String.explode word))
+		end
+	else
+		""
 
 module type CUE =
 sig
@@ -237,47 +281,6 @@ struct
 	let totalNgramsArray = Array.init (!syllableWindow) (fun a -> 0.0)
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
 	let ngramList = List.init !syllableWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
-	
-	let diphthongPattern = regexp "(9I)|(9U)|(OI)"
-	let vowelPattern = regexp "[&69AEIOUaeiouR~ML]"
-	let noVowelsPattern = regexp "[^&69AEIOUaeiouR~ML]"
-	let onsetPattern = regexp "[^0-9>](0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)"
-	let codaPattern = regexp "(0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)[^0-9<]"
-	let notNumPattern = regexp "[^0-9]"
-	let onsetReplace = subst "<$1"
-	let codaReplace = subst "$1>"
-	let onsetCleanupPattern = regexp "<([0-9])"
-	let codaCleanupPattern = regexp "([0-9])>"
-	let onsetCleanupReplace = subst "$1$1"
-	let codaCleanupReplace = subst "$1$1"
-	
-	(* Insert syllable boundaries into word by finding nucleus, then adding possible onsets and codas (in that order). 
-	   If word does not contain any syllabic elements, returns "" *)
-	let syllabify (word:string) = 
-		if (pmatch ~rex:vowelPattern word) then
-			begin
-				let syllCount = ref 0 in
-				let replace_with_count matched = (syllCount := (!syllCount + 1) mod 10; String.init (String.length matched) (fun i -> char_of_int (!syllCount + 48))) in (* need + 48 because char_of_int looks up by ASCII code *)
-				let workingWord = ref word in
-				workingWord := replace ~rex:diphthongPattern ~templ:"--" !workingWord;
-				workingWord := substitute ~rex:vowelPattern ~subst:replace_with_count !workingWord;
-				workingWord := substitute ~pat:"--" ~subst:replace_with_count !workingWord;
-				while pmatch ~rex:notNumPattern !workingWord do
-					workingWord := replace ~rex:onsetPattern ~itempl:onsetReplace !workingWord;
-					workingWord := replace ~rex:codaPattern ~itempl:codaReplace !workingWord;
-					workingWord := replace ~rex:onsetCleanupPattern ~itempl:onsetCleanupReplace !workingWord;
-					workingWord := replace ~rex:codaCleanupPattern ~itempl:codaCleanupReplace !workingWord;
-				done;
-				fst (List.fold_left2
-						(fun (currentResult, lastSyllable) workingChar wordChar -> 
-							((currentResult ^ (if workingChar <> lastSyllable then !syllableDelimiter else "") ^ (String.of_char wordChar)), workingChar)
-						)
-						("", '1')
-						(String.explode !workingWord) 
-						(String.explode word))
-			end
-		else
-			""
 	
 	(* Check if we can even syllabify word *)	
 	let use_score (word:string) = ((syllabify word) = "") 
@@ -921,7 +924,33 @@ let two_pass_processor utteranceList =
 let sentence_processor = incremental_processor;;
 
 (*** ACTUAL START OF PROGRAM ***)
+if (!interactive) then
+	begin
+		printf "Utterance number to process to: ";
+		utteranceLimit := read_int ()
+	end;;
+		
 sentence_processor !sentenceList;;
+
+if (!interactive) then
+	begin
+		verbose := true;
+		let eof = ref false in
+		while (not !eof) do
+			printf "\n#: ";
+			try
+				let command = String.nsplit (read_line ()) !wordDelimiter in
+				match command with
+				  "syllabify" :: args -> List.iter (fun arg -> printf "%s%s" (syllabify arg) !wordDelimiter) args; printf "\n"
+				| "score" :: args -> List.map eval_word args; ()
+				| "help" :: [] -> printf "Available commands: score, syllabify.  Both take series of words as arguments.\n"
+				| _ -> ()
+			with e ->
+				eof := true;
+			printf "\n"
+		done
+	end;;
+
 
 (* Dump lexicon if requested *)
 if !lexiconOut <> "" then
