@@ -41,7 +41,6 @@ let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
 let decayFactor = ref 0.0
 
-let removeSpacesPattern = regexp "((\\s)|(\\.))+"
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -86,11 +85,14 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
 					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter"]
 
+
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
 
 let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
 let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
+
+let removeDelimitersPattern = regexp (!wordDelimiter ^ "+")
 
 let diphthongPattern = regexp "(9I)|(9U)|(OI)"
 let vowelPattern = regexp "[&69AEIOUaeiouR~ML]"
@@ -774,6 +776,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 	else
 		();;
 
+
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
 	let familiarScore = (FamiliarWordCue.eval_word word (+.)) in
@@ -858,7 +861,7 @@ let incremental_processor utteranceList =
 		(fun utteranceCount segmentedSentence -> 
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
-					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+					let sentence = replace ~rex:removeDelimitersPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 					let segmentations = get_scored_segmentation_list sentence in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
@@ -875,6 +878,24 @@ let incremental_processor utteranceList =
 		)
 		utteranceList;;
 
+(* Returns a tuple of a segmentation list and an unsegmented utterance of the type lexicon_updater needs from a pre-segmented utterance *)
+let segmentation_of_segmented_sentence segmentedSentence =
+	let sentence = replace ~rex:removeDelimitersPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+	let segmentedChars = (String.explode segmentedSentence) in
+	let boundaryChar = List.nth (String.explode !wordDelimiter) 0 in
+	let boundaryIndexes = List.mapi (fun index character -> 
+										if (character = boundaryChar) then 
+											index 
+										else 
+											0) 
+									segmentedChars in
+	(([0] @ (List.mapi (fun index boundary -> boundary - index) ((List.remove_all boundaryIndexes 0) @ [(String.length segmentedSentence)]))), sentence);;
+
+(* Returns a segmentation list of the type lexicon_updater needs from a list of words *)
+let segmentation_of_word_list words =
+	segmentation_of_segmented_sentence (String.slice ~first:1 (List.fold_left (fun currentResult currentWord -> currentResult ^ !wordDelimiter ^ currentWord) "" words));;
+
+
 (* Learn phonotactic model from gold corpus, and then resegment without updating phonotactic model *)
 let two_pass_processor utteranceList = 
 	printf "\nPhonotactic Pass:\n";
@@ -882,16 +903,7 @@ let two_pass_processor utteranceList =
 		(fun utteranceCount segmentedSentence -> 
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
-					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-					let segmentedChars = (String.explode segmentedSentence) in
-					let boundaryChar = List.nth (String.explode !wordDelimiter) 0 in
-					let boundaryIndexes = List.mapi (fun index character -> 
-														if (character = boundaryChar) then 
-															index 
-														else 
-															0) 
-													segmentedChars in
-					let segmentation = [0] @ (List.mapi (fun index boundary -> boundary - index) ((List.remove_all boundaryIndexes 0) @ [(String.length segmentedSentence)])) in
+					let (segmentation, sentence) = segmentation_of_segmented_sentence segmentedSentence in
 					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] 1.0; 
 					printf "\n";
 					flush stdout;
@@ -907,7 +919,7 @@ let two_pass_processor utteranceList =
 		(fun utteranceCount segmentedSentence -> 
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
-					let sentence = replace ~rex:removeSpacesPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+					let sentence = replace ~rex:removeDelimitersPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
 					let bestStartList = eval_utterance sentence in
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
@@ -946,8 +958,9 @@ if (!interactive) then
 				match command with
 				  "syllabify" :: args -> List.iter (fun arg -> printf "%s%s" (syllabify arg) !wordDelimiter) args; printf "\n"
 				| "score" :: args -> List.map eval_word args; ()
-				| "help" :: [] -> printf "Available commands: score, syllabify.  Both take series of words as arguments.\n"
-				| _ -> ()
+				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (float_of_string incrementAmount); ()
+ 				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n"
+				| _ -> printf "Unknown command.\n"
 			with e ->
 				eof := true;
 			printf "\n"
