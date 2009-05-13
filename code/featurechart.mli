@@ -15,5 +15,8 @@ val read_feature_file : string -> unit
 (* Returns a StringSet of features given a phone*)
 val features_for_phone : string -> Set.Make(String).t
 
+(* Returns a StringSet of phones given a StringSet of features*)
+val phones_for_features : Set.Make(String).t -> Set.Make(String).t
+
 (* Prints a StringSet of features *)
 val print_string_set : Set.Make(String).t -> unit

@@ -1,4 +1,4 @@
-(* OCaml port of featurechart.pm *)
+(* OCaml port of featurechart.pm from my Phonology Tools *)
 
 open ExtList
 open ExtString
@@ -67,6 +67,34 @@ let read_feature_file featureFile =
 
 let features_for_phone phone =
 	Hashtbl.find chart.phonesToFeatures phone;;
+	
+let phones_for_features featureSet = 
+	if (StringSet.is_empty featureSet) then
+		Hashtbl.fold 
+			(fun key value currentSet ->
+				StringSet.add key currentSet
+			)
+			chart.phonesToFeatures
+			StringSet.empty
+	else
+		let first = ref true in 
+		let resultSet = StringSet.fold
+							(fun featureValue currentSet ->
+								if (!first) then
+									begin
+										first := false;
+										StringSet.union currentSet (Hashtbl.find chart.featuresToPhones featureValue)
+									end
+								else
+									StringSet.inter currentSet (Hashtbl.find chart.featuresToPhones featureValue)
+							)
+							featureSet
+							StringSet.empty
+		in
+		if (StringSet.is_empty resultSet) then
+			failwith "No phones in chart match specified feature set!"
+		else
+			resultSet;;
 
 let print_string_set stringSet = 
 	StringSet.iter

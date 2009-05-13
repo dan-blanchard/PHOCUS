@@ -1,8 +1,7 @@
-(* Dan Blanchard
+	(* Dan Blanchard
    Segmentation Framework *)
 
 (*	NOTES:
-		-	Calculating phoneme ngrams by increasing counts of ngrams in hypothetical words leads to segmentation of second utterance with Venkataraman.
 		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
 		-	Consider functor implementation of ngram cues to clean up redundant code.
 *)
@@ -11,6 +10,8 @@ open Printf
 open ExtList
 open ExtString
 open ExtArray
+
+module StringSet = Set.Make(String)
 
 let e = 2.71828183
 let printUtteranceDelimiter = ref false
@@ -40,7 +41,8 @@ let countProposedNgrams = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
 let decayFactor = ref 0.0
-
+let supervisedFor = ref 0
+let requireSyllabic = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -70,6 +72,10 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-pw", Arg.Set_int phonemeWindow, " Short for --phonemeWindow";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
+					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
+					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
+					"--supervisedFor", Arg.Set_int supervisedFor, " Number of utterances to use given word-boundaries for.  (Default = 0, unsupervised learner)";
+					"-sf", Arg.Set_int supervisedFor, " Short for --supervisedFor";
 					"--syllableNgramsOut", Arg.Set_string syllableCountsOut, " File to dump final syllable n-gram counts to";
 					"-sn", Arg.Set_string syllableCountsOut, " Short for --syllableNgramsOut";
 					"--syllableWindow", Arg.Set_int syllableWindow, " Window size for syllable n-grams";
@@ -85,18 +91,41 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
 					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter"]
 
-
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
+
+(* Read feature file, if specifed *)
+if !featureFile <> "" then
+	Featurechart.read_feature_file !featureFile;;
 
 let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
 let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
 
 let removeDelimitersPattern = regexp (!wordDelimiter ^ "+")
 
-let diphthongPattern = regexp "(9I)|(9U)|(OI)"
-let vowelPattern = regexp "[&69AEIOUaeiouR~ML]"
-let noVowelsPattern = regexp "[^&69AEIOUaeiouR~ML]"
+let (diphthongs, vowels) = if (!featureFile <> "" ) then 
+								StringSet.partition (fun phone -> (String.length phone) > 1) (Featurechart.phones_for_features (StringSet.singleton "+syllabic"))
+							else
+								(StringSet.empty, StringSet.empty)
+let diphthongPattern = regexp (if (!featureFile <> "" ) then
+									if (StringSet.is_empty diphthongs) then
+										"(9I)|(OI)|(9U)"
+									else
+										(StringSet.fold 
+											(fun diphthong currentString -> 
+												(if currentString <> "" then "|" else "") ^ "(" ^ diphthong ^ ")"
+											) 
+											diphthongs 
+											""
+										)
+								else 
+									"(9I)|(OI)|(9U)") 
+let vowelPattern = regexp ("[" ^ (if (!featureFile <> "" ) then 
+										(StringSet.fold (^) vowels "") 
+								else "&69AEIOUaeiouR~ML") ^ "]")
+let noVowelsPattern = regexp ("[^" ^ (if (!featureFile <> "" ) then 
+										(StringSet.fold (^) vowels "") 
+									else "&69AEIOUaeiouR~ML") ^ "]")
 let onsetPattern = regexp "[^0-9>](0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)"
 let codaPattern = regexp "(0+|1+|2+|3+|4+|5+|6+|7+|8+|9+)[^0-9<]"
 let notNumPattern = regexp "[^0-9]"
@@ -186,10 +215,7 @@ struct
 			Hashtbl.replace lexicon newWord ((Hashtbl.find lexicon newWord) +. incrementAmount)
 		else
 			Hashtbl.add lexicon newWord incrementAmount;
-		if Hashtbl.mem lastSeen newWord then
-			Hashtbl.replace lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter)
-		else
-			Hashtbl.add lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter);;		
+		Hashtbl.replace lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter);;		
 end
 
 module type NgramProbsSig = 
@@ -557,7 +583,6 @@ struct
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
 	let cartesianProductCache = Hashtbl.create 10000
 	let ngramList = List.init !featureWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
-	module StringSet = Set.Make(String)
 	
 	let initialize initialCount = ()
 		
@@ -750,10 +775,6 @@ else
 		close_in stdin
 	end;;
 
-(* Read feature file, if specifed *)
-if !featureFile <> "" then
-	Featurechart.read_feature_file !featureFile;;
-
 (* Setup initial value for utteranceDelimiter in the lexicon *)
 Hashtbl.add lexicon !utteranceDelimiter 0.0;;
 
@@ -787,7 +808,7 @@ let default_evidence_combiner word =
 	if (FamiliarWordCue.use_score word) then
 		familiarScore
 	else
-		if (SyllableNgramCue.use_score word) || (syllableScore < infinity) then (* Can't syllabify word or score is acceptably low. *)
+		if (!requireSyllabic && (SyllableNgramCue.use_score word)) || (syllableScore < infinity) then (* Can't syllabify word or score is acceptably low. *)
 			syllableScore
 		else
 			phonemeScore;;
@@ -852,31 +873,7 @@ let fast_search sentence =
 	let bestStartList = eval_utterance sentence in
 	[|(1.0, ((List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence]))|];;
 
-
 let get_scored_segmentation_list = fast_search;;
-
-(* Loop through utterances *)
-let incremental_processor utteranceList = 
-	List.iteri
-		(fun utteranceCount segmentedSentence -> 
-			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
-				begin
-					let sentence = replace ~rex:removeDelimitersPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
-					let segmentations = get_scored_segmentation_list sentence in
-					if (!displayLineNumbers) then
-						printf "%d: " (utteranceCount + 1);
-					Array.iter (fun (incrementAmount, segmentation) -> 
-									lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] incrementAmount
-								) 
-								segmentations;
-					if (!printUtteranceDelimiter) then
-						printf "%s" !utteranceDelimiter;		
-					printf "\n";
-					flush stdout;
-					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0)
-				end
-		)
-		utteranceList;;
 
 (* Returns a tuple of a segmentation list and an unsegmented utterance of the type lexicon_updater needs from a pre-segmented utterance *)
 let segmentation_of_segmented_sentence segmentedSentence =
@@ -894,6 +891,32 @@ let segmentation_of_segmented_sentence segmentedSentence =
 (* Returns a segmentation list of the type lexicon_updater needs from a list of words *)
 let segmentation_of_word_list words =
 	segmentation_of_segmented_sentence (String.slice ~first:1 (List.fold_left (fun currentResult currentWord -> currentResult ^ !wordDelimiter ^ currentWord) "" words));;
+
+(* Loop through utterances *)
+let incremental_processor utteranceList = 
+	List.iteri
+		(fun utteranceCount segmentedSentence -> 
+			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
+				begin
+					let sentence = replace ~rex:removeDelimitersPattern ~templ:"" segmentedSentence in (* Removes spaces from sentence *)
+					let segmentations = (if (!supervisedFor > utteranceCount) then 
+											[|1.0, (fst (segmentation_of_segmented_sentence segmentedSentence))|]
+										else 
+											get_scored_segmentation_list sentence) in
+					if (!displayLineNumbers) then
+						printf "%d: " (utteranceCount + 1);
+					Array.iter (fun (incrementAmount, segmentation) -> 
+									lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] incrementAmount
+								) 
+								segmentations;
+					if (!printUtteranceDelimiter) then
+						printf "%s" !utteranceDelimiter;		
+					printf "\n";
+					flush stdout;
+					Hashtbl.replace lexicon !utteranceDelimiter ((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0)
+				end
+		)
+		utteranceList;;
 
 
 (* Learn phonotactic model from gold corpus, and then resegment without updating phonotactic model *)
