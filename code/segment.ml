@@ -481,7 +481,7 @@ struct
 		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
 		let totalWordsFloat = (!totalWords +. (if !mbdp then 1. else 0.0)) in
 		let score = ref 0.0 in
-		if (String.length word) < !phonemeWindow then
+		if (String.length wordWithBoundary) < !phonemeWindow then
 			-. (log !badScore)
 		else	
 			begin
@@ -594,7 +594,7 @@ struct
 									!wordDelimiter ^ word ^ !wordDelimiter 
 								else 
 									word ^ !wordDelimiter) in							
-		if (String.length word) < !featureWindow then
+		if (String.length wordWithBoundary) < !featureWindow then
 			-. (log !badScore)
 		else	
 			begin
