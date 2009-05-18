@@ -37,5 +37,5 @@ while ($line = <WORDLIST>)
 
 foreach my $prevLine (sort {$substringCounts{$a} <=> $substringCounts{$b}} (keys %substringCounts))
 {
-	print "$prevLine\t$substringCounts{$prevLine}\n";
+	print "$substringCounts{$prevLine}\t$prevLine\n";
 }
