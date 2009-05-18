@@ -155,7 +155,7 @@ let prob_phonemes word wordNgramCountsArray wordTotalNgramsArray wordTypesWithCo
 								!wordDelimiter ^ word ^ !wordDelimiter 
 							else 
 								word ^ !wordDelimiter) in							
-	if (String.length word) < !windowSize then
+	if (String.length wordWithBoundary) < !windowSize then
 		-. (log !badScore)
 	else	
 		let phonemeScore = ref (if !windowSize > 1 then 
