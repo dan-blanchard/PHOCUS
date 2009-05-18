@@ -6,7 +6,7 @@
 use strict;
 use Getopt::Std;
 
-our ($opt_d,$opt_v,$opt_i,$opt_e,$opt_b,$opt_s,$opt_t,$opt_n,$opt_c);
+our ($opt_d,$opt_v,$opt_i,$opt_e,$opt_b,$opt_s,$opt_t,$opt_n,$opt_c,$opt_f);
 my $usage = "\nSegmentation Error Analyzer\n\n" . 
 			"Usage: ./errors.pl [OPTIONS] TRUE_CORPUS FOUND_CORPUS\n\n" . 
 			"TRUE_CORPUS = The correctly segmented reference corpus.\n" .
@@ -18,6 +18,7 @@ my $usage = "\nSegmentation Error Analyzer\n\n" .
 			"\t-c\t\tOutputs n-gram frequency differences between true and found corpora, with frequencies normalized to the true corpus.\n" .
 			"\t-t\t\tCalculate character n-gram frequencies once per word token instead of per word type.\n" .
 			"\t-n NGRAM_SIZE\tSets greatest character n-gram size to keep track of to NGRAM_SIZE. (Default = 2 for character bigrams and unigrams.)\n" .
+			"\t-f FREQUENCY_THRESHOLD\tCollocations are considered 'frequent' if they occur more than FREQUENCY_THRESHOLD times. (Default = 10)\n" .
 			"\t-d DELIMITER\tSets the word delimiter character to DELIMITER.\n" .
 			"\t-i NUM_LINES\tIgnores the first NUM_LINES lines in the corpora.\n" .
 			"\t-b BLOCK_SIZE\tCalculates scores over blocks of size BLOCK_SIZE.  For example, -b 500 will output results for block of 500 utterances.\n\n";
@@ -93,12 +94,17 @@ for (my $i = 0; $i < $maxCollocationSize; $i++)
 
 
 # Handle arguments
-getopts('svectn:d:i:b:');
+getopts('svectn:d:i:b:f:');
 
 # Check for word delimiter argument
 if ($opt_d)
 {
 	$wordDelimiter = $opt_d;
+}
+
+if ($opt_f)
+{
+	$frequentCollocationThreshold = $opt_f;
 }
 
 if ($opt_n)
@@ -181,7 +187,8 @@ sub wordsInSubUtterance
 			$currentWordEnd = $i;
 		}
 		
-	}	return reverse @wordArray;
+	}	
+	return reverse @wordArray;
 }
 
 sub calculateTrueWordStats
