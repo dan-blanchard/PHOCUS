@@ -455,7 +455,7 @@ module PhonemeNgramCue : CUE =
 struct
 	open NgramProbs
 	
-	let ngramCountsArray = Array.init (!phonemeWindow) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2)))))
+	let ngramCountsArray = Array.init (!phonemeWindow) (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2))))) 
 	let totalNgramsArray = Array.init (!phonemeWindow) (fun a -> 0.0)
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
 	let ngramList = List.init !phonemeWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
@@ -803,8 +803,10 @@ if !corpus <> "" then
 		sentenceList := Std.input_list ic;
 		close_in ic;
 		(* Initialize phoneme counts, if not MBDP *)
-		if (not !mbdp) then
-			(PhonemeNgramCue.initialize !initialNgramCount)
+		if (not !mbdp) && (!phonemeWindow > 0) then
+			PhonemeNgramCue.initialize !initialNgramCount;
+		if (!featureFile <> "") && (!featureWindow > 0) then
+			FeatureNgramCue.initialize !initialNgramCount
 	with e ->
 		close_in_noerr ic;
 		raise e
@@ -840,7 +842,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:f
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
 	let familiarScore = (FamiliarWordCue.eval_word word (+.)) in
-	let phonemeScore = (PhonemeNgramCue.eval_word word (+.)) in
+	let phonemeScore = if (!phonemeWindow > 0) then (PhonemeNgramCue.eval_word word (+.)) else -.(log !badScore) in
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word (+.)) else infinity in
 	if (!verbose) then
 		printf "Familiar score for %s = %.15F\nSyllable score for %s = %.15F\nPhoneme score for %s = %.15F\n\n" word familiarScore word syllableScore word phonemeScore;

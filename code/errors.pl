@@ -399,7 +399,6 @@ sub calculateFoundWordStats
 					for (my $currentIndex = 0; $currentIndex < scalar(@trueWordArray) - $currentWindowSize; $currentIndex++) 
 					{
 						$collocation = join($wordDelimiter, @trueWordArray[$currentIndex..($currentIndex+$currentWindowSize)]);
-						# if (($trueCollocations[$currentWindowSize]{$collocation} / ($trueTotalCollocations[$currentWindowSize] + 1)) >= ((1/(scalar(keys %trueLexicon) + 1))**($currentWindowSize + 1)))
 						if ($trueCollocations[$currentWindowSize]{$collocation} >= $frequentCollocationThreshold)
 						{
 							$currentWordFrequentCollocationUnderSegmentation = 1;
