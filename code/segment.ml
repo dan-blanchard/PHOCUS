@@ -1,8 +1,7 @@
-	(* Dan Blanchard
-   Segmentation Framework *)
+(*	Dan Blanchard
+	Segmentation Framework *)
 
 (*	NOTES:
-		-	FeatureNgramCue has not been updated to account for fixes in PhonemeNgramCue.
 		-	Consider functor implementation of ngram cues to clean up redundant code.
 *)
 open Pcre
