@@ -257,7 +257,7 @@ struct
 	let prob_ngram_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray =
 		if (n = 0) then
 			if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-				(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
+				-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log wordTotalNgramsArray.(n)))
 			else
 				!badScore
 		else
@@ -265,9 +265,9 @@ struct
 				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
 					begin					
 						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+							-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)))
 						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+							-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log (Hashtbl.find ngramCountsArray.(n - 1) prefix)))
 						else
 							!badScore
 					end
@@ -275,9 +275,9 @@ struct
 					if (Hashtbl.mem ngramCountsArray.(n) ngram) then
 						begin					
 							if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-								(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+								-.((log (Hashtbl.find ngramCountsArray.(n) ngram)) -. (log (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)))
 							else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-								(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+								-.((log (Hashtbl.find ngramCountsArray.(n) ngram)) -. (log (Hashtbl.find ngramCountsArray.(n - 1) prefix)))
 							else
 								!badScore
 						end
@@ -289,24 +289,24 @@ struct
 	let prob_ngram_kneser_ney prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray = 
 		(* let d = discount n in *)
 		if (n = 0) then
-			(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n)
+			-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log wordTotalNgramsArray.(n)))
 		else
 			begin
 				if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
 					begin					
 						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+							-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)))
 						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find wordNgramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+							-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log (Hashtbl.find ngramCountsArray.(n - 1) prefix)))
 						else
 							!badScore
 					end
 				else 
 					begin					
 						if (Hashtbl.mem wordNgramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)
+							-.((log (Hashtbl.find ngramCountsArray.(n) ngram)) -. (log (Hashtbl.find wordNgramCountsArray.(n - 1) prefix)))
 						else if (Hashtbl.mem ngramCountsArray.(n - 1) prefix) then
-							(Hashtbl.find ngramCountsArray.(n) ngram) /. (Hashtbl.find ngramCountsArray.(n - 1) prefix)
+							-.((log (Hashtbl.find ngramCountsArray.(n) ngram)) -. (log (Hashtbl.find ngramCountsArray.(n - 1) prefix)))
 						else
 							!badScore
 					end								
@@ -314,7 +314,7 @@ struct
 
 	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 	let prob_ngram_joint prefix ngram n wordNgramCountsArray wordTotalNgramsArray =
-		(Hashtbl.find wordNgramCountsArray.(n) ngram) /. wordTotalNgramsArray.(n);;
+		-.((log (Hashtbl.find wordNgramCountsArray.(n) ngram)) -. (log wordTotalNgramsArray.(n)));;
 
 	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 	let prob_ngram prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray = 
@@ -389,12 +389,12 @@ struct
 								score := !score +. (if !syllableWindow > 1 then 
 															-.(log 1.0)
 														else
-															-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
+															(log (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0)))));
 								List.iter (* Get ngram scores *)
 									(fun firstSyll ->
 										let ngramSyllableArray = Array.sub syllablesWithBoundary firstSyll !syllableWindow in
 										let ngram = string_of_syllable_array ngramSyllableArray in
-										let ngramScore = (-. (log (prob_ngram ngramSyllableArray.(0) ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray))) in
+										let ngramScore = prob_ngram ngramSyllableArray.(0) ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
 										(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 										score := (combine !score ngramScore)
 									)
@@ -517,12 +517,12 @@ struct
 				score := !score +. (if !phonemeWindow > 1 then 
 											-.(log 1.0)
 										else
-											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
+											(log (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0)))));
 				(* printf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
-						let ngramScore = (-. (log (prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray))) in
+						let ngramScore = prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
 						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
@@ -689,11 +689,11 @@ struct
 				score := !score +. (if !phonemeWindow > 1 then 
 											-.(log 1.0)
 										else
-											-.(log (1.0 /. (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0))))));
+											(log (1.0 -. ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) /. currentTotalNgramsArray.(0)))));
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !featureWindow in
-						let ngramScore = (-. (log (prob_ngram (String.sub ngram 0 (!featureWindow - 1)) ngram (!featureWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray))) in
+						let ngramScore = prob_ngram (String.sub ngram 0 (!featureWindow - 1)) ngram (!featureWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
 						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
