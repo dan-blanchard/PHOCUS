@@ -371,11 +371,18 @@ struct
 					begin
 						List.iter (* Get n-gram counts of all size *)
 							(fun currentWindowSizeMinusOne ->
-								let ngramFirstSyllListLength = (Array.length syllablesWithBoundary) - currentWindowSizeMinusOne in 
+								let currentSyllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
+																				 (if currentWindowSizeMinusOne > 0 then 
+																					[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																				else 
+																					syllables @ [!wordDelimiter])
+																			else
+																				syllables) in										
+								let ngramFirstSyllListLength = (Array.length currentSyllablesWithBoundary) - currentWindowSizeMinusOne in 
 								let ngramFirstSyllList = List.init ngramFirstSyllListLength (fun a -> a) in
 								List.iter (* Loop through all n-grams of current size *)
 									(fun firstSyll ->
-										let ngram = string_of_syllable_array (Array.sub syllablesWithBoundary firstSyll (currentWindowSizeMinusOne + 1)) in
+										let ngram = string_of_syllable_array (Array.sub currentSyllablesWithBoundary firstSyll (currentWindowSizeMinusOne + 1)) in
 										if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) ngram then
 											Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) ngram) +. 1.0)
 										else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
@@ -432,11 +439,18 @@ struct
 			let wordNgramList = List.init wordWindow (fun a -> a) in
 			List.iter (* Get n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->
-					let ngramFirstSyllListLength = (Array.length syllablesWithBoundary) - currentWindowSizeMinusOne in 
+					let currentSyllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
+																	 (if currentWindowSizeMinusOne > 0 then 
+																		[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																	else 
+																		syllables @ [!wordDelimiter])
+																else
+																	syllables) in										
+					let ngramFirstSyllListLength = (Array.length currentSyllablesWithBoundary) - currentWindowSizeMinusOne in 
 					let ngramFirstSyllList = List.init ngramFirstSyllListLength (fun a -> a) in
 					List.iter (* Loop through all n-grams of current size *)
 						(fun firstSyll ->
-							let ngram = string_of_syllable_array (Array.sub syllablesWithBoundary firstSyll (currentWindowSizeMinusOne + 1)) in
+							let ngram = string_of_syllable_array (Array.sub currentSyllablesWithBoundary firstSyll (currentWindowSizeMinusOne + 1)) in
 							if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
 								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +. incrementAmount)
 							else
@@ -504,11 +518,18 @@ struct
 			begin
 				List.iter (* Get n-gram counts of all size *)
 					(fun currentWindowSizeMinusOne ->
-						let ngramFirstCharListLength = (String.length wordWithBoundary) - currentWindowSizeMinusOne in 
+						let currentWordWithBoundary = (if not !ignoreWordBoundary then 
+													(if currentWindowSizeMinusOne > 0 then 
+														!wordDelimiter ^ word ^ !wordDelimiter 
+													else 
+														word ^ !wordDelimiter)
+												else
+													word) in							
+						let ngramFirstCharListLength = (String.length currentWordWithBoundary) - currentWindowSizeMinusOne in 
 						let ngramFirstCharList = List.init ngramFirstCharListLength (fun a -> a) in
 						List.iter (* Loop through all n-grams of current size *)
 							(fun firstChar ->
-								let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
+								let ngram = String.sub currentWordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
 								if Hashtbl.mem wordNgramCountsArray.(currentWindowSizeMinusOne) ngram then
 									Hashtbl.replace wordNgramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find wordNgramCountsArray.(currentWindowSizeMinusOne) ngram) +. 1.0)
 								else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
@@ -566,11 +587,18 @@ struct
 			let wordNgramList = List.init wordWindow (fun a -> a) in
 			List.iter (* Get n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->
-					let ngramFirstCharListLength = (String.length wordWithBoundary) - currentWindowSizeMinusOne in 
+					let currentWordWithBoundary = (if not !ignoreWordBoundary then 
+												(if currentWindowSizeMinusOne > 0 then 
+													!wordDelimiter ^ newWord ^ !wordDelimiter 
+												else 
+													newWord ^ !wordDelimiter)
+											else
+												newWord) in							
+					let ngramFirstCharListLength = (String.length currentWordWithBoundary) - currentWindowSizeMinusOne in 
 					let ngramFirstCharList = List.init ngramFirstCharListLength (fun a -> a) in
 					List.iter (* Loop through all n-grams of current size *)
 						(fun firstChar ->
-							let ngram = String.sub wordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
+							let ngram = String.sub currentWordWithBoundary firstChar (currentWindowSizeMinusOne + 1) in
 							if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
 								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +. incrementAmount)
 							else
@@ -640,11 +668,18 @@ struct
 			begin
 				List.iter (* Get feature n-gram counts of all size *)
 					(fun currentWindowSizeMinusOne ->						
-						let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
-						let firstCharList = List.init ((String.length wordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
+						let currentWordWithBoundary = (if not !ignoreWordBoundary then 
+													(if currentWindowSizeMinusOne > 0 then 
+														!wordDelimiter ^ word ^ !wordDelimiter 
+													else 
+														word ^ !wordDelimiter)
+												else
+													word) in							
+						let firstCharListForBundles = Array.init (String.length currentWordWithBoundary) (fun a -> a) in
+						let firstCharList = List.init ((String.length currentWordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
 						let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
 												(fun firstChar ->
-													let phoneme = String.sub wordWithBoundary firstChar 1 in
+													let phoneme = String.sub currentWordWithBoundary firstChar 1 in
 													Featurechart.features_for_phone phoneme
 												) 
 												firstCharListForBundles 
@@ -655,7 +690,7 @@ struct
 								let lastCharList = List.init currentWindowSizeMinusOne (fun a -> (a + 1)) in
 								let ngramFeatureSet = List.fold_left
 														(fun currentProduct lastChar ->
-															let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
+															let subWord = String.sub currentWordWithBoundary firstChar (lastChar + 1) in
 															if Hashtbl.mem cartesianProductCache subWord then															
 																begin
 																	Hashtbl.find cartesianProductCache subWord
@@ -743,11 +778,18 @@ struct
 			let wordNgramList = List.init wordWindow (fun a -> a) in
 			List.iter (* Get feature n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->											
-					let firstCharListForBundles = Array.init (String.length wordWithBoundary) (fun a -> a) in
-					let firstCharList = List.init ((String.length wordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
+					let currentWordWithBoundary = (if not !ignoreWordBoundary then 
+												(if currentWindowSizeMinusOne > 0 then 
+													!wordDelimiter ^ newWord ^ !wordDelimiter 
+												else 
+													newWord ^ !wordDelimiter)
+											else
+												newWord) in							
+					let firstCharListForBundles = Array.init (String.length currentWordWithBoundary) (fun a -> a) in
+					let firstCharList = List.init ((String.length currentWordWithBoundary) - currentWindowSizeMinusOne) (fun a -> a) in
 					let wordFeatures = Array.map (* Build an array of all feature bundles in current word *)
 											(fun firstChar ->
-												let phoneme = String.sub wordWithBoundary firstChar 1 in												
+												let phoneme = String.sub currentWordWithBoundary firstChar 1 in												
 												Featurechart.features_for_phone phoneme
 											) 
 											firstCharListForBundles 
@@ -758,7 +800,7 @@ struct
 							let lastCharList = List.init currentWindowSizeMinusOne (fun a -> (a + 1)) in
 							let ngramFeatureSet = List.fold_left
 													(fun currentProduct lastChar ->
-														let subWord = String.sub wordWithBoundary firstChar (lastChar + 1) in
+														let subWord = String.sub currentWordWithBoundary firstChar (lastChar + 1) in
 														if Hashtbl.mem cartesianProductCache subWord then
 															Hashtbl.find cartesianProductCache subWord
 														else
