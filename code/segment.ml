@@ -13,7 +13,7 @@ open ExtArray
 module StringSet = Set.Make(String)
 
 let e = 2.71828183
-let sixOverPiSquared = 6.0 /. (3.1415926536 ** 2.0)
+let logSixOverPiSquared = log (6.0 /. (3.1415926536 ** 2.0))
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
@@ -39,6 +39,7 @@ let totalWords = ref 0.0
 let mbdp = ref false
 let verbose = ref false
 let countProposedNgrams = ref false
+let ignoreWordBoundary = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
 let decayFactor = ref 0.0
@@ -59,6 +60,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-fw", Arg.Set_int featureWindow, " Short for --featureWindow";
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
+					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating word n-gram scores, do not include word boundary.";
+					"-iw", Arg.Set ignoreWordBoundary, " Short for --ignoreWordBoundary";
 					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
 					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
 					"--interactive", Arg.Set interactive, " After reading in corpus, user can specify an utterance number to segment up to, and query scores for possible segmentations.";
@@ -214,11 +217,11 @@ struct
 			let rawScore = 
 				(if (not !mbdp) then
 					let wordTypesFloat = float ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
-						(wordCountFloat /. (totalWordsFloat +. wordTypesFloat))
+						-.((log wordCountFloat) -. (log (totalWordsFloat +. wordTypesFloat)))
 				else
-					(((wordCountFloat +. 1.0) /. (totalWordsFloat +. 1.0)) *. (((wordCountFloat) /. (wordCountFloat +. 1.0)) ** 2.0)))
+					-.((log (wordCountFloat +. 1.0)) -. (log (totalWordsFloat +. 1.0)) +. 2.0 *. ((log wordCountFloat) -. (log (wordCountFloat +. 1.0)))))
 			in
-			-.(log (rawScore *. (((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0) -. (Hashtbl.find lastSeen word)) ** (-. !decayFactor)))
+			rawScore +. !decayFactor *. (log (((Hashtbl.find lexicon !utteranceDelimiter) +. 1.0) -. (Hashtbl.find lastSeen word)))
 		else
 			-.(log !badScore)
 	
@@ -354,10 +357,13 @@ struct
 				let wordNgramCountsArray = Array.init (!syllableWindow) (fun a -> Hashtbl.create 100) in
 				let wordTotalNgramsArray = Array.init (!syllableWindow) (fun a -> 0.0) in
 				let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in		
-				let syllablesWithBoundary = Array.of_list (if !syllableWindow > 1 then 
-																[!wordDelimiter] @ syllables @ [!wordDelimiter]
-															else 
-																syllables @ [!wordDelimiter]) in		
+				let syllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
+																 (if !syllableWindow > 1 then 
+																	[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																else 
+																	syllables @ [!wordDelimiter])
+															else
+																syllables) in										
 				let score = ref 0.0 in
 				if (Array.length syllablesWithBoundary) < !syllableWindow then
 					-.(log !badScore)
@@ -412,10 +418,13 @@ struct
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			let syllabifiedWord = syllabify newWord in
 			let syllables = String.nsplit syllabifiedWord !syllableDelimiter in 
-			let syllablesWithBoundary = Array.of_list (if !syllableWindow > 1 then 
-															[!wordDelimiter] @ syllables @ [!wordDelimiter]
-														else 
-															syllables @ [!wordDelimiter]) in		
+			let syllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
+															 (if !syllableWindow > 1 then 
+																[!wordDelimiter] @ syllables @ [!wordDelimiter]
+															else 
+																syllables @ [!wordDelimiter])
+														else
+															syllables) in										
 			let wordWindow = (if (Array.length syllablesWithBoundary) < !syllableWindow then
 									Array.length syllablesWithBoundary
 							else
@@ -479,10 +488,13 @@ struct
 		let wordNgramCountsArray = Array.init (!phonemeWindow) (fun a -> Hashtbl.create 100) in
 		let wordTotalNgramsArray = Array.init (!phonemeWindow) (fun a -> 0.0) in
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in		
-		let wordWithBoundary = (if !phonemeWindow > 1 then 
-									!wordDelimiter ^ word ^ !wordDelimiter 
-								else 
-									word ^ !wordDelimiter) in							
+		let wordWithBoundary = (if not !ignoreWordBoundary then 
+									(if !phonemeWindow > 1 then 
+										!wordDelimiter ^ word ^ !wordDelimiter 
+									else 
+										word ^ !wordDelimiter)
+								else
+									word) in							
 		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
 		let totalWordsFloat = (!totalWords +. (if !mbdp then 1. else 0.0)) in
 		let score = ref 0.0 in
@@ -511,7 +523,7 @@ struct
 				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
 				if (not !mbdp) then
-					score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)))
+					score := -.((log wordTypesFloat) -. (log (wordTypesFloat +. totalWordsFloat)))
 				else
 					score := 0.0;
 				score := !score +. (if !phonemeWindow > 1 then 
@@ -531,7 +543,7 @@ struct
 					!score
 				else
 					begin
-						let adjustment = -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0)) in
+						let adjustment = -.(logSixOverPiSquared +. (log wordTypesFloat) -. (log totalWordsFloat)) -. 2.0 *. ((log (wordTypesFloat -. 1.0)) -. (log wordTypesFloat)) in
 						(* printf "Score adjustment = %F\n" adjustment; *)
 						(* printf "Raw phoneme score = %F\n" !score; *)
 						!score +. adjustment
@@ -540,10 +552,13 @@ struct
 		
 	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
-			let wordWithBoundary = (if !phonemeWindow > 1 then 
-										!wordDelimiter ^ newWord ^ !wordDelimiter 
-									else 
-										newWord ^ !wordDelimiter) in
+			let wordWithBoundary = (if not !ignoreWordBoundary then 
+										(if !phonemeWindow > 1 then 
+											!wordDelimiter ^ newWord ^ !wordDelimiter 
+										else 
+											newWord ^ !wordDelimiter)
+									else
+										newWord) in
 			let wordWindow = (if (String.length wordWithBoundary) < !phonemeWindow then
 									String.length wordWithBoundary
 							else
@@ -609,10 +624,13 @@ struct
 		let wordNgramCountsArray = Array.init (!featureWindow) (fun a -> Hashtbl.create 100) in
 		let wordTotalNgramsArray = Array.init (!featureWindow) (fun a -> 0.0) in
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in		
-		let wordWithBoundary = (if !featureWindow > 1 then 
-									!wordDelimiter ^ word ^ !wordDelimiter 
-								else 
-									word ^ !wordDelimiter) in							
+		let wordWithBoundary = (if not !ignoreWordBoundary then 
+									(if !featureWindow > 1 then 
+										!wordDelimiter ^ word ^ !wordDelimiter 
+									else 
+										word ^ !wordDelimiter)
+								else
+									word) in							
 		let wordTypesFloat = float (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
 		let totalWordsFloat = (!totalWords +. (if !mbdp then 1. else 0.0)) in
 		let score = ref 0.0 in
@@ -683,7 +701,7 @@ struct
 				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
 				if (not !mbdp) then
-					score := -.(log (wordTypesFloat /. (wordTypesFloat +. totalWordsFloat)))
+					score := -.((log wordTypesFloat) -. (log (wordTypesFloat +. totalWordsFloat)))
 				else
 					score := 0.0;
 				score := !score +. (if !phonemeWindow > 1 then 
@@ -702,7 +720,7 @@ struct
 					!score
 				else
 					begin
-						let adjustment = -. (log (sixOverPiSquared *. (wordTypesFloat /. (totalWordsFloat)))) -. (log (((wordTypesFloat -. 1.0) /. wordTypesFloat) ** 2.0)) in
+						let adjustment = -.(logSixOverPiSquared +. (log wordTypesFloat) -. (log totalWordsFloat)) -. 2.0 *. ((log (wordTypesFloat -. 1.0)) -. (log wordTypesFloat)) in
 						(* printf "Score adjustment = %F\n" adjustment; *)
 						(* printf "Raw phoneme score = %F\n" !score; *)
 						!score +. adjustment
@@ -711,10 +729,13 @@ struct
 	
 	let update_evidence (newWord:string) (incrementAmount:float)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
-			let wordWithBoundary = (if !featureWindow > 1 then 
+		let wordWithBoundary = (if not !ignoreWordBoundary then 
+									(if !featureWindow > 1 then 
 										!wordDelimiter ^ newWord ^ !wordDelimiter 
 									else 
-										newWord ^ !wordDelimiter) in
+										newWord ^ !wordDelimiter)
+								else
+									newWord) in
 			let wordWindow = (if (String.length wordWithBoundary) < !featureWindow then
 									String.length wordWithBoundary
 							else
@@ -1005,7 +1026,11 @@ let sentence_processor = incremental_processor;;
 if (!interactive) then
 	begin
 		printf "Utterance number to process to: ";
-		utteranceLimit := read_int ()
+		utteranceLimit := read_int ();
+		utteranceLimit := (if (!utteranceLimit = 0) then 
+								-1 
+							else
+								!utteranceLimit)
 	end;;
 		
 sentence_processor !sentenceList;;
@@ -1020,7 +1045,7 @@ if (!interactive) then
 				let command = String.nsplit (read_line ()) !wordDelimiter in
 				match command with
 				  "syllabify" :: args -> List.iter (fun arg -> printf "%s%s" (syllabify arg) !wordDelimiter) args; printf "\n"
-				| "score" :: args -> List.map eval_word args; ()
+				| "score" :: args -> ignore (List.map eval_word args); ()
 				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (float_of_string incrementAmount); ()
  				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n"
 				| _ -> printf "Unknown command.\n"
