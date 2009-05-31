@@ -45,6 +45,9 @@ let lexicon = Hashtbl.create 10000
 let decayFactor = ref 0.0
 let supervisedFor = ref 0
 let requireSyllabic = ref false
+let waitForStablePhonemeDist = ref false
+let waitUntilUtterance = ref 0
+let stabilityThreshold = ref 0.99
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -60,7 +63,7 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-fw", Arg.Set_int featureWindow, " Short for --featureWindow";
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
-					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating word n-gram scores, do not include word boundary.";
+					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating phoneme/syllable/etc. n-gram scores, do not include word boundary.";
 					"-iw", Arg.Set ignoreWordBoundary, " Short for --ignoreWordBoundary";
 					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
 					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
@@ -82,6 +85,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
+					"--stabilityThreshold", Arg.Set_float stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
+					"-st", Arg.Set_float stabilityThreshold, " Short for --stabilityThreshold";
 					"--supervisedFor", Arg.Set_int supervisedFor, " Number of utterances to use given word-boundaries for.  (Default = 0, unsupervised learner)";
 					"-sf", Arg.Set_int supervisedFor, " Short for --supervisedFor";
 					"--syllableNgramsOut", Arg.Set_string syllableCountsOut, " File to dump final syllable n-gram counts to";
@@ -96,11 +101,17 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-ul", Arg.Set_int utteranceLimit, " Short for --utteranceLimit";
 					"--verbose", Arg.Set verbose, " Print out scores for each possible segmentation of each utterance.";
 					"-v", Arg.Set verbose, " Short for --verbose";
+					"--waitForStablePhonemeDist", Arg.Set waitForStablePhonemeDist, " Do not start attempting to segment until phoneme unigram has stabilized.";
+					"-wf", Arg.Set waitForStablePhonemeDist, " Short for --waitForStablePhonemeDist";
+					"--waitUntilUtterance", Arg.Set_int waitUntilUtterance, " Do not start attempting to segment until we have reached the specified utterance number.";
+					"-wu", Arg.Set_int waitUntilUtterance, " Short for --waitUntilUtterance";
 					"--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
 					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter"]
 
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
+
+if (!mbdp) then	initialNgramCount := 0.0;;
 
 (* Read feature file, if specifed *)
 if !featureFile <> "" then
@@ -481,6 +492,8 @@ struct
 	let totalNgramsArray = Array.init (!phonemeWindow) (fun a -> 0.0)
 	let typesWithCountArray = Array.init 3 (fun a -> 0)
 	let ngramList = List.init !phonemeWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
+	let oldUnigramCounts = Hashtbl.create 40
+	let hasStabilized = ref false
 	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
@@ -491,6 +504,10 @@ struct
 				List.iter
 					(fun ngram -> 
 						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCount *. (100.0 ** -.(float_of_int currentWindowSizeMinusOne)));
+						if (currentWindowSizeMinusOne = 0) then
+							Hashtbl.add oldUnigramCounts ngram 0.0
+						else
+							()
 					)
 					phonemePermutationList;
 				Array.set totalNgramsArray currentWindowSizeMinusOne ((float (List.length phonemePermutationList)) *. initialCount)
@@ -609,8 +626,22 @@ struct
 				)
 				wordNgramList
 	
-	let use_score (word:string) = true
-	
+	let use_score (utterance:string) =
+		hasStabilized := !hasStabilized || ((not (Hashtbl.mem lexicon utterance)) && Hashtbl.fold
+																						(fun phoneme count wasStable ->
+																							let oldCount = Hashtbl.find oldUnigramCounts phoneme in
+																							Hashtbl.replace oldUnigramCounts phoneme count;
+																							(* if (not !hasStabilized) then
+																								printf "utterance: %s\tphoneme: %s\toldCount: %F\tnewCount: %F\tpercentage: %F\n" utterance phoneme oldCount count (oldCount /. count)
+																							else
+																								(); *)
+																							(wasStable && (oldCount /. count > !stabilityThreshold))
+																						)
+																						ngramCountsArray.(0) 
+																						true);
+		!hasStabilized
+		
+
 	(* Dump the table associated with this cue to a file. *)
 	let dump dumpFile = 
 		let oc = open_out dumpFile in
@@ -1005,13 +1036,16 @@ let incremental_processor utteranceList =
 					let segmentations = (if (!supervisedFor > utteranceCount) then 
 											[|1.0, (fst (segmentation_of_segmented_sentence segmentedSentence))|]
 										else 
-											get_scored_segmentation_list sentence) in
+											(if (utteranceCount + 1 > !waitUntilUtterance) && ((not !waitForStablePhonemeDist) || (PhonemeNgramCue.use_score sentence)) then
+												get_scored_segmentation_list sentence
+											else
+												[|1.0, (fst (segmentation_of_segmented_sentence sentence))|])) in
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
 					Array.iter (fun (incrementAmount, segmentation) -> 
-									lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] incrementAmount
-								) 
-								segmentations;
+										lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] incrementAmount
+									) 
+									segmentations;
 					if (!printUtteranceDelimiter) then
 						printf "%s" !utteranceDelimiter;		
 					printf "\n";
