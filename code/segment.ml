@@ -13,7 +13,7 @@ open ExtArray
 module StringSet = Set.Make(String)
 
 let e = 2.71828183
-let logSixOverPiSquared = log (6.0 /. (3.1415926536 ** 2.0))
+let logSixOverPiSquared = log 0.607927102
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
