@@ -18,7 +18,7 @@ let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
 let badScore =  ref 0.0
-let initialNgramCount = ref 0.0000001
+let initialNgramCount = ref 1
 let syllableDelimiter = ref "."
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
@@ -65,7 +65,7 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
 					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating phoneme/syllable/etc. n-gram scores, do not include word boundary.";
 					"-iw", Arg.Set ignoreWordBoundary, " Short for --ignoreWordBoundary";
-					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic n-grams before they are seen (default = 0.0000001)";
+					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic largest n-grams before they are seen (default = 1.0)";
 					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
 					"--interactive", Arg.Set interactive, " After reading in corpus, user can specify an utterance number to segment up to, and query scores for possible segmentations.";
 					"-i", Arg.Set interactive, " Short for --interactive";
