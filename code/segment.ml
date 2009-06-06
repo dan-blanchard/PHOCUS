@@ -468,7 +468,7 @@ struct
 								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram incrementAmount;
 						)
 						ngramFirstSyllList;
-					Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstSyllListLength))
+					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstSyllListLength))
 				)
 				wordNgramList
 	
@@ -494,26 +494,24 @@ struct
 	let ngramList = List.init !phonemeWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
 	let oldUnigramCounts = Hashtbl.create 40
 	let hasStabilized = ref false
-	
+
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
 		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))) in
+		let numPhonemesFloat =  float_of_int (List.length phonemeList) in
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
 				let phonemePermutationList = permutations phonemeList currentWindowSizeMinusOne in
+				let currentIncrementAmount = initialCount *. (numPhonemesFloat  ** (float_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) *. (float_of_int (!phonemeWindow - currentWindowSizeMinusOne)) in
 				List.iter
 					(fun ngram -> 
-						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCount *. (100.0 ** -.(float_of_int currentWindowSizeMinusOne)));
-						if (currentWindowSizeMinusOne = 0) then
-							Hashtbl.add oldUnigramCounts ngram 0.0
-						else
-							()
+						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram currentIncrementAmount;
+						totalNgramsArray.(currentWindowSizeMinusOne) <- totalNgramsArray.(currentWindowSizeMinusOne) +. currentIncrementAmount
 					)
-					phonemePermutationList;
-				Array.set totalNgramsArray currentWindowSizeMinusOne ((float (List.length phonemePermutationList)) *. initialCount)
+					phonemePermutationList
 			)
 			ngramList
-	
+
 	(* Returns negative log of frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
 		let wordNgramCountsArray = Array.init (!phonemeWindow) (fun a -> Hashtbl.create 100) in
@@ -555,7 +553,7 @@ struct
 									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram 1.0;
 							)
 							ngramFirstCharList;
-						Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
+						wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
 					)
 					ngramList;
 				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
@@ -587,8 +585,8 @@ struct
 						!score +. adjustment
 					end
 			end
-		
-	let update_evidence (newWord:string) (incrementAmount:float)= 
+	
+	let update_evidence (newWord:string) (incrementAmount:float) = 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			let wordWithBoundary = (if not !ignoreWordBoundary then 
 										(if !phonemeWindow > 1 then 
@@ -622,9 +620,10 @@ struct
 								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram incrementAmount;
 						)
 						ngramFirstCharList;
-					Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
+					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +. (float ngramFirstCharListLength))
 				)
 				wordNgramList
+	
 	
 	let use_score (utterance:string) =
 		hasStabilized := !hasStabilized || ((not (Hashtbl.mem lexicon utterance)) && Hashtbl.fold
@@ -667,15 +666,17 @@ struct
 	let initialize initialCount =
 		let featureList = Std.input_list (Unix.open_process_in ("head -n 1 " ^ !featureFile ^ " | gsed -r 's/^\\t//' | tr '\\t' '\\n'")) in
 		let featureValueList = (List.map (fun a -> "+" ^ a) featureList) @ (List.map (fun a -> "-" ^ a) featureList) in
+		let numFeatureValuesFloat =  float_of_int (List.length featureValueList) in
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
 				let featurePermutationList = permutations featureValueList currentWindowSizeMinusOne in
+				let currentIncrementAmount = initialCount *. (numFeatureValuesFloat  ** (float_of_int (!featureWindow - (currentWindowSizeMinusOne + 1)))) *. (float_of_int (!featureWindow - currentWindowSizeMinusOne)) in
 				List.iter
 					(fun ngram -> 
-						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCount *. (100.0 ** -.(float_of_int currentWindowSizeMinusOne)));
+						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram currentIncrementAmount;
+						totalNgramsArray.(currentWindowSizeMinusOne) <- totalNgramsArray.(currentWindowSizeMinusOne) +. currentIncrementAmount
 					)
-					featurePermutationList;
-				Array.set totalNgramsArray currentWindowSizeMinusOne ((float (List.length featurePermutationList)) *. initialCount)
+					featurePermutationList
 			)
 			ngramList
 		
@@ -757,7 +758,7 @@ struct
 											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) +. 1.0)
 										else
 											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram 1.0;
-										Array.set wordTotalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. 1.0)
+										wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +. 1.0)
 									)
 									ngramFeatureSet
 							)
@@ -863,7 +864,7 @@ struct
 										Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) +. incrementAmount)
 									else
 										Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) featureGram incrementAmount;
-									Array.set totalNgramsArray currentWindowSizeMinusOne (totalNgramsArray.(currentWindowSizeMinusOne) +. incrementAmount)
+									totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +. incrementAmount)
 								)
 								ngramFeatureSet
 						)
@@ -1143,7 +1144,7 @@ if !phonemeCountsOut <> "" then
 	PhonemeNgramCue.dump !phonemeCountsOut;;
 
 (* Dump n-gram counts if requested *)
-if !phonemeCountsOut <> "" then
+if !featureCountsOut <> "" then
 	FeatureNgramCue.dump !featureCountsOut;;
 
 (* Dump n-gram counts if requested *)
