@@ -48,7 +48,7 @@ let countProposedNgrams = ref false
 let ignoreWordBoundary = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
-let decayFactor = ref 0.0
+let decayFactor = ref 1.0
 let supervisedFor = ref 0
 let requireSyllabic = ref false
 let waitForStablePhonemeDist = ref false
@@ -121,6 +121,7 @@ Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
 let badScoreNum = num_of_float !badScore;;
 let stabilityThresholdNum = num_of_float !stabilityThreshold;;
 let initialNgramCountNum = num_of_float !initialNgramCount;;
+let decayNum = num_of_float !decayFactor;;
 
 
 if (!mbdp) then	initialNgramCount := 0.0;;
@@ -232,10 +233,9 @@ end
 module FamiliarWordCue : CUE = 
 struct
 	let lastSeen = Hashtbl.create 10000
-	let decayNum = num_of_float !decayFactor
 	
 	(* Returns frequency that word occurs in lexicon. *)
-	let eval_word (word:string) combine = 
+	let eval_word (word:string) combine =
 		if (Hashtbl.mem lexicon word) then
 			let wordCount = Hashtbl.find lexicon word in
 			let rawScore = 
@@ -707,7 +707,7 @@ struct
 		let wordTypes = num_of_int (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
 		let totalWordsNum = (if !mbdp then (succ_num !totalWords) else !totalWords) in
 		let score = ref (num_of_int 0) in
-		if (String.length wordWithBoundary) < !featureWindow then
+			if (String.length wordWithBoundary) < !featureWindow then
 			badScoreNum
 		else	
 			begin
@@ -934,7 +934,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
 			let endChar = List.nth segmentation 1 in
 			let newWord = String.sub sentence startChar (endChar - startChar) in
 			List.iter (fun updateFunc -> (updateFunc newWord incrementAmount)) updateFunctions; (* Calls all of the update functions in the list *)
-			if (incrementAmount = (num_of_int 1)) then
+			if (incrementAmount =/ (num_of_int 1)) then
 				begin
 					printf "%s" newWord;
 					if (List.length segmentation > 2) then
@@ -978,7 +978,7 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 			let oldBestProduct = fst (bestList.(firstChar - 1)) in
 			let lastCharBestProduct = fst (bestList.(lastChar)) in
 			let scoreProduct = wordScore */ oldBestProduct in
-			if scoreProduct > lastCharBestProduct then
+			if scoreProduct >/ lastCharBestProduct then
 				mbdp_inner subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
 			else	
 				mbdp_inner subUtterance (firstChar + 1) lastChar bestList
