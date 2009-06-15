@@ -16,7 +16,7 @@ module StringSet = Set.Make(String)
 (* Converts floats to Nums *)
 let num_of_float floatNum = 
 	let (integer, decimal) = String.split (Printf.sprintf "%.14f" floatNum) "." in
-	(num_of_string integer) +/ (num_of_string (decimal ^ " / " ^ (Printf.sprintf "%.0f" (10.0 ** (float_of_int ((String.length decimal) - 1))))))
+	(num_of_string integer) +/ (num_of_string (decimal ^ " / " ^ (Printf.sprintf "%.0f" (10.0 ** (float_of_int ((String.length decimal)))))))
 
 let e = num_of_float 2.71828183
 let sixOverPiSquared = num_of_float 0.607927102
@@ -517,11 +517,19 @@ struct
 				let phonemePermutationList = permutations phonemeList currentWindowSizeMinusOne in
 				let currentIncrementAmount = initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne)) in
 				List.iter
-					(fun ngram -> 
+					(fun ngram ->
 						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram currentIncrementAmount;
 						totalNgramsArray.(currentWindowSizeMinusOne) <- totalNgramsArray.(currentWindowSizeMinusOne) +/ currentIncrementAmount
 					)
-					phonemePermutationList
+					phonemePermutationList;
+				if (currentWindowSizeMinusOne = 0) then
+					List.iter
+						(fun ngram ->
+							Hashtbl.add oldUnigramCounts ngram currentIncrementAmount;
+						)
+						phonemePermutationList
+				else
+					()
 			)
 			ngramList
 
