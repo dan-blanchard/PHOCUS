@@ -52,6 +52,7 @@ let decayFactor = ref 1.0
 let supervisedFor = ref 0
 let requireSyllabic = ref false
 let waitForStablePhonemeDist = ref false
+let noLexicon = ref false
 let waitUntilUtterance = ref 0
 let stabilityThreshold = ref 0.99
 
@@ -83,6 +84,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-ln", Arg.Set displayLineNumbers, " Short for --lineNumbers";
 					"--MBDP", Arg.Set mbdp, " Use MBDP-1 (Brent 1999) phoneme and word scores functions.  Should also enable --hypotheticalPhonotactics for true MBDP-1.";
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1";
+					"--noLexicon", Arg.Set noLexicon, " Only score words based on the phonotactics, and don't do 'familiar word' spotting.  Does NOT entail --tokenPhonotactics.";
+					"-nl", Arg.Set noLexicon, " Short for --noLexicon";
 					"--phonemeNgramsOut", Arg.Set_string phonemeCountsOut, " File to dump final phoneme n-gram counts to";
 					"-pn", Arg.Set_string phonemeCountsOut, " Short for --phonemeNgramsOut";
 					"--phonemeWindow", Arg.Set_int phonemeWindow, " Window size for phoneme n-grams";
@@ -253,7 +256,7 @@ struct
 	
 	let dump dumpFile = ()
 	
-	let use_score (word:string) = Hashtbl.mem lexicon word
+	let use_score (word:string) = (not !noLexicon) && (Hashtbl.mem lexicon word) 
 	
 	let update_evidence (newWord:string) (incrementAmount:num)= 
 		totalWords := !totalWords +/ incrementAmount;
@@ -956,7 +959,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
 
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
-	let familiarScore = (FamiliarWordCue.eval_word word ( */ )) in
+	let familiarScore =  (FamiliarWordCue.eval_word word ( */ )) in
 	let phonemeScore = if (!phonemeWindow > 0) then (PhonemeNgramCue.eval_word word ( */ )) else badScoreNum in
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word ( */ )) else (num_of_int 0) in
 	if (!verbose) then
