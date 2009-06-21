@@ -55,6 +55,7 @@ let waitForStablePhonemeDist = ref false
 let noLexicon = ref false
 let waitUntilUtterance = ref 0
 let stabilityThreshold = ref 0.99
+let goldPhonotactics = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -68,6 +69,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-fn", Arg.Set_string featureCountsOut, " Short for --featureNgramsOut";
 					"--featureWindow", Arg.Set_int featureWindow, " Window size for feature n-grams";
 					"-fw", Arg.Set_int featureWindow, " Short for --featureWindow";
+					"--goldPhonotactics", Arg.Set goldPhonotactics, " Calculate phoneme n-gram scores based on their true frequencies in the gold corpus. ";
+					"-gp", Arg.Set goldPhonotactics, " Short for --goldPhonotactics";
 					"--hypotheticalPhonotactics", Arg.Set countProposedNgrams, " When evaluating hypothetical words' well-formedness, increment counts of all n-grams within proposed word. (Default = false)";
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
 					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating phoneme/syllable/etc. n-gram scores, do not include word boundary.";
@@ -1120,8 +1123,10 @@ let two_pass_processor utteranceList =
 		utteranceList;;
 
 
-(* let sentence_processor = two_pass_processor;; *)
-let sentence_processor = incremental_processor;;
+let sentence_processor = (if not !goldPhonotactics then
+								incremental_processor
+							else
+								two_pass_processor);;
 
 (*** ACTUAL START OF PROGRAM ***)
 if (!interactive) then
