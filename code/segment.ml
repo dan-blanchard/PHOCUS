@@ -970,7 +970,7 @@ let default_evidence_combiner word =
 	if (FamiliarWordCue.use_score word) then
 		familiarScore
 	else
-		if (!requireSyllabic && (SyllableNgramCue.use_score word)) || (syllableScore >/ (num_of_int 0)) then (* Can't syllabify word or score is acceptably low. *)
+		if (!requireSyllabic && (SyllableNgramCue.use_score word)) || (syllableScore >/ (num_of_int 0)) then (* Can't syllabify word or score is acceptably high. *)
 			syllableScore
 		else
 			phonemeScore;;
