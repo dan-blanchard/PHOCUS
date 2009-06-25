@@ -18,13 +18,18 @@ let num_of_float floatNum =
 	let (integer, decimal) = String.split (Printf.sprintf "%.14f" floatNum) "." in
 	(num_of_string integer) +/ (num_of_string (decimal ^ " / " ^ (Printf.sprintf "%.0f" (10.0 ** (float_of_int ((String.length decimal)))))))
 
+(* Converts floats to Nums *)
+let num_of_float_string floatNum = 
+	let (integer, decimal) = String.split floatNum "." in
+	(num_of_string integer) +/ (num_of_string (decimal ^ " / " ^ (Printf.sprintf "%.0f" (10.0 ** (float_of_int ((String.length decimal)))))))
+
 let e = num_of_float 2.71828183
 let sixOverPiSquared = num_of_float 0.607927102
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
-let badScore =  ref 0.0
-let initialNgramCount = ref 1.0
+let badScore =  ref "0.0"
+let initialNgramCount = ref "1.0"
 let syllableDelimiter = ref "."
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
@@ -48,21 +53,22 @@ let countProposedNgrams = ref false
 let ignoreWordBoundary = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
-let decayFactor = ref 1.0
+let decayFactor = ref "1.0"
 let supervisedFor = ref 0
 let requireSyllabic = ref false
 let waitForStablePhonemeDist = ref false
 let noLexicon = ref false
 let waitUntilUtterance = ref 0
-let stabilityThreshold = ref 0.99
+let stabilityThreshold = ref "0.99"
 let goldPhonotactics = ref false
+let typeDenominator = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
-let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when word length is less than window size (Default = 0.0)";
-					"-bs", Arg.Set_float badScore, " Short for --badScore";
-					"--decayFactor", Arg.Set_float decayFactor, " Exponent used to calculate memory decay.  (Default = 0.0, no decay)";
-					"-df", Arg.Set_float decayFactor, " Short for --decayFactor";
+let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when word length is less than window size (Default = 0.0)";
+					"-bs", Arg.Set_string badScore, " Short for --badScore";
+					"--decayFactor", Arg.Set_string decayFactor, " Exponent used to calculate memory decay.  (Default = 0.0, no decay)";
+					"-df", Arg.Set_string decayFactor, " Short for --decayFactor";
 					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
 					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
 					"--featureNgramsOut", Arg.Set_string featureCountsOut, " File to dump final feature n-gram counts to";
@@ -75,8 +81,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
 					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating phoneme/syllable/etc. n-gram scores, do not include word boundary.";
 					"-iw", Arg.Set ignoreWordBoundary, " Short for --ignoreWordBoundary";
-					"--initialCount", Arg.Set_float initialNgramCount, " Count assigned to phonotactic largest n-grams before they are seen (default = 1.0)";
-					"-ic", Arg.Set_float initialNgramCount, " Short for --initialCount";
+					"--initialCount", Arg.Set_string initialNgramCount, " Count assigned to phonotactic largest n-grams before they are seen (default = 1.0)";
+					"-ic", Arg.Set_string initialNgramCount, " Short for --initialCount";
 					"--interactive", Arg.Set interactive, " After reading in corpus, user can specify an utterance number to segment up to, and query scores for possible segmentations.";
 					"-i", Arg.Set interactive, " Short for --interactive";
 					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
@@ -97,8 +103,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
-					"--stabilityThreshold", Arg.Set_float stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
-					"-st", Arg.Set_float stabilityThreshold, " Short for --stabilityThreshold";
+					"--stabilityThreshold", Arg.Set_string stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
+					"-st", Arg.Set_string stabilityThreshold, " Short for --stabilityThreshold";
 					"--supervisedFor", Arg.Set_int supervisedFor, " Number of utterances to use given word-boundaries for.  (Default = 0, unsupervised learner)";
 					"-sf", Arg.Set_int supervisedFor, " Short for --supervisedFor";
 					"--syllableNgramsOut", Arg.Set_string syllableCountsOut, " File to dump final syllable n-gram counts to";
@@ -107,6 +113,8 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
+					"--typeDenominator", Arg.Set typeDenominator, " When evaluating familiar words, divide word count by total number of word tokens plus number of word types.  (Should be on for MBDP-1).";
+					"-td", Arg.Set typeDenominator, " Short for --typeDenominator";					
 					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
 					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
 					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
@@ -123,14 +131,14 @@ let arg_spec_list =["--badScore", Arg.Set_float badScore, " Score assigned when 
 let usage = Sys.executable_name ^ " [-options] CORPUS";;
 Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
 
+if (!mbdp) then	initialNgramCount := "0.0";;
+
 (* Convert command-line arguments to their Num versions *)
-let badScoreNum = num_of_float !badScore;;
-let stabilityThresholdNum = num_of_float !stabilityThreshold;;
-let initialNgramCountNum = num_of_float !initialNgramCount;;
-let decayNum = num_of_float !decayFactor;;
+let badScoreNum = num_of_float_string !badScore;;
+let stabilityThresholdNum = num_of_float_string !stabilityThreshold;;
+let initialNgramCountNum = num_of_float_string !initialNgramCount;;
+let decayNum = num_of_float_string !decayFactor;;
 
-
-if (!mbdp) then	initialNgramCount := 0.0;;
 
 (* Read feature file, if specifed *)
 if !featureFile <> "" then
@@ -247,7 +255,10 @@ struct
 			let rawScore = 
 				(if (not !mbdp) then
 					let wordTypes = num_of_int ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
-						(wordCount // (!totalWords +/ wordTypes))
+						(wordCount // (if (!typeDenominator) then
+											(!totalWords +/ wordTypes)
+										else
+											!totalWords))
 				else
 					(((succ_num wordCount) // (succ_num !totalWords)) */ (square_num ((wordCount) // (succ_num wordCount)))))
 			in
