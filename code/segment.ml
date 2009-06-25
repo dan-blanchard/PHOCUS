@@ -61,7 +61,7 @@ let noLexicon = ref false
 let waitUntilUtterance = ref 0
 let stabilityThreshold = ref "0.99"
 let goldPhonotactics = ref false
-let typeDenominator = ref false
+let noTypeDenominator = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -95,6 +95,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1";
 					"--noLexicon", Arg.Set noLexicon, " Only score words based on the phonotactics, and don't do 'familiar word' spotting.  Does NOT entail --tokenPhonotactics.";
 					"-nl", Arg.Set noLexicon, " Short for --noLexicon";
+					"--noTypeDenominator", Arg.Set noTypeDenominator, " When evaluating familiar words, divide word count by only the  total number of word tokens (instead of tokens + types).  Should be OFF for MBDP-1.";
+					"-nt", Arg.Set noTypeDenominator, " Short for --noTypeDenominator";					
 					"--phonemeNgramsOut", Arg.Set_string phonemeCountsOut, " File to dump final phoneme n-gram counts to";
 					"-pn", Arg.Set_string phonemeCountsOut, " Short for --phonemeNgramsOut";
 					"--phonemeWindow", Arg.Set_int phonemeWindow, " Window size for phoneme n-grams";
@@ -113,8 +115,6 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
-					"--typeDenominator", Arg.Set typeDenominator, " When evaluating familiar words, divide word count by total number of word tokens plus number of word types.  (Should be on for MBDP-1).";
-					"-td", Arg.Set typeDenominator, " Short for --typeDenominator";					
 					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
 					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
 					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
@@ -255,10 +255,10 @@ struct
 			let rawScore = 
 				(if (not !mbdp) then
 					let wordTypes = num_of_int ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
-						(wordCount // (if (!typeDenominator) then
-											(!totalWords +/ wordTypes)
+						(wordCount // (if (!noTypeDenominator) then
+											!totalWords
 										else
-											!totalWords))
+											(!totalWords +/ wordTypes)))
 				else
 					(((succ_num wordCount) // (succ_num !totalWords)) */ (square_num ((wordCount) // (succ_num wordCount)))))
 			in
