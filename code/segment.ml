@@ -116,8 +116,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
-					"--uniformPhonotactics", Arg.Set verbose, " Never update phonotactic n-gram counts.  Just use initial uniform distribution throughout.";
-					"-up", Arg.Set verbose, " Short for --uniformPhonotactics";
+					"--uniformPhonotactics", Arg.Set uniformPhonotactics, " Never update phonotactic n-gram counts.  Just use initial uniform distribution throughout.";
+					"-up", Arg.Set uniformPhonotactics, " Short for --uniformPhonotactics";
 					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
 					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
 					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
