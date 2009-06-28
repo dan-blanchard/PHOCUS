@@ -62,6 +62,7 @@ let waitUntilUtterance = ref 0
 let stabilityThreshold = ref "0.99"
 let goldPhonotactics = ref false
 let noTypeDenominator = ref false
+let uniformPhonotactics = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -115,6 +116,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
+					"--uniformPhonotactics", Arg.Set verbose, " Never update phonotactic n-gram counts.  Just use initial uniform distribution throughout.";
+					"-up", Arg.Set verbose, " Short for --uniformPhonotactics";
 					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
 					"-ud", Arg.Set_string utteranceDelimiter, " Short for --utteranceDelimiter"; 
 					"--utteranceLimit", Arg.Set_int utteranceLimit, " Number of utterances in input corpus to process. (default = 0, which examines all)";
@@ -1082,7 +1085,13 @@ let incremental_processor utteranceList =
 					if (!displayLineNumbers) then
 						printf "%d: " (utteranceCount + 1);
 					Array.iter (fun (incrementAmount, segmentation) -> 
-										lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] incrementAmount
+										lexicon_updater 
+											segmentation 
+											sentence (if (not !uniformPhonotactics) then
+															[PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence]
+														else
+															[FamiliarWordCue.update_evidence])
+											incrementAmount
 									) 
 									segmentations;
 					if (!printUtteranceDelimiter) then
