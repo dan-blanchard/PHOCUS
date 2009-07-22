@@ -663,11 +663,18 @@ sub printCurrentTotalResults
 		{
 			if ($opt_b + $opt_i == $lineNumber)
 			{
-				print "block\tWP\tWR\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
+				print "block\tWP\tFO\tFU\tFB\tWR\tTO\tTU\tTB\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
 			}
 			print "$lineNumber\t";
 		}
-		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, $wordRecall*100, $wordF*100, $boundaryPrecision*100, $boundaryRecall*100, $boundaryF*100, $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
+		printf "%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\t%1.2f\%\n", $wordPrecision*100, 
+			($foundTotalWords > 0) ? (($foundWordOverSegmentedWords / $foundTotalWords) * 100) : 0, 
+			($foundTotalWords > 0) ? (($foundWordUnderSegmentedWords / $foundTotalWords) * 100) : 0,
+			($foundTotalWords > 0) ? (($foundWordCrossingBrackets / $foundTotalWords) * 100) : 0,
+			$wordRecall*100, ($trueTotalWords > 0) ? (($trueWordOverSegmentedWords / $trueTotalWords) * 100) : 0, 
+			($trueTotalWords > 0) ? (($trueWordUnderSegmentedWords / $trueTotalWords) * 100) : 0,
+			($trueTotalWords > 0) ? (($trueWordCrossingBrackets / $trueTotalWords) * 100) : 0,
+			$wordF*100, $boundaryPrecision*100, $boundaryRecall*100, $boundaryF*100, $lexiconPrecision*100, $lexiconRecall*100, $lexiconF*100;
 	}
 	
 	if ($opt_e) # Print errors, if asked
@@ -840,7 +847,7 @@ while ($trueLine = <GOLDFILE>)
 }
 if (!$opt_b && $opt_s)
 {
-	print "WP\tWR\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
+	print "WP\tFO\tFU\tFB\tWR\tTO\tTU\tTB\tWF\tBP\tBR\tBF\tLP\tLR\tLF\n";
 }
 printCurrentTotalResults($opt_b ? $lineNumber : 0); 
 
