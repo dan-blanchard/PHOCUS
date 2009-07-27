@@ -1,12 +1,32 @@
-Build Instructions
-------------------
+PHOCUS: PHOnotactic CUe Segmenter
+Copyright (C) 2007-2009 Dan Blanchard
+
+PHOCUS is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PHOCUS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.     
+
+Usage info for PHOCUS (segment.ml)
+==================================
+For help running PHOCUS, run ./segment.native -h after compiling.  It describes all of the default options.  The default mode is PHOCUS-1.
+
+Build Instructions for segment.ml
+---------------------------------
 
 Dependencies: caml-pcre, extlib
 
 To build a particular program (e.g., segment.ml), just use ocamlbuild.  
 
 Examples
-------------------
+--------
 To get a native code version of the segmenter run:
 	ocamlbuild segment.native
 
@@ -14,6 +34,11 @@ To get a byte code version run:
 	ocamlbuild segment.byte
 
 Troubleshooting
-------------------
+---------------
 If you receive an error about some module not being a compiled interface, then that module must 
 be recompiled with your current version of ocaml (or reinstalled if its an external library).
+
+
+Usage info for Error Analyzer (errors.pl)
+=========================================
+The Error Analyzer script will give you a great deal of information about the errors a segmenter makes, including what percentage of true words and found words are over- and under-segmented, as well as word, boundary, and lexicon precision, recall, and F0 scores.  Run ./errors.pl without arguments for help.
