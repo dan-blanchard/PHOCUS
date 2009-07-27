@@ -1,0 +1,46 @@
+The corpora contained in this directory are modified versions of corpora available in the CHILDES database.  All of these corpora are copyright their respective copyright holders.
+
+----- Brent and Cartwright (1996) version of BR corpus ----- 
+
+The first corpus is a version of the Bernstein-Ratner corpus.  It was phonemicized by Brent and Cartwright (1996), and is available as the file br-old-gold.txt.  This corpus uses a single character for all diphthongs and vowel plus 'r' combinations.  It also uses different symbols for the 'r's in 'bird' and 'butter', which only differ on stress.  If you use this version of the corpus in a paper please cite the following:
+
+CHILDES database:
+B.MacWhinney and C. Snow. 1985. The child language data exchange system. Journal of Child Language, 12:271-296.
+
+Bernstein-Ratner corpus (original source of data):
+N. Bernstein-Ratner. 1987. The phonology of parent-child speech. In K. Nelson and A. van Kleeck, editors, Children's Language, volume 6. Erlbaum, Hillsdale, NJ.
+
+Brent version of BR corpus:
+Brent, M.R. and T.A. Cartwright. 1996. Distributional regularity and phonotactic constraints are useful for segmentation. Cognition 61: 93-125.
+
+
+----- Blanchard and Heinz (2008) version of BR corpus ----- 
+
+The second corpus is another modified version of the Bernstein-Ratner corpus.  It takes the Brent and Cartwright version and splits the diphthongs and vowel+'r's into two symbols (with the exception of those whose first vowel does not occur in isolation in English).  It also collapses the stressed and unstressed syllabic 'r' sounds into one symbol.  This version of the corpus is available as br-gold.txt.  When using this version of the corpus in a paper, please cite the following:
+
+CHILDES database:
+B. MacWhinney and C. Snow. 1985. The child language data exchange system. Journal of Child Language, 12:271-296.
+
+Bernstein-Ratner corpus (original source of data):
+N. Bernstein-Ratner. 1987. The phonology of parent-child speech. In K. Nelson and A. van Kleeck, editors, Children's Language, volume 6. Erlbaum, Hillsdale, NJ.
+
+Brent version of BR corpus:
+Brent, M.R. and T.A. Cartwright. 1996. Distributional regularity and phonotactic constraints are useful for segmentation. Cognition 61: 93-125.
+
+Blanchard, Daniel and Jeffrey Heinz. 2008. Improving Word Segmentation by Simultaneously Learning Phonotactics. CoNLL 2008: Proceedings of the 12th Conference on Computational Natural Language Learning, pp. 65–72.
+
+
+----- Johnson (2008) version of the Demuth Sesotho corpus ----- 
+
+This only non-English corpus in this directory is in Sesotho (Bantu).  Johnson (2008) trimmed the Demuth (1992) corpus from the CHILDES database (MacWhinney & Snow, 1985) of speech between mother-child dyads to include only the child-directed speech. He did not convert the orthography to phonemes, because the writing system for Sesotho is nearly phonemic to begin with.  The final corpus contains 8,503 utterances consisting of 21,037 word tokens.  There is both a morpheme-segmented and word-segmented version of this corpus (sesotho-morph-gold.txt and sesotho-word-gold, respectively).
+
+When using this corpus, please cite the following:
+
+CHILDES database:
+B. MacWhinney and C. Snow. 1985. The child language data exchange system. Journal of Child Language, 12:271-296.
+
+Demuth corpus (original source of data):
+Demuth, K. (1992). Acquisition of Sesotho. In D. Slobin (Ed.), The cross-linguistic study of language acquisition (Vol. 3, pp. 557–638). Hillsdale, NJ: Lawrence Erlbaum Associates.
+
+Johnson version of corpus:
+Johnson, M. (2008). Unsupervised word segmentation for Sesotho using adaptor grammars. In Proceedings of the tenth meeting of Association for Computational Linguistics SIGMORPHON (pp. 20–27). Morristown, NJ: Association for Computational Linguistics.
