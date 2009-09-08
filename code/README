@@ -16,7 +16,8 @@ along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 
 Usage info for PHOCUS (segment.ml)
 ==================================
-For help running PHOCUS, run ./segment.native -h after compiling.  It describes all of the default options.  The default mode is PHOCUS-1.
+For help running PHOCUS, run ./segment.native -h after compiling.  It describes all of the default options.  
+The default mode is PHOCUS-1.
 
 Build Instructions for segment.ml
 ---------------------------------
@@ -41,4 +42,8 @@ be recompiled with your current version of ocaml (or reinstalled if its an exter
 
 Usage info for Error Analyzer (errors.pl)
 =========================================
-The Error Analyzer script will give you a great deal of information about the errors a segmenter makes, including what percentage of true words and found words are over- and under-segmented, as well as word, boundary, and lexicon precision, recall, and F0 scores.  Run ./errors.pl without arguments for help.
+The Error Analyzer script will give you a great deal of information about the errors a segmenter makes, 
+including what percentage of true words and found words are over- and under-segmented, as well as word, 
+boundary, and lexicon precision, recall, and F0 scores.  
+
+Run ./errors.pl without arguments for help.
