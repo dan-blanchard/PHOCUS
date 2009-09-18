@@ -1034,10 +1034,12 @@ let eval_functions = [(if (not !noLexicon) then
  					  (if (!phonemeWindow > 0) then PhonemeNgramCue.eval_word else (fun a b -> badScoreNum)) ;
 					  (if ((!syllableWindow > 0) || !requireSyllabic) then 
 							(fun word combine ->
-								if (SyllableNgramCue.use_score word) then
+								if (SyllableNgramCue.use_score word) && (!requireSyllabic) then (* Backward because use_score for SyllableNgramCue actually checks if syllabification fails *)
+									badScoreNum
+								else if (!syllableWindow > 0)
 									SyllableNgramCue.eval_word word combine
 								else
-									badScoreNum
+									(num_of_int 1)								
 							)
 						else (fun a b -> badScoreNum));
 					  (if (!featureWindow > 0) then FeatureNgramCue.eval_word else (fun a b -> badScoreNum))];;
