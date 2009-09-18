@@ -55,7 +55,7 @@ let featureCountsOut = ref ""
 let syllableCountsOut = ref ""
 let phonemeWindow = ref 1
 let syllableWindow = ref 0
-let featureWindow = ref 1
+let featureWindow = ref 0
 let jointProb = ref false
 let smooth = ref false
 let tokenPhonotactics = ref false
@@ -77,6 +77,7 @@ let stabilityThreshold = ref "0.99"
 let goldPhonotactics = ref false
 let noTypeDenominator = ref false
 let uniformPhonotactics = ref false
+let weightedSum = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -142,6 +143,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-wf", Arg.Set waitForStablePhonemeDist, " Short for --waitForStablePhonemeDist";
 					"--waitUntilUtterance", Arg.Set_int waitUntilUtterance, " Do not start attempting to segment until we have reached the specified utterance number.";
 					"-wu", Arg.Set_int waitUntilUtterance, " Short for --waitUntilUtterance";
+					"--weightedSum", Arg.Set weightedSum, " Instead of using back-off model for score combination, use weighted sum with all cues weighted equally.";
+					"-ws", Arg.Set weightedSum, " Short for --weightedSum";
 					"--wordDelimiter", Arg.Set_string wordDelimiter, " Word delimiter";
 					"-wd", Arg.Set_string wordDelimiter, " Short for --wordDelimiter"]
 
@@ -1010,7 +1013,44 @@ let multiplicative_evidence_combiner word =
 		printf "Familiar score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 phonemeScore);
 	familiarScore */ phonemeScore;;
 
-let eval_word = default_evidence_combiner;;
+let weighted_sum_combiner evalFunctions weights names word =
+	let scoreList = List.map (fun evalFunc -> (evalFunc word ( */ ))) evalFunctions in
+	if (!verbose) then
+		begin
+			List.iter2 (fun name score -> printf "%s score for %s = %s\n" name word (approx_num_exp 10 score)) names scoreList;
+			printf "\n"
+		end;
+	List.fold_left2 (fun currentSum weight score -> currentSum +/ (weight */ score)) (num_of_int 0) weights scoreList;;
+
+let eval_functions = [(if (not !noLexicon) then 
+							(fun word combine -> 
+								if (FamiliarWordCue.use_score word) then 
+									FamiliarWordCue.eval_word word combine 
+								else 
+									badScoreNum
+							)
+					   else 
+							(fun a b -> badScoreNum));
+ 					  (if (!phonemeWindow > 0) then PhonemeNgramCue.eval_word else (fun a b -> badScoreNum)) ;
+					  (if ((!syllableWindow > 0) || !requireSyllabic) then 
+							(fun word combine ->
+								if (SyllableNgramCue.use_score word) then
+									SyllableNgramCue.eval_word word combine
+								else
+									badScoreNum
+							)
+						else (fun a b -> badScoreNum));
+					  (if (!featureWindow > 0) then FeatureNgramCue.eval_word else (fun a b -> badScoreNum))];;
+
+let eval_weights = [(num_of_float 0.25) ; (num_of_float 0.25) ; (num_of_float 0.25) ; (num_of_float 0.25)];;
+
+let eval_names = ["Familiar" ; "Phoneme" ; "Syllable" ; "Feature"];;
+
+
+let eval_word = if (!weightedSum) then 
+					(weighted_sum_combiner eval_functions eval_weights eval_names)
+				else
+					default_evidence_combiner;;
 
 let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
