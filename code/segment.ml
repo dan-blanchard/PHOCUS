@@ -1006,21 +1006,27 @@ let default_evidence_combiner word =
 		else
 			phonemeScore;;
 
-let multiplicative_evidence_combiner word =
-	let familiarScore = (FamiliarWordCue.eval_word word ( */ )) in
-	let phonemeScore = (PhonemeNgramCue.eval_word word ( */ )) in
-	if (!verbose) then
-		printf "Familiar score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 phonemeScore);
-	familiarScore */ phonemeScore;;
-
-let weighted_sum_combiner evalFunctions weights names word =
-	let scoreList = List.map (fun evalFunc -> (evalFunc word ( */ ))) evalFunctions in
-	if (!verbose) then
+let weighted_sum_combiner filterFunctions evalFunctions weights names word =
+	let filterScore = List.fold_left (fun currentProduct filterFunc -> (filterFunc word) */ currentProduct) (num_of_int 1) filterFunctions in
+	if (filterScore >/ (num_of_int 0)) then
 		begin
-			List.iter2 (fun name score -> printf "%s score for %s = %s\n" name word (approx_num_exp 10 score)) names scoreList;
-			printf "\n"
-		end;
-	List.fold_left2 (fun currentSum weight score -> currentSum +/ (weight */ score)) (num_of_int 0) weights scoreList;;
+			let scoreList = List.map (fun evalFunc -> (evalFunc word ( */ ))) evalFunctions in
+			if (!verbose) then
+				begin
+					List.iter2 (fun name score -> printf "%s score for %s = %s\n" name word (approx_num_exp 10 score)) names scoreList;
+					printf "\n"
+				end;
+			List.fold_left2 (fun currentSum weight score -> currentSum +/ (weight */ score)) (num_of_int 0) weights scoreList
+		end
+	else
+		filterScore;;
+
+let filter_functions = [(fun word -> 
+							if (!requireSyllabic) && (SyllableNgramCue.use_score word) then
+								(num_of_int 0)
+							else
+								(num_of_int 1)
+						)];;
 
 let eval_functions = [(if (not !noLexicon) then 
 							(fun word combine -> 
@@ -1032,16 +1038,7 @@ let eval_functions = [(if (not !noLexicon) then
 					   else 
 							(fun a b -> badScoreNum));
  					  (if (!phonemeWindow > 0) then PhonemeNgramCue.eval_word else (fun a b -> badScoreNum)) ;
-					  (if ((!syllableWindow > 0) || !requireSyllabic) then 
-							(fun word combine ->
-								if (SyllableNgramCue.use_score word) && (!requireSyllabic) then (* Backward because use_score for SyllableNgramCue actually checks if syllabification fails *)
-									badScoreNum
-								else if (!syllableWindow > 0) then
-									SyllableNgramCue.eval_word word combine
-								else
-									(num_of_int 1)								
-							)
-						else (fun a b -> badScoreNum));
+					  (if (!syllableWindow > 0) then SyllableNgramCue.eval_word else (fun a b -> badScoreNum)) ;
 					  (if (!featureWindow > 0) then FeatureNgramCue.eval_word else (fun a b -> badScoreNum))];;
 
 let eval_weights = [(num_of_float 0.25) ; (num_of_float 0.25) ; (num_of_float 0.25) ; (num_of_float 0.25)];;
@@ -1050,7 +1047,7 @@ let eval_names = ["Familiar" ; "Phoneme" ; "Syllable" ; "Feature"];;
 
 
 let eval_word = if (!weightedSum) then 
-					(weighted_sum_combiner eval_functions eval_weights eval_names)
+					(weighted_sum_combiner filter_functions eval_functions eval_weights eval_names)
 				else
 					default_evidence_combiner;;
 
