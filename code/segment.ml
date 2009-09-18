@@ -1036,7 +1036,7 @@ let eval_functions = [(if (not !noLexicon) then
 							(fun word combine ->
 								if (SyllableNgramCue.use_score word) && (!requireSyllabic) then (* Backward because use_score for SyllableNgramCue actually checks if syllabification fails *)
 									badScoreNum
-								else if (!syllableWindow > 0)
+								else if (!syllableWindow > 0) then
 									SyllableNgramCue.eval_word word combine
 								else
 									(num_of_int 1)								
