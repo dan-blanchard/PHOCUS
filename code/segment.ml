@@ -78,6 +78,7 @@ let goldPhonotactics = ref false
 let noTypeDenominator = ref false
 let uniformPhonotactics = ref false
 let weightedSum = ref false
+let subseqDenom = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -123,6 +124,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
 					"--stabilityThreshold", Arg.Set_string stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
 					"-st", Arg.Set_string stabilityThreshold, " Short for --stabilityThreshold";
+					"--subseqDenominator", Arg.Set subseqDenom, " For lexical score, calculate probability word is a word, rather than probability of word occuring in corpus.";
+					"-sd", Arg.Set subseqDenom, " Short for --subseqDenom";
 					"--supervisedFor", Arg.Set_int supervisedFor, " Number of utterances to use given word-boundaries for.  (Default = 0, unsupervised learner)";
 					"-sf", Arg.Set_int supervisedFor, " Short for --supervisedFor";
 					"--syllableNgramsOut", Arg.Set_string syllableCountsOut, " File to dump final syllable n-gram counts to";
@@ -264,9 +267,11 @@ sig
 	val use_score : string -> bool
 end
 
-module FamiliarWordCue : CUE = 
+module FamiliarWordCue = 
 struct
 	let lastSeen = Hashtbl.create 10000
+	let subseqCounts = Hashtbl.create 100000
+	let tempSubseqCounts = Hashtbl.create 1000
 	
 	(* Returns frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine =
@@ -275,10 +280,13 @@ struct
 			let rawScore = 
 				(if (not !mbdp) then
 					let wordTypes = num_of_int ((Hashtbl.length lexicon) - 1) in (* Subtract one for initial utterance delimiter addition *)
-						(wordCount // (if (!noTypeDenominator) then
+					(wordCount // (if !subseqDenom then
+										Hashtbl.find subseqCounts word
+									else
+										(if (!noTypeDenominator) then
 											!totalWords
 										else
-											(!totalWords +/ wordTypes)))
+											(!totalWords +/ wordTypes))))
 				else
 					(((succ_num wordCount) // (succ_num !totalWords)) */ (square_num ((wordCount) // (succ_num wordCount)))))
 			in
@@ -288,9 +296,33 @@ struct
 	
 	let initialize initialCount = ()
 	
-	let dump dumpFile = ()
+	let dump dumpFile = 
+		let oc = open_out dumpFile in
+		hash_fprint_num oc lexicon;
+		close_out oc
 	
 	let use_score (word:string) = (not !noLexicon) && (Hashtbl.mem lexicon word) 
+	
+	let update_subseq_count (newSeq:string) (incrementAmount:num)= 
+		if Hashtbl.mem tempSubseqCounts newSeq then
+			Hashtbl.replace tempSubseqCounts newSeq ((Hashtbl.find tempSubseqCounts newSeq) +/ incrementAmount)
+		else
+			Hashtbl.add tempSubseqCounts newSeq incrementAmount(* ;
+					if (!verbose) then
+						printf "\tUpdated count for %s to %s\n" newSeq (approx_num_exp 10 (Hashtbl.find tempSubseqCounts newSeq)) *)
+
+	let commit_subseq_counts () = 
+		Hashtbl.iter 
+			(fun subseq count -> 
+				if Hashtbl.mem subseqCounts subseq then
+					Hashtbl.replace subseqCounts subseq ((Hashtbl.find subseqCounts subseq) +/ count)
+				else
+					Hashtbl.add subseqCounts subseq count(* ;
+									if (!verbose) then
+										printf "\tUpdated count for %s to %s\n" subseq (approx_num_exp 10 (Hashtbl.find subseqCounts subseq)) *)
+			)
+			tempSubseqCounts;
+		Hashtbl.clear tempSubseqCounts
 	
 	let update_evidence (newWord:string) (incrementAmount:num)= 
 		totalWords := !totalWords +/ incrementAmount;
@@ -299,6 +331,8 @@ struct
 		else
 			Hashtbl.add lexicon newWord incrementAmount;
 		Hashtbl.replace lastSeen newWord (Hashtbl.find lexicon !utteranceDelimiter);;		
+		
+	
 end
 
 module type NgramProbsSig = 
@@ -988,7 +1022,7 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
 			lexicon_updater (List.tl segmentation) sentence updateFunctions incrementAmount
 		end
 	else
-		();;
+		FamiliarWordCue.commit_subseq_counts ();;
 
 
 (* Backs-off from familiar word score to phoneme n-gram score. *)
@@ -1055,6 +1089,7 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
 		begin
 			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
+			FamiliarWordCue.update_subseq_count newSubUtterance (num_of_int 1);			
 			let wordScore = eval_word newSubUtterance in
 			let oldBestProduct = fst (bestList.(firstChar - 1)) in
 			let lastCharBestProduct = fst (bestList.(lastChar)) in
@@ -1073,6 +1108,7 @@ let mbdp_outer sentence =
 		(fun oldBestList lastChar ->
 			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
+			FamiliarWordCue.update_subseq_count subUtterance (num_of_int 1);						
 			let newBestList = Array.append oldBestList [|((eval_word subUtterance), 0)|] in
 			mbdp_inner subUtterance 1 lastChar newBestList
 		)
@@ -1237,10 +1273,8 @@ if (!interactive) then
 
 (* Dump lexicon if requested *)
 if !lexiconOut <> "" then
-	let oc = open_out !lexiconOut in
-	hash_fprint_num oc lexicon;
-	close_out oc;;
-
+	FamiliarWordCue.dump !lexiconOut;;
+	
 (* Dump n-gram counts if requested *)
 if !phonemeCountsOut <> "" then
 	PhonemeNgramCue.dump !phonemeCountsOut;;
