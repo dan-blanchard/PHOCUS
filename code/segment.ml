@@ -67,7 +67,7 @@ let countProposedNgrams = ref false
 let ignoreWordBoundary = ref false
 let utteranceLimit = ref 0
 let lexicon = Hashtbl.create 10000
-let decayFactor = ref "1.0"
+(* let decayFactor = ref "1.0" *)
 let supervisedFor = ref 0
 let requireSyllabic = ref false
 let waitForStablePhonemeDist = ref false
@@ -84,8 +84,8 @@ let subseqDenom = ref false
 let process_anon_args corpusFile = corpus := corpusFile
 let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when word length is less than window size (Default = 0.0)";
 					"-bs", Arg.Set_string badScore, " Short for --badScore";
-					"--decayFactor", Arg.Set_string decayFactor, " Exponent used to calculate memory decay.  (Default = 0.0, no decay)";
-					"-df", Arg.Set_string decayFactor, " Short for --decayFactor";
+					(* "--decayFactor", Arg.Set_string decayFactor, " Exponent used to calculate memory decay.  (Default = 0.0, no decay)";
+					"-df", Arg.Set_string decayFactor, " Short for --decayFactor"; *)
 					"--featureChart", Arg.Set_string featureFile, " Feature chart file";
 					"-fc", Arg.Set_string featureFile, " Short for --featureChart";					
 					"--featureNgramsOut", Arg.Set_string featureCountsOut, " File to dump final feature n-gram counts to";
@@ -160,7 +160,7 @@ if (!mbdp) then	initialNgramCount := "0.0";;
 let badScoreNum = num_of_float_string !badScore;;
 let stabilityThresholdNum = num_of_float_string !stabilityThreshold;;
 let initialNgramCountNum = num_of_float_string !initialNgramCount;;
-let decayNum = num_of_float_string !decayFactor;;
+(* let decayNum = num_of_float_string !decayFactor;; *)
 
 
 (* Read feature file, if specifed *)
@@ -290,7 +290,7 @@ struct
 				else
 					(((succ_num wordCount) // (succ_num !totalWords)) */ (square_num ((wordCount) // (succ_num wordCount)))))
 			in
-			rawScore */ (power_num decayNum ((succ_num (Hashtbl.find lexicon !utteranceDelimiter)) -/ (Hashtbl.find lastSeen word)))
+			rawScore (* */ (power_num decayNum ((succ_num (Hashtbl.find lexicon !utteranceDelimiter)) -/ (Hashtbl.find lastSeen word))) *)
 		else
 			badScoreNum
 	
