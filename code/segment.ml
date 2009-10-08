@@ -299,6 +299,11 @@ struct
 	let dump dumpFile = 
 		let oc = open_out dumpFile in
 		hash_fprint_num oc lexicon;
+		if (!subseqDenom) then
+			begin
+				fprintf oc "\n\nSubsequence Counts:\n";
+				hash_fprint_num oc subseqCounts
+			end;
 		close_out oc
 	
 	let use_score (word:string) = (not !noLexicon) && (Hashtbl.mem lexicon word) 
