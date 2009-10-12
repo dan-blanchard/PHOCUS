@@ -75,7 +75,7 @@ let noLexicon = ref false
 let waitUntilUtterance = ref 0
 let stabilityThreshold = ref "0.99"
 let goldPhonotactics = ref false
-let noTypeDenominator = ref false
+let typeDenominator = ref false
 let uniformPhonotactics = ref false
 let weightedSum = ref false
 let subseqDenom = ref false
@@ -112,8 +112,6 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-mb", Arg.Set mbdp, " Short for --MBDP-1";
 					"--noLexicon", Arg.Set noLexicon, " Only score words based on the phonotactics, and don't do 'familiar word' spotting.  Does NOT entail --tokenPhonotactics.";
 					"-nl", Arg.Set noLexicon, " Short for --noLexicon";
-					"--noTypeDenominator", Arg.Set noTypeDenominator, " When evaluating familiar words, divide word count by only the  total number of word tokens (instead of tokens + types).  Should be OFF for MBDP-1.";
-					"-nt", Arg.Set noTypeDenominator, " Short for --noTypeDenominator";					
 					"--phonemeNgramsOut", Arg.Set_string phonemeCountsOut, " File to dump final phoneme n-gram counts to";
 					"-pn", Arg.Set_string phonemeCountsOut, " Short for --phonemeNgramsOut";
 					"--phonemeWindow", Arg.Set_int phonemeWindow, " Window size for phoneme n-grams";
@@ -134,6 +132,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
+					"--typeDenominator", Arg.Set typeDenominator, " When evaluating familiar words, divide word count by total number of word tokens + total number of word types.  Should only be on for Venkataraman.";
+					"-td", Arg.Set typeDenominator, " Short for --typeDenominator";					
 					"--uniformPhonotactics", Arg.Set uniformPhonotactics, " Never update phonotactic n-gram counts.  Just use initial uniform distribution throughout.";
 					"-up", Arg.Set uniformPhonotactics, " Short for --uniformPhonotactics";
 					"--utteranceDelimiter", Arg.Set_string utteranceDelimiter, " Utterance delimiter"; 
@@ -283,10 +283,10 @@ struct
 					(wordCount // (if !subseqDenom then
 										Hashtbl.find subseqCounts word
 									else
-										(if (!noTypeDenominator) then
-											!totalWords
+										(if (!typeDenominator) then
+											(!totalWords +/ wordTypes)
 										else
-											(!totalWords +/ wordTypes))))
+											!totalWords)))
 				else
 					(((succ_num wordCount) // (succ_num !totalWords)) */ (square_num ((wordCount) // (succ_num wordCount)))))
 			in
@@ -1265,7 +1265,7 @@ if (!interactive) then
 				let command = String.nsplit (read_line ()) !wordDelimiter in
 				match command with
 				  "syllabify" :: args -> List.iter (fun arg -> printf "%s%s" (syllabify arg) !wordDelimiter) args; printf "\n"
-				| "score" :: args -> ignore (List.map eval_word args); ()
+				| "score" :: args -> printf "Total = %s" (approx_num_exp 10 (List.fold_left (fun acc x -> acc */ x) (num_of_int 1) (List.map eval_word args))); printf "\n"
 				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_float (float_of_string incrementAmount)); ()
  				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n"
 				| _ -> printf "Unknown command.\n"
