@@ -1029,6 +1029,27 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
 	else
 		FamiliarWordCue.commit_subseq_counts ();;
 
+(* These two functions are used for updating the subsequence counts if we're doing a supervised pass through the corpus.*)
+let rec subsequence_updater_inner subUtterance firstChar lastChar =
+	if firstChar <= lastChar then
+		begin
+			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
+			FamiliarWordCue.update_subseq_count newSubUtterance (num_of_int 1);
+			subsequence_updater_inner subUtterance (firstChar + 1) lastChar 
+		end
+	else
+		();;
+
+let subsequence_updater_outer sentence =
+	let lastCharList = Array.init (String.length sentence) (fun a -> a) in
+	Array.iter
+		(fun lastChar ->
+			let subUtterance = String.sub sentence 0 (lastChar + 1) in
+			FamiliarWordCue.update_subseq_count subUtterance (num_of_int 1);						
+			subsequence_updater_inner subUtterance 1 lastChar
+		)
+		lastCharList;;
+
 
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
@@ -1156,11 +1177,14 @@ let segmentation_of_segmented_sentence segmentedSentence =
 										else 
 											0) 
 									segmentedChars in
+	subsequence_updater_outer sentence;
 	(([0] @ (List.mapi (fun index boundary -> boundary - index) ((List.remove_all boundaryIndexes 0) @ [(String.length segmentedSentence)]))), sentence);;
 
 (* Returns a segmentation list of the type lexicon_updater needs from a list of words *)
 let segmentation_of_word_list words =
 	segmentation_of_segmented_sentence (String.slice ~first:1 (List.fold_left (fun currentResult currentWord -> currentResult ^ !wordDelimiter ^ currentWord) "" words));;
+
+
 
 (* Loop through utterances *)
 let incremental_processor utteranceList = 
