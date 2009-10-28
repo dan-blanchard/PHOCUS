@@ -79,6 +79,7 @@ let typeDenominator = ref false
 let uniformPhonotactics = ref false
 let weightedSum = ref false
 let subseqDenom = ref false
+let currentOutputChannel = ref stdout
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -314,7 +315,7 @@ struct
 		else
 			Hashtbl.add tempSubseqCounts newSeq incrementAmount(* ;
 					if (!verbose) then
-						printf "\tUpdated count for %s to %s\n" newSeq (approx_num_exp 10 (Hashtbl.find tempSubseqCounts newSeq)) *)
+						eprintf "\tUpdated count for %s to %s\n" newSeq (approx_num_exp 10 (Hashtbl.find tempSubseqCounts newSeq)) *)
 
 	let commit_subseq_counts () = 
 		Hashtbl.iter 
@@ -324,7 +325,7 @@ struct
 				else
 					Hashtbl.add subseqCounts subseq count(* ;
 									if (!verbose) then
-										printf "\tUpdated count for %s to %s\n" subseq (approx_num_exp 10 (Hashtbl.find subseqCounts subseq)) *)
+										eprintf "\tUpdated count for %s to %s\n" subseq (approx_num_exp 10 (Hashtbl.find subseqCounts subseq)) *)
 			)
 			tempSubseqCounts;
 		Hashtbl.clear tempSubseqCounts
@@ -508,7 +509,7 @@ struct
 										let ngramSyllableArray = Array.sub syllablesWithBoundary firstSyll !syllableWindow in
 										let ngram = string_of_syllable_array ngramSyllableArray in
 										let ngramScore = prob_ngram ngramSyllableArray.(0) ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
-										(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+										(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 										score := (combine !score ngramScore)
 									)
 									(List.init ((Array.length syllablesWithBoundary) - (!syllableWindow - 1)) (fun a -> a));
@@ -663,12 +664,12 @@ struct
 											num_of_int 1
 										else
 											(num_of_int 1) // ((num_of_int 1) -/ ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) // currentTotalNgramsArray.(0))));
-				(* printf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
+				(* eprintf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
 						let ngramScore = prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
-						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+						(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
 					(List.init ((String.length wordWithBoundary) - (!phonemeWindow - 1)) (fun a -> a));
@@ -677,8 +678,8 @@ struct
 				else
 					begin
 						let adjustment = (sixOverPiSquared */ (wordTypes // (totalWordsNum))) */ (square_num ((pred_num wordTypes) // wordTypes)) in
-						(* printf "Score adjustment = %F\n" adjustment; *)
-						(* printf "Raw phoneme score = %F\n" !score; *)
+						(* eprintf "Score adjustment = %F\n" adjustment; *)
+						(* eprintf "Raw phoneme score = %F\n" !score; *)
 						!score */ adjustment
 					end
 			end
@@ -728,7 +729,7 @@ struct
 																							let oldCount = Hashtbl.find oldUnigramCounts phoneme in
 																							Hashtbl.replace oldUnigramCounts phoneme count;
 																							(* if (not !hasStabilized) then
-																								printf "utterance: %s\tphoneme: %s\toldCount: %F\tnewCount: %F\tpercentage: %F\n" utterance phoneme oldCount count (oldCount /. count)
+																								eprintf "utterance: %s\tphoneme: %s\toldCount: %F\tnewCount: %F\tpercentage: %F\n" utterance phoneme oldCount count (oldCount /. count)
 																							else
 																								(); *)
 																							(wasStable && (oldCount // count >/ stabilityThresholdNum))
@@ -876,7 +877,7 @@ struct
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !featureWindow in
 						let ngramScore = prob_ngram (String.sub ngram 0 (!featureWindow - 1)) ngram (!featureWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
-						(* printf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+						(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
 					(List.init ((String.length wordWithBoundary) - (!featureWindow - 1)) (fun a -> a));
@@ -885,8 +886,8 @@ struct
 				else
 					begin
 						let adjustment = (sixOverPiSquared */ (wordTypes // (totalWordsNum))) */ (square_num ((pred_num wordTypes) // wordTypes)) in
-						(* printf "Score adjustment = %F\n" adjustment; *)
-						(* printf "Raw phoneme score = %F\n" !score; *)
+						(* eprintf "Score adjustment = %F\n" adjustment; *)
+						(* eprintf "Raw phoneme score = %F\n" !score; *)
 						!score */ adjustment
 					end
 			end
@@ -1020,9 +1021,9 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
 			List.iter (fun updateFunc -> (updateFunc newWord incrementAmount)) updateFunctions; (* Calls all of the update functions in the list *)
 			if (incrementAmount =/ (num_of_int 1)) then
 				begin
-					printf "%s" newWord;
+					fprintf !currentOutputChannel "%s" newWord;
 					if (List.length segmentation > 2) then
-						printf "%s" !wordDelimiter
+						fprintf !currentOutputChannel "%s" !wordDelimiter
 				end;
 			lexicon_updater (List.tl segmentation) sentence updateFunctions incrementAmount
 		end
@@ -1057,7 +1058,7 @@ let default_evidence_combiner word =
 	let phonemeScore = if (!phonemeWindow > 0) then (PhonemeNgramCue.eval_word word ( */ )) else badScoreNum in
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word ( */ )) else (num_of_int 0) in
 	if (!verbose) then
-		printf "Familiar score for %s = %s\nSyllable score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 syllableScore) word (approx_num_exp 10 phonemeScore);
+		eprintf "Familiar score for %s = %s\nSyllable score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 syllableScore) word (approx_num_exp 10 phonemeScore);
 	if (FamiliarWordCue.use_score word) then
 		familiarScore
 	else
@@ -1073,8 +1074,8 @@ let weighted_sum_combiner filterFunctions evalFunctions weights names word =
 			let scoreList = List.map (fun evalFunc -> (evalFunc word ( */ ))) evalFunctions in
 			if (!verbose) then
 				begin
-					List.iter2 (fun name score -> printf "%s score for %s = %s\n" name word (approx_num_exp 10 score)) names scoreList;
-					printf "\n"
+					List.iter2 (fun name score -> eprintf "%s score for %s = %s\n" name word (approx_num_exp 10 score)) names scoreList;
+					eprintf "\n"
 				end;
 			List.fold_left2 (fun currentSum weight score -> currentSum +/ (weight */ score)) (num_of_int 0) weights scoreList
 		end
@@ -1132,7 +1133,7 @@ let mbdp_outer sentence =
 	let lastCharList = Array.init (String.length sentence) (fun a -> a) in
 	let bestList = Array.fold_left
 		(fun oldBestList lastChar ->
-			(* printf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
+			(* eprintf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
 			FamiliarWordCue.update_subseq_count subUtterance (num_of_int 1);						
 			let newBestList = Array.append oldBestList [|((eval_word subUtterance), 0)|] in
@@ -1141,7 +1142,7 @@ let mbdp_outer sentence =
 		[||]
 		lastCharList
 	in
-	(* Array.iter (fun (x, y) -> printf "(%F, %d)" x y) bestList; *)
+	(* Array.iter (fun (x, y) -> eprintf "(%F, %d)" x y) bestList; *)
 	Array.map
 	 	snd
 		bestList;;
@@ -1201,7 +1202,7 @@ let incremental_processor utteranceList =
 											else
 												[|(num_of_int 1), (fst (segmentation_of_segmented_sentence sentence))|])) in
 					if (!displayLineNumbers) then
-						printf "%d: " (utteranceCount + 1);
+						fprintf !currentOutputChannel "%d: " (utteranceCount + 1);
 					Array.iter (fun (incrementAmount, segmentation) -> 
 										lexicon_updater 
 											segmentation 
@@ -1213,9 +1214,9 @@ let incremental_processor utteranceList =
 									) 
 									segmentations;
 					if (!printUtteranceDelimiter) then
-						printf "%s" !utteranceDelimiter;		
-					printf "\n";
-					flush stdout;
+						fprintf !currentOutputChannel "%s" !utteranceDelimiter;		
+					fprintf !currentOutputChannel "\n";
+					flush !currentOutputChannel;
 					Hashtbl.replace lexicon !utteranceDelimiter (succ_num (Hashtbl.find lexicon !utteranceDelimiter))
 				end
 		)
@@ -1224,15 +1225,16 @@ let incremental_processor utteranceList =
 
 (* Learn phonotactic model from gold corpus, and then resegment without updating phonotactic model *)
 let two_pass_processor utteranceList = 
-	printf "\nPhonotactic Pass:\n";
+	eprintf "\nPhonotactic Pass:\n";
+	currentOutputChannel := stderr;
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let (segmentation, sentence) = segmentation_of_segmented_sentence segmentedSentence in
 					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_int 1); 
-					printf "\n";
-					flush stdout;
+					fprintf !currentOutputChannel "\n";
+					flush !currentOutputChannel;
 					Hashtbl.replace lexicon !utteranceDelimiter (succ_num (Hashtbl.find lexicon !utteranceDelimiter))
 				end
 		)
@@ -1240,7 +1242,9 @@ let two_pass_processor utteranceList =
 	Hashtbl.clear lexicon;
 	Hashtbl.add lexicon !utteranceDelimiter (num_of_int 0);
 	totalWords := (num_of_int 0);
-	printf "\nSegmentation Pass:\n";
+	eprintf "\nSegmentation Pass:\n";
+	flush stderr;
+	currentOutputChannel := stdout;
 	List.iteri
 		(fun utteranceCount segmentedSentence -> 
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
@@ -1249,12 +1253,12 @@ let two_pass_processor utteranceList =
 					let bestStartList = eval_utterance sentence in
 					let segmentation = (List.fast_sort compare (find_segmentation bestStartList (Array.length bestStartList) [])) @ [String.length sentence] in
 					if (!displayLineNumbers) then
-						printf "%d: " (utteranceCount + 1);
+						fprintf !currentOutputChannel "%d: " (utteranceCount + 1);
 					lexicon_updater segmentation sentence [FamiliarWordCue.update_evidence] (num_of_int 1); 
 					if (!printUtteranceDelimiter) then
-						printf "%s" !utteranceDelimiter;		
-					printf "\n";
-					flush stdout;
+						fprintf !currentOutputChannel "%s" !utteranceDelimiter;		
+					fprintf !currentOutputChannel "\n";
+					flush !currentOutputChannel;
 					Hashtbl.replace lexicon !utteranceDelimiter (succ_num (Hashtbl.find lexicon !utteranceDelimiter))
 				end
 		)
