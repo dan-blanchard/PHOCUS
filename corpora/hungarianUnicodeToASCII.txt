@@ -8,6 +8,7 @@ dzs	J
 dz	D
 e	3
 ë	e
+É	E
 é	E
 f	f
 gy	G
@@ -15,6 +16,7 @@ g	g
 h	h
 i	i
 í	I
+i:	I
 j	j
 k	k
 ly	j

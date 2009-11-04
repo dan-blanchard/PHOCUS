@@ -95,7 +95,7 @@ nem szabad enni
 nem szabad enni
 gyere ide ölembe jó
 itt van a zoli az ölembe
-<szét szedte>
+szét szedte
 szét szedte az andi a törpe bácsit
 bácsi
 a törpe bácsit szétszedte
@@ -126,8 +126,8 @@ jó
 ez a vauvau
 hogy beszél a vauvau
 a baba is
-mondd meg < kérem a babát > 
-mondd meg <kérem a babát> 
+mondd meg  kérem a babát  
+mondd meg kérem a babát 
 kérem a babát
 itt a baba de nincs ruhája
 hol van a szép baba ruhája
@@ -447,7 +447,7 @@ bábá
 indulátunk
 indulunk
 igen indulunk indulunk
-nézz oda kitölt <a moncsi>
+nézz oda kitölt a moncsi
 a moni
 köszönöm moni
 itt vagyunk a végállomáson
@@ -636,7 +636,7 @@ köszönöm a telefon
 jó
 kopogott kopogott kopogott a moni
 oda menjünk vissza
-<be van zárva> be van zárva a másik ajtó
+be van zárva be van zárva a másik ajtó
 oda menjünk vissza &csa csak be van zárva a másik ajtó
 itt van a zoli
 hova ment a moncsi
@@ -935,12 +935,12 @@ széken van
 zolcsi
 kopogott
 andikám mit csinálsz
-figyelj ide <ezt a szép babát >
+figyelj ide ezt a szép babát 
 nem kell tépni ezt a szép baba
 tudod
 van neki szép
 szép baba
-<mond &me >
+mond &me 
 mondd meg a a zolinak hogy ne vigyen el
 szia
 &m mit fogsz vásárolni
@@ -1026,7 +1026,7 @@ ez telefon
 az ilona néni azt mondta hogy vissza kell menni
 és csak holnap
 nem
-holnap <a tündi kell >
+holnap a tündi kell 
 a tündinek kell idejönni
 az jó
 szia
@@ -1113,7 +1113,7 @@ ott van a sok néni
 sok néni van ott
 sok öreg néni
 nem menjünk
-<menjünk az &ab >
+menjünk az &ab 
 menjünk az ablakhoz
 ne kopogass
 ne kopogass
@@ -1312,12 +1312,12 @@ oda menjünk
 halacskát
 ez a halacska
 hol van a papucsod moni
-<nem a tied >
+nem a tied 
 ez nem a tied
 hol van a papucsod
 az nincs
 az nem a tied
-nem a tied <az &mo>
+nem a tied az &mo
 az andié
 az az ô papucsai
 hol van a papucsod
@@ -1423,7 +1423,7 @@ uszik a halacska
 a virágot nézd meg
 mondd meg a halacska uszik
 mondd meg
-<mondd meg a halacska >
+mondd meg a halacska 
 mondd meg a halacska uszik
 nem kell a halacska
 mit kell neked
@@ -3705,7 +3705,7 @@ majd nem ad
 gyerekek nincs a zsebetekben
 beszélgetnek mind a 
 majd adok neked golyót
-csak azt kell mondani amit én mondok <én vagyok egy maci> 
+csak azt kell mondani amit én mondok én vagyok egy maci 
 nem kell mondani
 nem te nem vagy maci
 melyik golyó
@@ -4189,7 +4189,7 @@ térem tépen
 és te mondtál hogy teté teté
 tete
 nem tessék
-<tették>
+tették
 mondtad
 kötyönöm tették
 anyuci és mondtál akkor hogy
@@ -4324,7 +4324,7 @@ na Évika mondd meg
 mondd meg nekem 
 a kocsi átmegy a hidon
 mondd meg nekem a kocsi átmegy a hidon
-na mondd meg nekem < a farkas átmegy a hidon> 
+na mondd meg nekem  a farkas átmegy a hidon 
 szétromlott ahid
 farkastól
 na mondd meg nekem
@@ -4338,13 +4338,13 @@ autóbusszal
 itt van az autó
 milyen nagy hid
 igen na mondd meg 
- ki tudja mondani hogy <a farkas átmegy a hidon> 
+ ki tudja mondani hogy a farkas átmegy a hidon 
 na jó
-na ki tudja mondani hogy <a hidon átmegy a farkas> 
+na ki tudja mondani hogy a hidon átmegy a farkas 
 szegény kis farkas
 hol 
 itt van
-mondd meg <a kutyát megharapta a farkas> 
+mondd meg a kutyát megharapta a farkas 
 mondd meg
 a kutyát megharapta afarkas
 a szék alatt van
@@ -7450,16 +7450,16 @@ a barna bácsitól kapta
 mondta tudom
 mondta hogy a barna bácsitól csak azt akartam tôle megkérdezni
 igen
-hogy mondja azt hogy <gyöngyök>
+hogy mondja azt hogy gyöngyök
 azt akartam hogy többes
 megeszed ababa lábát
 ne tedd tönkre azt a szép ágyat most festette be a jani bácsi 
-azt nem mondta hogy <gyöngyökbôl>
+azt nem mondta hogy gyöngyökbôl
 nekem van szemüvegem
 ne beszélj
 nekem is
 milyen
-neked is van <szemüveged> 
+neked is van szemüveged 
 ne verekedjetek
 a doktor néni elmegy jó
 szervusztok altassátok el a babát szépen takarjátok be hagy
@@ -8592,7 +8592,7 @@ kérem
 köszönöm
 szép
 mond hogy
-mond hogy <kérlek szépen szépen> 
+mond hogy kérlek szépen szépen 
 hogy mondod
 hogy hogy mondod
 kérem szépen mond azt és nem kérlek
@@ -8809,7 +8809,7 @@ olaj
 tudod mi az olaj
 amit a kocsiba teszünk
 mint a benzin és ez az olaj
-<lehet nézni>
+lehet nézni
 lehet nézni de nem fogni
 kérem
 nem halacska
@@ -8827,7 +8827,7 @@ háj látod milyen gyönyörû szép játék ez
 olyan szines
 még a róka
 a róka
-<na mesélj még>
+na mesélj még
 na mesélj még valamit
 igen
 mit fogunk ezzel
@@ -10703,7 +10703,7 @@ rádió ez
 zoli
 rádió es vagy micsoda
 micsoda
-úgy emlékszem <hogy a>
+úgy emlékszem hogy a
 hogy a zolinak nagyon tetszik a
 hangszóró úgye
 az is szép
@@ -12889,13 +12889,13 @@ elbújt a zoli
 zoli
 zoli gyere ide itt van az anyuci
 zoli
-zoli mondd meg <a moncsi elvette a halacskát> 
+zoli mondd meg a moncsi elvette a halacskát 
 gyere
 hol van a halacska
 halacska hol van
 elvitte
 zoli monnd meg
-zoli <halacskát elvitte a moncsi> 
+zoli halacskát elvitte a moncsi 
 halacskát elvitte a moncsi
 ki kérdezte azt
 hogy ki az
@@ -12911,8 +12911,8 @@ nem szól a rádió
 nem szól a rádió
 zoli nem szól
 zoli nem szól a rádió
-zoli mondd meg <a halacskát elvitte a bácsi> 
-mondd meg <a halacskát elvitte a bácsi> 
+zoli mondd meg a halacskát elvitte a bácsi 
+mondd meg a halacskát elvitte a bácsi 
 vigyázz
 csunya szék
 vigyázz az ujjadra
@@ -12933,7 +12933,7 @@ tedd vissza
 tedd vissza 
 tedd vissza
 papucsot elvitte a moncsi
-mondd meg zoli <papucsot elvitte a moncsi>
+mondd meg zoli papucsot elvitte a moncsi
 papucsomat elvitte a moncsi
 tessék adni vissza
 bá
@@ -12947,7 +12947,7 @@ moncsi hol van
 kérem azt mondja a lábom
 ott van a lábom látod
 kérem a papucsom
-azt mondja a kicsi lábom <kérem a papucsom
+azt mondja a kicsi lábom kérem a papucsom
 azt mondta
 merre van papucsom
 nincsen papucsom
@@ -15127,7 +15127,7 @@ jó hozom neki tejet
 itt hoztam itt van
 itt van a kicsi tej jó
 na
-na mondd meg <tejet iszik a
+na mondd meg tejet iszik a
 mondd meg
 na jó
 mi van rajtá
@@ -15137,7 +15137,7 @@ mi az
 bogár
 úgye
 leesett a bogár
-mondd meg <a bogár elszaladt> 
+mondd meg a bogár elszaladt 
 meg
 keresd meg
 megtaláltad
@@ -16297,7 +16297,7 @@ jó adjuk az egérnek jó
 nem kell adni az egérnek
 csak a bácsinak szabad
 lehet adni a bácsinak
-halló ott vagy eqérke
+halló ott vagy egérke
 ott vagy a lyukba
 gyere ki egérke
 tornyot
@@ -16739,8 +16739,8 @@ mondd meg neki
 mondd meg neki lyukba menjél
 lyukba menjél
 mondd meg neki menjél lyukba
-mondd meg neki <lyukba menjél> 
-zoli mondd meg a bogárnak <menjél lyukba> 
+mondd meg neki lyukba menjél 
+zoli mondd meg a bogárnak menjél lyukba 
 jó
 nincs senki
 mondd meg halacska gyere ki
@@ -18300,7 +18300,7 @@ attila
 te voltál
 bekapcsolunk
 mondd meg hogy nem volt én nem volt
-mondd meg <én nem volt csak a réka volt> 
+mondd meg én nem volt csak a réka volt 
 de
 én megyek nézni
 hol van ez a gyönyörü állat
@@ -18377,7 +18377,6 @@ nézz fáj neki a lába nagyon gyenge
 révó
 te is fölhúztál
 mit csináltál
-^
 rendbe van
 hol van a puska
 benne van
@@ -18470,7 +18469,7 @@ na maradjátok és hozom a játékokat
 szépen
 halacskát még a lovacskát még mindent jó
 jó na itt maradjátok és bezárom ezt is
-és te mondd meg nekem <rosszálkodni fogsz> 
+és te mondd meg nekem rosszálkodni fogsz 
 te se fogsz rosszálkodni
 mutasd mekem hogy kell játszani
 de nem szabad jönni és akkor mindjárt jövök és nem lesz semmi baj
@@ -20366,7 +20365,7 @@ konyhába
 bejött a konyhába
 kopogat
 akarok bejönni és a néni mondta
-most az mondja <én vagyok a férjed>
+most az mondja én vagyok a férjed
 és bejött és jaj az egér
 konyhába van ott
 menjünk oda hozzá
