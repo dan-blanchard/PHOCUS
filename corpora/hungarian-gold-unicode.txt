@@ -80,11 +80,11 @@ visszateszem jó
 látod mit csinál
 egyet igyet fája 
 kis bárány
- báránykám
+báránykám
 hol szól a bárány
 bárány
 mit mond a bárány
- nem tudom mit mond a bárány
+nem tudom mit mond a bárány
 mit mond a cica
 mit mond a moni
 ott alszik az ali
@@ -107,7 +107,7 @@ az mi
 baba
 az mi
 ez mi
- bákomán
+bákomán
 de kugli
 na jó
 visszateszem jó
@@ -126,7 +126,7 @@ jó
 ez a vauvau
 hogy beszél a vauvau
 a baba is
-mondd meg  kérem a babát  
+mondd meg kérem a babát 
 mondd meg kérem a babát 
 kérem a babát
 itt a baba de nincs ruhája
@@ -536,7 +536,7 @@ mit csinálsz
 mit csinálsz zoli
 zolikém zolikém
 oh zolikém
- zoli zolikém
+zoli zolikém
 szia andi
 elmész vonattal
 szia
@@ -593,7 +593,7 @@ az a jó
 nem szabad verekedni
 csak adjátok szép csókot
 jó
- csókot
+csókot
 nem kérsz csókot
 tôle nem kérsz
 szép pénz 
@@ -630,7 +630,7 @@ ott kint az udvarban
 zolikám hol van az anyuci
 elveszi a zoli
 nem bélus ez zoli
- az anyuci elvitte
+az anyuci elvitte
 elvitte az anyuci
 köszönöm a telefon
 jó
@@ -1153,7 +1153,7 @@ ali
 mit csinálsz
 kapa
 kapa
- úgy kopogat
+úgy kopogat
 ne kopogass
 leesett a moncsi
 hol vannak a babák
@@ -1754,7 +1754,6 @@ azelôtt a bajusza fájott
 szegenyke
 miért
 mit csinált
- 
 és most mit törültél meg
 miért
 aj aj náthás
@@ -1868,7 +1867,7 @@ na most
 uh hum milyen levest fözöl
 jaj de finom
 jó ezt eltesszük 
- a zöldséget is meg kell pucolni
+a zöldséget is meg kell pucolni
 meg itt van a reszelô
 majd meg kell reszelni
 be kell csukni az ajtót
@@ -1899,7 +1898,7 @@ jól van
 azt aztán nem lehet kinyitni
 de ezt is ki lehet
 látod
- veszed ki belôle
+veszed ki belôle
 segitsek
 tessék
 ez az
@@ -2283,7 +2282,7 @@ lacika lacika
 kitôl kaptál ezeket a kockákat
 karácsonykor kitôl kaptál
 a télapó
-már me  hogy jézuska de mindegy
+már me hogy jézuska de mindegy
 metro ez
 mit akarsz mondani
 gondoltam ez egy nagy gyár kemencével
@@ -2318,7 +2317,7 @@ vendégség volt igen
 anyuka
 nem ez ilyen gyerekzsúr volt
 gyerek társaság volt igen
-volt  répa
+volt répa
 igen
 és hol tálaltál
 igen
@@ -2383,7 +2382,7 @@ mókus házat
 kell még egy 
 köszönöm szépen
 ez jó lesz itt
-na hozd meg be  itt van
+na hozd meg be itt van
 igen 
 igen
 ó ez lesz ez lesz itt elôl ez a fa lesz itt elôl jó
@@ -2745,7 +2744,7 @@ nincs több kockák
 de kérek még többet
 de nekem kell még többet
 onnan tudjatok szedni kell még egy pár
- az üzlet bezár
+az üzlet bezár
 bezárt az üzlet nem lehet kenyeret kapni
 nem
 semmi mást
@@ -2774,11 +2773,11 @@ de ha kérem szépen
 de nem olyan nagyot mint nálad van
 na akkor cseréljünk jó
 adok neked
-jó köszönöm  megcsinálja a hajót
+jó köszönöm megcsinálja a hajót
 hajót 
-neked is  jó
+neked is jó
 ha jók vagytok
-nem vadultok  
+nem vadultok 
 olyan olyan rossz kislány hogy nemadja
 az az
 csak kérem szépen
@@ -2839,7 +2838,7 @@ puskás gábor vagy
 aj jaj
 finom az
 mi
-barna bácsi  játékot és nem vertem meg
+barna bácsi játékot és nem vertem meg
 pedig úgy kell 
 de nem veréssel
 ez a puskád én 
@@ -2919,7 +2918,7 @@ milyen nagy
 igen megijedt a magdi
 igen
 én nem majdnem én meg is ijedtem
- nem majdnem
+nem majdnem
 de meg is ijdetem nem majdnem hanem megijedtem
 megijdete
 még egyet
@@ -2961,11 +2960,10 @@ pukkanástól
 megijedtél úgye
 ki esett a dunába
 kis katona
- 
 szervusz
 itt a kötény
 játszunk gyere
- van fönt
+van fönt
 nagyon piszkos úgy van nagyon piszkos
 most jön a takaritó néni
 de az is piszkos 
@@ -3056,7 +3054,7 @@ hol van a csvarhüzó
 hol van a csvarhúzó
 elég elég ejnye
 elég volt már
-elég  elég
+elég elég
 visszamész a másik szobába
 akkor ne kalapálj
 jó ha kalapácsolni kell akkor itt a földön tessék kalapácsolni
@@ -3143,7 +3141,7 @@ te is csinálsz
 hát én csinálok játszok mert ha ti nem játszotok én játszok nézd
 te is
 tessék
- lehet 
+lehet 
 tessék vigyázni
 jó vigyázni
 nincs ágy
@@ -3724,7 +3722,7 @@ köszönöm
 van elég
 milyen szinu ez
 ez piros
- jaj de szép a karácsonyfa
+jaj de szép a karácsonyfa
 tovább nem tudom
 vannak rajta van rajta a sok gyertya
 nem kell
@@ -3869,7 +3867,7 @@ ott van benne a nagy tóban
 eldobta a bajuszom
 pedig az visszanö ahányszor eldobom
 annyiszor visszanó a bajuszom
- és tudod mi van még nekem
+és tudod mi van még nekem
 amikor fiatalabb voltam volt nekem egy nagy szakállom tudod mi a
 olyan nagy haja
 hol van ez a nagy viz
@@ -3881,7 +3879,7 @@ egyiket
 elviszi tôlem
 téged hogy hivnak
 sírjak
- &ad adjál kicsit zsebkendöt nagyon sírok kérek zsebkendöt
+&ad adjál kicsit zsebkendöt nagyon sírok kérek zsebkendöt
 mégegyszer csinálunk jó
 na csinálj valami rossz elôször azér kell sírni mért valami
 a papucsot
@@ -3905,7 +3903,7 @@ mi a fogaid
 hol van a fogaid
 ez fog
 ez csunya
-a farkasnak van olyan nagy fog ami el sza  elmegy a szájból
+a farkasnak van olyan nagy fog ami el sza elmegy a szájból
 képeld el hogy hogy amikor
 sírt
 mit modtál
@@ -4027,7 +4025,7 @@ az kis kutyus még az a mókus
 évikém
 totó
 fölébredt
- nyissuk azt a házat
+nyissuk azt a házat
 de nem nyitjuk ki
 tegyél vissza
 tudod mit csinálsz
@@ -4133,7 +4131,7 @@ az nem az nem fér be
 ez ide való csak most nincs nincs
 hozzatok egy másik doboz jó
 ez idevaló ide való ebbe a dobozba lehet rakni
-ez a lábom úgy  lábam
+ez a lábom úgy lábam
 de nem fáj csak olyan nagy látod milyen nagy itt vérzik a lábam
 ott van a lábom meg itt meg itt meg itt az mind a lábom
 vérzik kicsit
@@ -4169,7 +4167,7 @@ feri
 feri visszament visszament a másik szobába
 feri gyer ide nem
 a kati néni
- ott van jön
+ott van jön
 barna engedje már be azt a három gyereket
 jó gyere be
 adok neked játékokat
@@ -4267,7 +4265,7 @@ elveszi ez a szép kis
 szép 
 odanézz elveszi a barna bácsi odanézz elveszi elveszi tôletek
 elveszi a barna bácsi
- barna bácsi
+barna bácsi
 itt nem szabad
 figyelj ide
 jó legyél és fogadj szót a barna bácsinak
@@ -4324,7 +4322,7 @@ na Évika mondd meg
 mondd meg nekem 
 a kocsi átmegy a hidon
 mondd meg nekem a kocsi átmegy a hidon
-na mondd meg nekem  a farkas átmegy a hidon 
+na mondd meg nekem a farkas átmegy a hidon 
 szétromlott ahid
 farkastól
 na mondd meg nekem
@@ -4338,7 +4336,7 @@ autóbusszal
 itt van az autó
 milyen nagy hid
 igen na mondd meg 
- ki tudja mondani hogy a farkas átmegy a hidon 
+ki tudja mondani hogy a farkas átmegy a hidon 
 na jó
 na ki tudja mondani hogy a hidon átmegy a farkas 
 szegény kis farkas
@@ -4396,7 +4394,7 @@ az egyik farkas
 nem szabad
 akkor visszanéz
 ne legyél rossz
- tessék rontani rontani
+tessék rontani rontani
 tessék szét rontani
 kis fiam
 tudod mi lesz belôle
@@ -4416,7 +4414,7 @@ gyere ide kis fiam
 jön a csunya róka
 tegnap volt a csunya róka
 az egyik róka elment a piacre és
- és megvesz egy alma és haza viszi
+és megvesz egy alma és haza viszi
 hát az nem alma
 ezt a fiut
 én nem tudom mi volt ezzel a fiuval
@@ -4505,7 +4503,7 @@ nem hatalmas olyan
 nem nagy
 nem nagyot csinálok
 ez kell a barna bácsinak
- csak errébb mert
+csak errébb mert
 mért dült el
 eldöntötted 
 de szép kis kutyusod van hadd nézzem meg
@@ -4539,7 +4537,7 @@ csinálok valamit jó
 csinálok valami szépet nem csináltam valami szépet
 miért nem
 vanneked elég
- oda akkor nem találjuk meg
+oda akkor nem találjuk meg
 ez mind
 mind az kell a gyurikának
 gyuri 
@@ -4645,7 +4643,7 @@ már megvolt
 már meghalt a barna bácsi
 menjünk a temetöbe jó
 szegény barna bácsi
- meghalt
+meghalt
 bizony meghalt
 tudod
 hol
@@ -4790,7 +4788,7 @@ tele van vizzel
 add vissza 
 üres
 jó fiu a barna bácsi
- a barna
+a barna
 igy
 na akkor az úgy
 legalább
@@ -4878,11 +4876,11 @@ lesz neki lesz kistestvére
 igen
 igen és ô sír a kis testvére
 jaj te kis mitugrálsz
- jó jó jó 
+jó jó jó 
 miért sírsz
 tessék onnan visszamenni
 vissza tessék visszamenni
- sír
+sír
 miért sírsz katika
 viola néni
 viola néni
@@ -5010,7 +5008,7 @@ na ott van az Évi
 nem kérsz ilyen széket
 olyan szép szines
 köszönöm
- kati néni úgye
+kati néni úgye
 én majd kapaszkodom
 mert én midjárt leszállok
 nem tudok kinyitni
@@ -5038,7 +5036,7 @@ neked
 megcsinálom
 megcsinálom na szép
 most már jó ujajaj
-na most már megcsináltam  na rossz a fejem rossz a fejem
+na most már megcsináltam na rossz a fejem rossz a fejem
 elvette elvette 
 most már jó
 icának
@@ -5053,8 +5051,8 @@ na megcsinálom itt van a szék
 domika add vissza az Évikének
 domi
 nézd mennyi van
-hat  a kezedbe
- az Évi  hum
+hat a kezedbe
+az Évi hum
 rossz a
 kocsi
 itt is van még tessék
@@ -5106,7 +5104,7 @@ lehet enni a barna bácsit
 ham ham edd meg
 egyed 
 nem finom de finom vagyok edd meg fonom
- csak neked is
+csak neked is
 fáj a gyomrom még a szivem juj de fáj
 és a
 szememre
@@ -5131,7 +5129,7 @@ a dórinak
 mért kell neki pénz
 bolgog ember
 végre megy egy forint
- a dominak nem kell neki pénz
+a dominak nem kell neki pénz
 nyalogok
 te is tudod
 gyurikám mit csinálsz ott fiam
@@ -5139,7 +5137,7 @@ gyuri
 ki vagyok
 faludi gabika mit csinálsz
 én vagyok
-kukucskálni na menjünk vissza szegény katihoz  szegények
+kukucskálni na menjünk vissza szegény katihoz szegények
 lacikám
 neki nem tetszett
 annak a fazekas tündi nem tetszett
@@ -5192,7 +5190,7 @@ te vagy a vezetô bácsi
 akkor ülj le ha a vezetô bácsi vagy
 a vezetô bácsi nem tud
 te a tisztviselô vagy
- nagy
+nagy
 majd visszalö a barnabácsi majd vissza fog löni
 barnabácsinak
 brr rrr rr
@@ -5230,7 +5228,7 @@ akkor nagyobbat csinálok
 majd nagyobbat csinálok
 mit vettem el
 ne vedd el tôlem
-azokat ne vedd el tôlem  az nem kell 
+azokat ne vedd el tôlem az nem kell 
 ne vedd el tôlem ezeket
 nézd meg milyen magas ez a
 puskám
@@ -5245,7 +5243,7 @@ oda adom neked egy halacskát jó
 kerestem a halacskát meg is találtam
 meg is találtam
 szivesen
- akkor visszaadod jó mert a
+akkor visszaadod jó mert a
 többi gyerek &mi
 mi van
 ó mindig lelönek ez nem uj dolog
@@ -5272,7 +5270,7 @@ tudod hogy kell egy háromszöget
 ez jó
 mennyi kocka van mennyi
 mennyi kis
- le
+le
 na tedd le
 inkább adjál vissza nekem
 jó
@@ -5309,7 +5307,7 @@ idejön a kezem
 sírjak
 idejön nem sírok
 idejön vigyázz idejön a kezem vigyázz
-igen nem az az szép nem  csak ez ez
+igen nem az az szép nem csak ez ez
 most már
 most már ne legyünk rosszak jó
 jó most már lehet jók lenni jó
@@ -5344,10 +5342,10 @@ na most hallgassunk
 ne most hangosan most ô
 megiszod a kávét
 kávéka
- játszunk vezetô bácsi vagy
+játszunk vezetô bácsi vagy
 piros a lámpa
 de nem szabad nem szabad csak zölddel vigyázz most zöld a lámpa
-hát  piros
+hát piros
 az kék az semmi
 a kék az nem jelent semmit
 évi nem tudsz mesélni
@@ -5438,7 +5436,7 @@ csak levelet eszik
 ô szereti a levelet
 fürödnek már
 juuj
- neked hogy meg mosakodtam
+neked hogy meg mosakodtam
 ezt megsöpörtem ezt
 föl tudok mászni a fára
 a na itt vagyok
@@ -5572,7 +5570,7 @@ uuuu erósen kiabál
 virágom
 édes
 cukorkám
- jaj de aranyos
+jaj de aranyos
 barna és úgy megreszket az álla
 olyan érdekes 
 viola
@@ -5610,7 +5608,7 @@ te szereted szereted a csokit
 van még csoki benne
 nem adom jó
 most nem majd amikor elmennek a többi gyerekek
-a  nemjön
+a nemjön
 miklós
 miklós te fogod itt majd leesel 
 autobusz volt az
@@ -5749,7 +5747,7 @@ de most egy házat
 mikor
 mikor lessz a tea
 én nem kaptam még
-a gyerekek mindenki  violanéni hoz teát
+a gyerekek mindenki violanéni hoz teát
 ne ülj le a homokba
 csupa homok leszel
 ne tegyük
@@ -5849,7 +5847,7 @@ itt van az olló
 jön az ollö
 megvágja
 ollót 
- nem volt görög
+nem volt görög
 az hollandok
 köhög köhögök
 de nem egyforma
@@ -5925,8 +5923,8 @@ valaki ver
 vávávávává
 azért mégis mégis kell
 takard be
- de én látom
- te is ott alszol
+de én látom
+te is ott alszol
 tündi te is alszol
 na most a barna bácsi 
 jó szépen aludtam
@@ -5942,7 +5940,7 @@ azt a tündit
 évát
 rehol laci
 rehol hol van
- fektessük le a villanyt
+fektessük le a villanyt
 jó
 jó lesz
 akkor adom egy takarót
@@ -5954,14 +5952,14 @@ most már nemszabad
 nem te se mész
 menjetek innen vá vá vá vau v
 mekkora gyomra van
- hatalmas gyomra van
+hatalmas gyomra van
 neked ne
 nem olyan hatalmas gyomrod van
 fáj a torka
 menjetek ki onnan
 az oroszlán
 az jó lesz mert az oroszlán ez nagyon nagyon ravasz
- a mamám
+a mamám
 engemet hívtál
 nem ravasz ez a róka
 olyan szép kis róka pedig van neki egy kis
@@ -5993,7 +5991,7 @@ te vegyél le
 jó vegyél le
 na megint fára mászunk föl
 mi megyünk
- nekem  levette
+nekem levette
 kati
 aztán én
 most már felmászunk a fára
@@ -6135,7 +6133,7 @@ paprikás csirkét kérek
 jaj ez nagyon finom
 foghatom így kézzel
 ebbe nagyon sok van tudod hogy nagyon finom hogy fözted meséld
-tett bele cukrot is és úgy fözte  nézd oda  tessék
+tett bele cukrot is és úgy fözte nézd oda tessék
 itt
 ott van
 itt a barna
@@ -6171,7 +6169,7 @@ eper
 jó
 nyakamba teszed
 teszed
-így így jó most  az edényt
+így így jó most az edényt
 ezzel
 ezzel a kanállal 
 köszönöm szépe
@@ -6304,7 +6302,7 @@ kereszt van rajta
 mért nem tudod
 rosszat csináltad
 jó
- azért ne csináljatok rosszat
+azért ne csináljatok rosszat
 esik az esö
 nem köszönöm
 nem mehetsz most
@@ -6330,7 +6328,7 @@ az a zöld kocsi nem rozsdás
 az tiszta
 az a zöld kocsi az az enyém
 abban van puska van sok minden
- puska azt a forró nadrágom
+puska azt a forró nadrágom
 óvodában nem lehet pusakával lövöldözni tudod azt
 óvódában nem lehet pusakával löni 
 menjünk börtönbe
@@ -6372,7 +6370,7 @@ vigyük aztán jó
 salátát
 jaj de finom
 ez a finom uborka
- olyan jó volt talán
+olyan jó volt talán
 jól van jól van 
 saláta vagy a
 megfelel
@@ -6604,7 +6602,7 @@ akkor azt kérek
 ne vedd el
 tessék ne vedd rl ne vedd el a kockákat róla majd beteszem most
 akkor már nem lesz neki ház
- csináljunk
+csináljunk
 nagyot csináljunk
 mindjárt mindjárt
 nem lesz
@@ -6663,7 +6661,7 @@ tessék
 egyet
 nincs nics több
 Évi
-itt van  
+itt van 
 ojaj teherautó
 elment már
 aranyos kis rókám
@@ -6846,7 +6844,7 @@ a kati néninek amikor jöttem a bölcsodébe
 akkor hoztam a
 na ki a nagyon ügyes
 a zsuzsika
-menj oda mici nénihez és kérdezd meg hogy  jó
+menj oda mici nénihez és kérdezd meg hogy jó
 mondd hogy a kati néni kér egy kis papir vattát
 ajjaj állami kocsi
 az egy volga auto 
@@ -6875,7 +6873,7 @@ igen mert elment
 és ha a farkasok jönnek akkor lejön
 akkor ne menjél oda
 jó
-akkor  úgye
+akkor úgye
 neked nincs nekem tényleg van csak nincs 
 jött a rendör
 hát mi van neki gyöngy
@@ -6891,7 +6889,7 @@ miért
 jános fürödni
 én is fogom fürödni jó
 én fogom sírni
- sír egy kicsit jó
+sír egy kicsit jó
 te is sírsz egy kicsit jó
 te nem sírsz
 jános sír egy kicsit
@@ -6906,7 +6904,7 @@ te már voltál kétszer is
 te már voltál
 dehogy is nem
 dehogy is nem
- néni nem lehet
+néni nem lehet
 kétszer nem lehet
 most megy a feri most megy jön a feri 
 most te mész
@@ -6926,7 +6924,7 @@ azt hittem már voltál
 majd megmossuk délbe
 ne tedd le most
 jó törüld azt
-oda  és akkor 
+oda és akkor 
 én tudom
 én tudom megcsinálni
 babám te visszajöttél
@@ -6940,11 +6938,11 @@ fésülködlek
 szép kis babám
 jaj de aranyos vagy
 de most már baba vagy
- beszélni tudod
+beszélni tudod
 nem tudod beszélni
- kis babám angyalkám
+kis babám angyalkám
 elmész
- homokos lettél
+homokos lettél
 az baj az baj
 mi van mi van Éva
 mivel most
@@ -6992,10 +6990,10 @@ majd fájni fog
 mindenki majd fájni fog holnap
 persze
 nagyon fájt
- ki szór ott homokot
+ki szór ott homokot
 ki csinálta
 a jános
- a homokot ki csinálta
+a homokot ki csinálta
 nem szeretem
 olyan homokos lettem na most 
 jaj de érdekes
@@ -7006,7 +7004,7 @@ gyere ide baba
 mit csinálsz Évike
 házat épitetek és teneked milyen gyönyörü karkötöd van kitôl
 kitôl kaptad
- kitôl
+kitôl
 de kitôl kaptad
 a barna bácsitól megköszönted
 nagyon szép gyönyörü neked is tetszik
@@ -7020,7 +7018,7 @@ jó kislány voltál
 barna bácsi milyen gyönyörü karkötöt hozott a
 nem a fürdöszobában hanem a nagyszobában
 mit hoztál
- akkor megiszam
+akkor megiszam
 évikém nézd drága ott van egy egész üres pad az lesz a te hajód
 próbáld meg
 az a mentöautó
@@ -7062,7 +7060,7 @@ akkor gyere
 akkor maradjál
 akkor maradjál
 akkor gyere
- akkor nem jösz a barna bácsihoz 
+akkor nem jösz a barna bácsihoz 
 jó
 most a barna bácsi
 fölveszi a kereket
@@ -7081,7 +7079,7 @@ akkor szállj le
 szállj le szállj le
 szállj le szállj le
 kiszállunk
-azért  mert negyon sokan vagyunk
+azért mert negyon sokan vagyunk
 itt van a barna bácsi
 nézd
 jaj elütött a vonat
@@ -7131,7 +7129,7 @@ nekem köszönsz
 én órát adok neked
 jó mnejünk az asztalhoz jó gyere
 menjünk az asztalhoz 
-nézzük meg a re  rehó lacit
+nézzük meg a re rehó lacit
 jaj vigyázzon mert eltöri
 eltörik a szék
 nem
@@ -7422,7 +7420,7 @@ nézz oda
 nem 
 nem
 sírjál
- sírjál sírjál
+sírjál sírjál
 eleget farkas
 nem úgy kell
 úgye
@@ -7790,7 +7788,7 @@ ez az ô kocsije
 szônyegen
 sokkal nagyobb a helyed
 igen
-akkor  téis
+akkor téis
 a gábor mit csinált
 elment a gábor
 elment
@@ -7935,10 +7933,10 @@ légy szives segitsél
 köszönöm szépen gyurika
 gyurika nézd
 így összerakod a kockát
-és így hozom  légy szives
+és így hozom légy szives
 mit keresel gyurika
 most kell enni úgye
-a poharakat  összerakom jó
+a poharakat összerakom jó
 igen
 hova megyünk
 itt a konyhában
@@ -7975,7 +7973,7 @@ igazán sok sok gyerek van itt
 és mindenki szeret
 valamit enni
 igen
-kimegyünk pisilni és keressetek  
+kimegyünk pisilni és keressetek 
 valamit enni
 most nem kell leszedni
 nem kell leszedni most
@@ -7997,7 +7995,7 @@ kell
 hanem 
 köszönöm szépen
 még tovabb
-lépcsô  épitsünk jó
+lépcsô épitsünk jó
 ez jó
 hol van a mókus
 nem szabad elvenni
@@ -8213,7 +8211,7 @@ na gyere gyurika
 mit mondasz
 evvel fujjad
 add ide egy kicsit a gyurinak tessék
-ne  csak úgy fujj
+ne csak úgy fujj
 fujjad 
 nem szól
 hogy nem szól ez
@@ -8225,7 +8223,7 @@ igen
 csukd össze a szádat jól es úgy fújd
 erôsen
 ne fogd be itt a lukat
- csak
+csak
 csak a végét
 csak a végét
 ne ne az egészet
@@ -8615,7 +8613,6 @@ nem az daru
 nem lesz akkor
 nem lesz sok
 akkor nem lesz sok
- 
 majd valahogy megcsináljuk
 mindjárt
 valami kis daru
@@ -8642,7 +8639,7 @@ csak leszorul
 nincs hely
 belebujt
 ezt nem oda
- most inkább egy vitrolás hajó
+most inkább egy vitrolás hajó
 vitorlás hajó 
 az árbóca
 elment 
@@ -8658,7 +8655,7 @@ jaj de gyönyörû lesz ez lacika
 ez mi lesz
 ez most daru
 jobb lenne ha meg lehetne rögziteni mert mindig lecsúszik
-mert nem lehet jó kereket csinálni  
+mert nem lehet jó kereket csinálni 
 tessék
 most nem fog menni most
 ez az enyém
@@ -8708,11 +8705,10 @@ tessék
 nem csapkodunk
 a köszönöm hol marad
 ne vedd el dinike 
- 
 lehet
-dinike nem   tudod
+dinike nem tudod
 sok mindig
-  jó
+jó
 igen
 daru nagyobb mint a duru
 motorozni akarsz
@@ -8743,10 +8739,9 @@ mi van a kötényed mi van a kötényedben
 gyurikám
 nemcsak róka hanem kalapod
 több nem fér bele
-hm hát így  
+hm hát így 
 többet nem többet nem
 nem csinálsz belôle semmit
- 
 hol van a halacska
 itt van a halacska
 bumm 
@@ -8756,7 +8751,7 @@ kalapot kapott
 itt a róka
 ki kapta a róka
 látod
-ott a kalap  nagy szélû kalap
+ott a kalap nagy szélû kalap
 barna bácsi megeszi a róka
 meg fog enni
 most a kis róka fog játszani vele
@@ -8907,7 +8902,7 @@ számoljunk
 számoljunk jó
 egy jó kettô nem nem nem
 na mit csinálsz
- számolni hogy kell
+számolni hogy kell
 hol a másik
 hol van
 mit csinálsz
@@ -9002,7 +8997,7 @@ nagyon fáj
 hol fáj
 mutasd meg 
 itt ez a rész
- most jobb lesz
+most jobb lesz
 nagyon fáj
 nagyon fáj
 most jobb
@@ -9123,7 +9118,7 @@ barna bácsi én vagyok a barna bácsi
 nem a nevem nem az én nevem
 hol van az
 a rókanak az apukája
-oh ott a bácsi aki  itt látod
+oh ott a bácsi aki itt látod
 látod a bácsit gyere ide 
 ott a bácsi
 ott van
@@ -9356,7 +9351,7 @@ bement
 értem akkor bemegy
 most elôször itt van az
 itt van az út
-gyuri itt az  
+gyuri itt az 
 átmegy a hídon
 igen lehet
 csak gyere oda 
@@ -9372,7 +9367,7 @@ itt látom hogy egy csomó játék van itt látod
 jó
 ez egy halacska
 igen
-rendben van elmegyek  
+rendben van elmegyek 
 bezártad mert
 nem fér bele
 sem a hajó
@@ -9380,7 +9375,7 @@ mindjárt jön vissza a nagymama
 jön mindjárt vissza
 most játszol egy kicsit
 ebédelsz
-és ha jön  
+és ha jön 
 hogy tudsz játszani
 elôbb ment dolgozni
 tedd bele
@@ -9449,14 +9444,14 @@ ez micsoda
 ez a micsoda nem tudom micsoda
 mi ez
 valami ez
-haj  
+haj 
 juj
 akkor szepen uszik a halacska
 körbe körbe
 én is hagy csináljam egy kicsit jó
 megengeded
 de figyeld 
-a róka is  
+a róka is 
 juj de mókás
 ô ezt tudja
 tudja bizony
@@ -9474,7 +9469,7 @@ nézz ide kettô halacska úszik benne
 igen
 látod kettô halacska
 a nagy hal meg a kis gyereke
- a kettô
+a kettô
 hogy úsznak
 na
 körbe
@@ -9583,8 +9578,8 @@ itt ez a autó
 nem csak itt fölmegy hanem itt van egy tenger látod
 itt
 itt van a tenger
-e  
- itt van a tenger
+e 
+itt van a tenger
 ide &me
 ide mehet
 ide mehetsz
@@ -9654,7 +9649,7 @@ az nagyon jó
 nagyon jó
 jaj ez a gyönyörû kutya
 jaj nagyon jó
- ez szebb mint az autó
+ez szebb mint az autó
 mond köszönöm szépen
 na mond
 köszönd meg
@@ -9783,7 +9778,7 @@ nagyon okos
 és a nagypapával is
 mindenkivel
 nagy a lakásotok
-jaj de  hány szobátok van
+jaj de hány szobátok van
 is
 neked is szobád van
 egyedül vagy nincs testvéred
@@ -10461,7 +10456,7 @@ hasad hol van
 hol van a hasad
 oda
 menjünk oda
- menjünk
+menjünk
 gyere föl
 oda
 be
@@ -10637,7 +10632,7 @@ jó
 vagy nézzük az egérkét jó
 itt van az egérke
 itt van az égér
- látod itt van
+látod itt van
 bent van
 huzd ki
 huzd ki
@@ -10841,7 +10836,7 @@ másikat
 ez kis kutyus
 szica volt az úgye
 én rajzoltam
-köszönöm itt a  itt a lába
+köszönöm itt a itt a lába
 itt van akutya
 itt a rókakóma
 rókakóma
@@ -11029,7 +11024,6 @@ nem fáj
 most jó
 neked is fáj
 neked is fáj
- 
 táncoljunk
 táncoljunk kicsit jó
 az nem
@@ -11191,7 +11185,7 @@ nem
 üljünk
 az a csunya cica
 nem tudod annak a nevét
-lehet  
+lehet 
 na mesélj
 mesélj csak nekem
 mesélj csak nekem
@@ -11285,7 +11279,7 @@ mit csinálsz
 zoliká is akarja oda menni
 zolika te is akarsz odamenni
 olyan érdekes
- mehet
+mehet
 menjünk nézni
 nézni
 uu leesél
@@ -11337,7 +11331,7 @@ aludni megyünk jó
 szép álmotokat kivánok
 megyünk aludni jó
 ágyikóba
- az én halacskám
+az én halacskám
 kettôn
 kettô van nálad
 kettô mi
@@ -11415,7 +11409,7 @@ oda
 odamenjünk
 oda
 oda jó
- kocka
+kocka
 mi van
 zoli az nem szabad
 az nem szabad
@@ -11590,7 +11584,7 @@ szia moncsi
 szia moncsi
 akarsz 
 az is
-a  hol van
+a hol van
 nem látom
 ott van
 hát igaz
@@ -11821,7 +11815,7 @@ oh nem úgy
 oda
 itt nincs gyere zoli
 gyere zoli
- uj de gyönyörû banda
+uj de gyönyörû banda
 mi van neki
 köténye van neki
 hát
@@ -11837,7 +11831,7 @@ te nem tudod
 papíros
 papíros
 nézzük meg ezt a rádiót
- ez
+ez
 én is kérek
 na tessék gyerekek megmondani nekem hogy mit adtam
 ez ki
@@ -11923,7 +11917,7 @@ jó volt
 finom
 finom
 finom volt
- nem volt finom
+nem volt finom
 nem nagyon finom úgye
 nem nagyon finom
 itt nem nagyon ez nem nagyon finom ez a papír
@@ -12449,7 +12443,7 @@ szék
 székkel
 székkel úgye
 mi esett le
- jó
+jó
 a szék esett le úgye
 mi ez
 zoli mi ez
@@ -13197,7 +13191,7 @@ te repülsz
 ó az kijött
 vigyázz ez jött
 mi van itt
- nem jó
+nem jó
 nem jó
 bekötlek jó
 most jó
@@ -13236,7 +13230,7 @@ eldobta a halacskát
 itt van a
 eldobta
 mit dobta el
-jaj de  ez a rádió
+jaj de ez a rádió
 gyönyörû rádió úgye
 menjünk a rádióhoz
 kis tekercske
@@ -13280,7 +13274,7 @@ jó
 még egyszer nézzük még
 semmi baj úgye
 mangó
- a mangó
+a mangó
 hol van a magnó
 itt van a mangó
 kettô mangó
@@ -13597,7 +13591,7 @@ ez szép
 ó az szép zoli
 milyen szép
 zöld
-ott van a nagy  úgye
+ott van a nagy úgye
 hol van a tied
 megyek én
 zoli
@@ -14543,7 +14537,7 @@ igen ez a csunya egér
 hol van a szép egérke
 itt a szép egérke
 csunya
- úgye
+úgye
 mi ez
 nem róka kóma
 mi ez
@@ -14653,7 +14647,7 @@ elment dolgozni
 aludni a vauvau talán lehet
 kocsival nem lehet játszani 
 kocsival nem lehet
-nem kérsz  nem akarsz
+nem kérsz nem akarsz
 számít
 számóljunk
 egy
@@ -14867,7 +14861,7 @@ nem itt most
 hol van a ásik halacska
 halacska 
 csak hol vagy halacskám
- hol van
+hol van
 hol van
 mutasd meg hol van a másik halacska
 hol van a másik halacska
@@ -16866,7 +16860,7 @@ megvan zolika
 meg
 menjetek csak innen
 menjetek csak innen
- a szájába
+a szájába
 nem szeret
 magnó
 bogár
@@ -16994,7 +16988,7 @@ még egyet
 jó akkor én is
 ott a bicikli is
 megnézzük a bicikli
- úgye
+úgye
 le
 jó
 itt már a nagy
@@ -17684,7 +17678,7 @@ igen a marcsi néninek telefonál
 na menjünk le most jó
 jó
 nem mész le
-azt a  nem kapsz
+azt a nem kapsz
 te se kapsz
 odateszem
 vigyázz ugrálni nem szabad
@@ -17847,7 +17841,7 @@ te a zolika vagy
 akkor hozzál és itt van a kislány 
 itt a néger kislány
 nincs
- van rajta
+van rajta
 hallod
 mi van a kezedben
 nézz ide mi van a kezedben
@@ -17870,7 +17864,7 @@ nem megy
 nyaklánc nem megy rád
 de
 de megy
- régi duna kis katona ugorj a dunába
+régi duna kis katona ugorj a dunába
 düdöld le
 szegény
 nem szabad úgy megütni
@@ -18473,12 +18467,12 @@ jó na itt maradjátok és bezárom ezt is
 te se fogsz rosszálkodni
 mutasd mekem hogy kell játszani
 de nem szabad jönni és akkor mindjárt jövök és nem lesz semmi baj
-anika anika itt van  anika
+anika anika itt van anika
 gyere megfázol
 jó
 letettél mindent
 nem rosszálkodtál
-itt van a  tessék
+itt van a tessék
 mi
 melyik az a tied
 ja fölveszem
@@ -18646,7 +18640,7 @@ senki bántott
 apu bán
 úgy
 kikapott
- kell vigyázni
+kell vigyázni
 csunya apuka
 szép az apukád
 igen
@@ -19821,7 +19815,7 @@ mik ezek
 galok jó
 nem kell félni most elteszem a dobozba jó
 csoki
-add ide  jó törpe jó
+add ide jó törpe jó
 a kulcsomat
 nem szabad bejönni a barna bácsinak nem vagyok csecsemô
 csunya
@@ -20461,7 +20455,7 @@ vérni szabad
 nem fogsz bántani a magnót
 bisztos
 azt is megfogod
- a zolit jó
+a zolit jó
 neked is kell menni
 most már nem jössz majd ebédelni fogsz
 ebédelni most dugd el
@@ -20493,7 +20487,7 @@ mivel szabad játszani
 avval szabad 
 én is csiaáljak
 mit csináljak
- a kezemet
+a kezemet
 be kell csukni
 rendes
 rendes fiú

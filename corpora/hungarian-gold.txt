@@ -80,11 +80,11 @@ visSat3S3m jO
 lAtod mit CinAl
 3G3t iG3t fAja 
 kis bArAN
- bArANkAm
+bArANkAm
 hol SOl a bArAN
 bArAN
 mit mond a bArAN
- n3m tudom mit mond a bArAN
+n3m tudom mit mond a bArAN
 mit mond a cica
 mit mond a moni
 ott alSik az ali
@@ -107,7 +107,7 @@ az mi
 baba
 az mi
 3z mi
- bAkomAn
+bAkomAn
 d3 kugli
 na jO
 visSat3S3m jO
@@ -126,7 +126,7 @@ jO
 3z a vauvau
 hoG b3SEl a vauvau
 a baba is
-mondd m3g  kEr3m a babAt  
+mondd m3g kEr3m a babAt 
 mondd m3g kEr3m a babAt 
 kEr3m a babAt
 itt a baba d3 ninC ruhAja
@@ -536,7 +536,7 @@ mit CinAlS
 mit CinAlS zoli
 zolikEm zolikEm
 oh zolikEm
- zoli zolikEm
+zoli zolikEm
 Sia andi
 3lmES vonattal
 Sia
@@ -593,7 +593,7 @@ az a jO
 n3m Sabad v3r3k3dni
 Cak adjAtok SEp COkot
 jO
- COkot
+COkot
 n3m kErS COkot
 t@l3 n3m kErS
 SEp pEnz 
@@ -630,7 +630,7 @@ ott kint az udvarban
 zolikAm hol van az aNuci
 3lv3Si a zoli
 n3m bElus 3z zoli
- az aNuci 3lvitt3
+az aNuci 3lvitt3
 3lvitt3 az aNuci
 k0S0n0m a t3l3fon
 jO
@@ -1153,7 +1153,7 @@ ali
 mit CinAlS
 kapa
 kapa
- UG kopogat
+UG kopogat
 n3 kopogass
 l33s3tt a monCi
 hol vannak a babAk
@@ -1754,7 +1754,6 @@ az3l@tt a bajuSa fAjott
 S3g3Nk3
 miErt
 mit CinAlt
- 
 Es most mit t0ryltEl m3g
 miErt
 aj aj nAthAs
@@ -1868,7 +1867,7 @@ na most
 uh hum mij3n l3v3st f0z0l
 jaj d3 finom
 jO 3zt 3lt3sSyk 
- a z0ldsEg3t is m3g k3ll pucolni
+a z0ldsEg3t is m3g k3ll pucolni
 m3g itt van a r3S3l@
 majd m3g k3ll r3S3lni
 b3 k3ll Cukni az ajtOt
@@ -1899,7 +1898,7 @@ jOl van
 azt aztAn n3m l3h3t kiNitni
 d3 3zt is ki l3h3t
 lAtod
- v3S3d ki b3l@l3
+v3S3d ki b3l@l3
 s3gits3k
 t3ssEk
 3z az
@@ -2283,7 +2282,7 @@ lacika lacika
 kit@l kaptAl 3z3k3t a kockAkat
 karACoNkor kit@l kaptAl
 a tElapO
-mAr m3  hoG jEzuska d3 mind3G
+mAr m3 hoG jEzuska d3 mind3G
 m3tro 3z
 mit akarS mondani
 gondoltam 3z 3G naG GAr k3m3ncEv3l
@@ -2318,7 +2317,7 @@ Es mEg
 aNuka
 n3m 3z ij3n G3r3kZUr volt
 G3r3k tArsasAg volt ig3n
-volt  rEpa
+volt rEpa
 ig3n
 Es hol tAlaltAl
 ig3n
@@ -2383,7 +2382,7 @@ mOkus hAzat
 k3ll mEg 3G 
 k0S0n0m SEp3n
 3z jO l3S itt
-na hozd m3g b3  itt van
+na hozd m3g b3 itt van
 ig3n 
 ig3n
 O 3z l3S 3z l3S itt 3l@l 3z a fa l3S itt 3l@l jO
@@ -2745,7 +2744,7 @@ ninC t0bb kockAk
 d3 kEr3k mEg t0bb3t
 d3 n3k3m k3ll mEg t0bb3t
 onnan tudjatok S3dni k3ll mEg 3G pAr
- az yzl3t b3zAr
+az yzl3t b3zAr
 b3zArt az yzl3t n3m l3h3t k3N3r3t kapni
 n3m
 s3mmi mAst
@@ -2774,11 +2773,11 @@ d3 ha kEr3m SEp3n
 d3 n3m ojan naGot mint nAlad van
 na akkor C3rEljynk jO
 adok n3k3d
-jO k0S0n0m  m3gCinAlja a hajOt
+jO k0S0n0m m3gCinAlja a hajOt
 hajOt 
-n3k3d is  jO
+n3k3d is jO
 ha jOk vaGtok
-n3m vadultok  
+n3m vadultok 
 ojan ojan rosS kislAN hoG n3madja
 az az
 Cak kEr3m SEp3n
@@ -2839,7 +2838,7 @@ puskAs gAbor vaG
 aj jaj
 finom az
 mi
-barna bACi  jAtEkot Es n3m v3rt3m m3g
+barna bACi jAtEkot Es n3m v3rt3m m3g
 p3dig UG k3ll 
 d3 n3m v3rEss3l
 3z a puskAd En 
@@ -2919,7 +2918,7 @@ mij3n naG
 ig3n m3gij3dt a magdi
 ig3n
 En n3m majdn3m En m3g is ij3dt3m
- n3m majdn3m
+n3m majdn3m
 d3 m3g is ijd3t3m n3m majdn3m han3m m3gij3dt3m
 m3gijd3t3
 mEg 3G3t
@@ -2961,11 +2960,10 @@ pukkanAstOl
 m3gij3dtEl UG3
 ki 3s3tt a dunAba
 kis katona
- 
 S3rvuS
 itt a k0tEN
 jAtSunk G3r3
- van f0nt
+van f0nt
 naGon piSkos UG van naGon piSkos
 most j0n a takaritO nEni
 d3 az is piSkos 
@@ -3056,7 +3054,7 @@ hol van a CvarhyzO
 hol van a CvarhUzO
 3lEg 3lEg 3jN3
 3lEg volt mAr
-3lEg  3lEg
+3lEg 3lEg
 visSamES a mAsik SobAba
 akkor n3 kalapAlj
 jO ha kalapAColni k3ll akkor itt a f0ld0n t3ssEk kalapAColni
@@ -3143,7 +3141,7 @@ t3 is CinAlS
 hAt En CinAlok jAtSok m3rt ha ti n3m jAtSotok En jAtSok nEzd
 t3 is
 t3ssEk
- l3h3t 
+l3h3t 
 t3ssEk viGAzni
 jO viGAzni
 ninC AG
@@ -3724,7 +3722,7 @@ k0S0n0m
 van 3lEg
 mij3n Sinu 3z
 3z piros
- jaj d3 SEp a karACoNfa
+jaj d3 SEp a karACoNfa
 tovAbb n3m tudom
 vannak rajta van rajta a sok G3rTa
 n3m k3ll
@@ -3869,7 +3867,7 @@ ott van b3nn3 a naG tOban
 3ldobta a bajuSom
 p3dig az visSan0 ahANSor 3ldobom
 anNiSor visSanO a bajuSom
- Es tudod mi van mEg n3k3m
+Es tudod mi van mEg n3k3m
 amikor fiatalabb voltam volt n3k3m 3G naG SakAllom tudod mi a
 ojan naG haja
 hol van 3z a naG viz
@@ -3881,7 +3879,7 @@ Cak 3Gik kEr3m jO
 3lviSi t@l3m
 tEg3d hoG hivnak
 sIrjak
- &ad adjAl kiCit Z3bk3nd0t naGon sIrok kEr3k Z3bk3nd0t
+&ad adjAl kiCit Z3bk3nd0t naGon sIrok kEr3k Z3bk3nd0t
 mEg3GS3r CinAlunk jO
 na CinAlj valami rosS 3l@S0r azEr k3ll sIrni mErt valami
 a papuCot
@@ -3905,7 +3903,7 @@ mi a fogaid
 hol van a fogaid
 3z fog
 3z CuNa
-a farkasnak van ojan naG fog ami 3l Sa  3lm3G a SAjbOl
+a farkasnak van ojan naG fog ami 3l Sa 3lm3G a SAjbOl
 kEp3ld 3l hoG hoG amikor
 sIrt
 mit modtAl
@@ -4027,7 +4025,7 @@ az kis kuTus mEg az a mOkus
 EvikEm
 totO
 f0lEbr3dt
- Nissuk azt a hAzat
+Nissuk azt a hAzat
 d3 n3m Nitjuk ki
 t3GEl visSa
 tudod mit CinAlS
@@ -4133,7 +4131,7 @@ az n3m az n3m fEr b3
 3z id3 valO Cak most ninC ninC
 hozzatok 3G mAsik doboz jO
 3z id3valO id3 valO 3bb3 a dobozba l3h3t rakni
-3z a lAbom UG  lAbam
+3z a lAbom UG lAbam
 d3 n3m fAj Cak ojan naG lAtod mij3n naG itt vErzik a lAbam
 ott van a lAbom m3g itt m3g itt m3g itt az mind a lAbom
 vErzik kiCit
@@ -4169,7 +4167,7 @@ f3ri
 f3ri visSam3nt visSam3nt a mAsik SobAba
 f3ri G3r id3 n3m
 a kati nEni
- ott van j0n
+ott van j0n
 barna 3ng3dj3 mAr b3 azt a hArom G3r3k3t
 jO G3r3 b3
 adok n3k3d jAtEkokat
@@ -4267,7 +4265,7 @@ Es n3m tud n3m tudod hoG mi t0rtEnt v3l3m
 SEp 
 odanEzz 3lv3Si a barna bACi odanEzz 3lv3Si 3lv3Si t@l3t3k
 3lv3Si a barna bACi
- barna bACi
+barna bACi
 itt n3m Sabad
 fiG3lj id3
 jO l3GEl Es fogadj SOt a barna bACinak
@@ -4324,7 +4322,7 @@ na Evika mondd m3g
 mondd m3g n3k3m 
 a koCi Atm3G a hidon
 mondd m3g n3k3m a koCi Atm3G a hidon
-na mondd m3g n3k3m  a farkas Atm3G a hidon 
+na mondd m3g n3k3m a farkas Atm3G a hidon 
 SEtromlott ahid
 farkastOl
 na mondd m3g n3k3m
@@ -4338,7 +4336,7 @@ autObusSal
 itt van az autO
 mij3n naG hid
 ig3n na mondd m3g 
- ki tudja mondani hoG a farkas Atm3G a hidon 
+ki tudja mondani hoG a farkas Atm3G a hidon 
 na jO
 na ki tudja mondani hoG a hidon Atm3G a farkas 
 S3gEN kis farkas
@@ -4396,7 +4394,7 @@ az 3Gik farkas
 n3m Sabad
 akkor visSanEz
 n3 l3GEl rosS
- t3ssEk rontani rontani
+t3ssEk rontani rontani
 t3ssEk SEt rontani
 kis fiam
 tudod mi l3S b3l@l3
@@ -4416,7 +4414,7 @@ G3r3 id3 kis fiam
 j0n a CuNa rOka
 t3gnap volt a CuNa rOka
 az 3Gik rOka 3lm3nt a piacr3 Es
- Es m3gv3S 3G alma Es haza viSi
+Es m3gv3S 3G alma Es haza viSi
 hAt az n3m alma
 3zt a fiut
 En n3m tudom mi volt 3zz3l a fiuval
@@ -4505,7 +4503,7 @@ UG CinAlok valamit UG
 n3m naG
 n3m naGot CinAlok
 3z k3ll a barna bACinak
- Cak 3rrEbb m3rt
+Cak 3rrEbb m3rt
 mErt dylt 3l
 3ld0nt0tt3d 
 d3 SEp kis kuTusod van hadd nEzz3m m3g
@@ -4539,7 +4537,7 @@ CinAlok valamit jO
 CinAlok valami SEp3t n3m CinAltam valami SEp3t
 miErt n3m
 vann3k3d 3lEg
- oda akkor n3m talAljuk m3g
+oda akkor n3m talAljuk m3g
 3z mind
 mind az k3ll a GurikAnak
 Guri 
@@ -4645,7 +4643,7 @@ mAr m3gvolt
 mAr m3ghalt a barna bACi
 m3njynk a t3m3t0b3 jO
 S3gEN barna bACi
- m3ghalt
+m3ghalt
 bizoN m3ghalt
 tudod
 hol
@@ -4790,7 +4788,7 @@ t3l3 van vizz3l
 add visSa 
 yr3s
 jO fiu a barna bACi
- a barna
+a barna
 iG
 na akkor az UG
 l3galAbb
@@ -4878,11 +4876,11 @@ l3S n3ki l3S kist3stvEr3
 ig3n
 ig3n Es @ sIr a kis t3stvEr3
 jaj t3 kis mitugrAlS
- jO jO jO 
+jO jO jO 
 miErt sIrS
 t3ssEk onnan visSam3nni
 visSa t3ssEk visSam3nni
- sIr
+sIr
 miErt sIrS katika
 viola nEni
 viola nEni
@@ -5010,7 +5008,7 @@ na ott van az Evi
 n3m kErS ij3n SEk3t
 ojan SEp Sin3s
 k0S0n0m
- kati nEni UG3
+kati nEni UG3
 En majd kapaSkodom
 m3rt En midjArt l3SAllok
 n3m tudok kiNitni
@@ -5038,7 +5036,7 @@ n3k3d
 m3gCinAlom
 m3gCinAlom na SEp
 most mAr jO ujajaj
-na most mAr m3gCinAltam  na rosS a f3j3m rosS a f3j3m
+na most mAr m3gCinAltam na rosS a f3j3m rosS a f3j3m
 3lv3tt3 3lv3tt3 
 most mAr jO
 icAnak
@@ -5053,8 +5051,8 @@ na m3gCinAlom itt van a SEk
 domika add visSa az EvikEn3k
 domi
 nEzd m3nNi van
-hat  a k3z3db3
- az Evi  hum
+hat a k3z3db3
+az Evi hum
 rosS a
 koCi
 itt is van mEg t3ssEk
@@ -5106,7 +5104,7 @@ l3h3t 3nni a barna bACit
 ham ham 3dd m3g
 3G3d 
 n3m finom d3 finom vaGok 3dd m3g fonom
- Cak n3k3d is
+Cak n3k3d is
 fAj a Gomrom mEg a Siv3m juj d3 fAj
 Es a
 S3m3mr3
@@ -5131,7 +5129,7 @@ a dOrinak
 mErt k3ll n3ki pEnz
 bolgog 3mb3r
 vEgr3 m3G 3G forint
- a dominak n3m k3ll n3ki pEnz
+a dominak n3m k3ll n3ki pEnz
 Nalogok
 t3 is tudod
 GurikAm mit CinAlS ott fiam
@@ -5139,7 +5137,7 @@ Guri
 ki vaGok
 faludi gabika mit CinAlS
 En vaGok
-kukuCkAlni na m3njynk visSa S3gEN katihoz  S3gEN3k
+kukuCkAlni na m3njynk visSa S3gEN katihoz S3gEN3k
 lacikAm
 n3ki n3m t3tS3tt
 annak a faz3kas tyndi n3m t3tS3tt
@@ -5192,7 +5190,7 @@ t3 vaG a v3z3t@ bACi
 akkor ylj l3 ha a v3z3t@ bACi vaG
 a v3z3t@ bACi n3m tud
 t3 a tiStvis3l@ vaG
- naG
+naG
 majd visSal0 a barnabACi majd visSa fog l0ni
 barnabACinak
 brr rrr rr
@@ -5230,7 +5228,7 @@ akkor naGobbat CinAlok
 majd naGobbat CinAlok
 mit v3tt3m 3l
 n3 v3dd 3l t@l3m
-azokat n3 v3dd 3l t@l3m  az n3m k3ll 
+azokat n3 v3dd 3l t@l3m az n3m k3ll 
 n3 v3dd 3l t@l3m 3z3k3t
 nEzd m3g mij3n magas 3z a
 puskAm
@@ -5245,7 +5243,7 @@ oda adom n3k3d 3G halaCkAt jO
 k3r3st3m a halaCkAt m3g is talAltam
 m3g is talAltam
 Siv3s3n
- akkor visSaadod jO m3rt a
+akkor visSaadod jO m3rt a
 t0bbi G3r3k &mi
 mi van
 O mindig l3l0n3k 3z n3m uj dolog
@@ -5272,7 +5270,7 @@ tudod hoG k3ll 3G hAromS0g3t
 3z jO
 m3nNi kocka van m3nNi
 m3nNi kis
- l3
+l3
 na t3dd l3
 inkAbb adjAl visSa n3k3m
 jO
@@ -5309,7 +5307,7 @@ id3j0n a k3z3m
 sIrjak
 id3j0n n3m sIrok
 id3j0n viGAzz id3j0n a k3z3m viGAzz
-ig3n n3m az az SEp n3m  Cak 3z 3z
+ig3n n3m az az SEp n3m Cak 3z 3z
 most mAr
 most mAr n3 l3Gynk rosSak jO
 jO most mAr l3h3t jOk l3nni jO
@@ -5344,10 +5342,10 @@ na most hallgassunk
 n3 most hangosan most @
 m3giSod a kAvEt
 kAvEka
- jAtSunk v3z3t@ bACi vaG
+jAtSunk v3z3t@ bACi vaG
 piros a lAmpa
 d3 n3m Sabad n3m Sabad Cak z0ldd3l viGAzz most z0ld a lAmpa
-hAt  piros
+hAt piros
 az kEk az s3mmi
 a kEk az n3m j3l3nt s3mmit
 Evi n3m tudS m3sElni
@@ -5438,7 +5436,7 @@ Cak l3v3l3t 3Sik
 @ S3r3ti a l3v3l3t
 fyr0dn3k mAr
 juuj
- n3k3d hoG m3g mosakodtam
+n3k3d hoG m3g mosakodtam
 3zt m3gs0p0rt3m 3zt
 f0l tudok mASni a fAra
 a na itt vaGok
@@ -5572,7 +5570,7 @@ uuuu 3rOs3n kiabAl
 virAgom
 Ed3s
 cukorkAm
- jaj d3 araNos
+jaj d3 araNos
 barna Es UG m3gr3Sk3t az Alla
 ojan Erd3k3s 
 viola
@@ -5610,7 +5608,7 @@ t3 S3r3t3d S3r3t3d a Cokit
 van mEg Coki b3nn3
 n3m adom jO
 most n3m majd amikor 3lm3nn3k a t0bbi G3r3k3k
-a  n3mj0n
+a n3mj0n
 miklOs
 miklOs t3 fogod itt majd l33s3l 
 autobuS volt az
@@ -5749,7 +5747,7 @@ d3 most 3G hAzat
 mikor
 mikor l3sS a t3a
 En n3m kaptam mEg
-a G3r3k3k mind3nki  violanEni hoz t3At
+a G3r3k3k mind3nki violanEni hoz t3At
 n3 ylj l3 a homokba
 Cupa homok l3S3l
 n3 t3Gyk
@@ -5849,7 +5847,7 @@ itt van az ollO
 j0n az oll0
 m3gvAgja
 ollOt 
- n3m volt g0r0g
+n3m volt g0r0g
 az hollandok
 k0h0g k0h0g0k
 d3 n3m 3Gforma
@@ -5925,8 +5923,8 @@ valaki v3r
 vAvAvAvAvA
 azErt mEgis mEgis k3ll
 takard b3
- d3 En lAtom
- t3 is ott alSol
+d3 En lAtom
+t3 is ott alSol
 tyndi t3 is alSol
 na most a barna bACi 
 jO SEp3n aludtam
@@ -5942,7 +5940,7 @@ azt a tyndit
 EvAt
 r3hol laci
 r3hol hol van
- f3kt3ssyk l3 a villaNt
+f3kt3ssyk l3 a villaNt
 jO
 jO l3S
 akkor adom 3G takarOt
@@ -5954,14 +5952,14 @@ most mAr n3mSabad
 n3m t3 s3 mES
 m3nj3t3k inn3n vA vA vA vau v
 m3kkora Gomra van
- hatalmas Gomra van
+hatalmas Gomra van
 n3k3d n3
 n3m ojan hatalmas Gomrod van
 fAj a torka
 m3nj3t3k ki onnan
 az oroSlAn
 az jO l3S m3rt az oroSlAn 3z naGon naGon ravaS
- a mamAm
+a mamAm
 3ng3m3t hIvtAl
 n3m ravaS 3z a rOka
 ojan SEp kis rOka p3dig van n3ki 3G kis
@@ -5993,7 +5991,7 @@ t3 v3GEl l3
 jO v3GEl l3
 na m3gint fAra mASunk f0l
 mi m3Gynk
- n3k3m  l3v3tt3
+n3k3m l3v3tt3
 kati
 aztAn En
 most mAr f3lmASunk a fAra
@@ -6135,7 +6133,7 @@ paprikAs CirkEt kEr3k
 jaj 3z naGon finom
 foghatom IG kEzz3l
 3bb3 naGon sok van tudod hoG naGon finom hoG f0zt3d m3sEld
-t3tt b3l3 cukrot is Es UG f0zt3  nEzd oda  t3ssEk
+t3tt b3l3 cukrot is Es UG f0zt3 nEzd oda t3ssEk
 itt
 ott van
 itt a barna
@@ -6171,7 +6169,7 @@ jO m3g3t3tS UG3
 jO
 Nakamba t3S3d
 t3S3d
-IG IG jO most  az 3dENt
+IG IG jO most az 3dENt
 3zz3l
 3zz3l a kanAllal 
 k0S0n0m SEp3
@@ -6304,7 +6302,7 @@ k3r3St van rajta
 mErt n3m tudod
 rosSat CinAltad
 jO
- azErt n3 CinAljatok rosSat
+azErt n3 CinAljatok rosSat
 3sik az 3s0
 n3m k0S0n0m
 n3m m3h3tS most
@@ -6330,7 +6328,7 @@ az a z0ld koCi n3m roZdAs
 az tiSta
 az a z0ld koCi az az 3NEm
 abban van puska van sok mind3n
- puska azt a forrO nadrAgom
+puska azt a forrO nadrAgom
 OvodAban n3m l3h3t pusakAval l0v0ld0zni tudod azt
 OvOdAban n3m l3h3t pusakAval l0ni 
 m3njynk b0rt0nb3
@@ -6372,7 +6370,7 @@ viGyk aztAn jO
 salAtAt
 jaj d3 finom
 3z a finom uborka
- ojan jO volt talAn
+ojan jO volt talAn
 jOl van jOl van 
 salAta vaG a
 m3gf3l3l
@@ -6604,7 +6602,7 @@ akkor azt kEr3k
 n3 v3dd 3l
 t3ssEk n3 v3dd rl n3 v3dd 3l a kockAkat rOla majd b3t3S3m most
 akkor mAr n3m l3S n3ki hAz
- CinAljunk
+CinAljunk
 naGot CinAljunk
 mindjArt mindjArt
 n3m l3S
@@ -6663,7 +6661,7 @@ t3ssEk
 3G3t
 ninC niC t0bb
 Evi
-itt van  
+itt van 
 ojaj t3h3rautO
 3lm3nt mAr
 araNos kis rOkAm
@@ -6846,7 +6844,7 @@ a kati nEnin3k amikor j0tt3m a b0lCodEb3
 akkor hoztam a
 na ki a naGon yG3s
 a ZuZika
-m3nj oda mici nEnih3z Es kErd3zd m3g hoG  jO
+m3nj oda mici nEnih3z Es kErd3zd m3g hoG jO
 mondd hoG a kati nEni kEr 3G kis papir vattAt
 ajjaj Allami koCi
 az 3G volga auto 
@@ -6875,7 +6873,7 @@ ig3n m3rt 3lm3nt
 Es ha a farkasok j0nn3k akkor l3j0n
 akkor n3 m3njEl oda
 jO
-akkor  UG3
+akkor UG3
 n3k3d ninC n3k3m tENl3g van Cak ninC 
 j0tt a r3nd0r
 hAt mi van n3ki G0nG
@@ -6891,7 +6889,7 @@ miErt
 jAnos fyr0dni
 En is fogom fyr0dni jO
 En fogom sIrni
- sIr 3G kiCit jO
+sIr 3G kiCit jO
 t3 is sIrS 3G kiCit jO
 t3 n3m sIrS
 jAnos sIr 3G kiCit
@@ -6906,7 +6904,7 @@ t3 mAr voltAl kEtS3r is
 t3 mAr voltAl
 d3hoG is n3m
 d3hoG is n3m
- nEni n3m l3h3t
+nEni n3m l3h3t
 kEtS3r n3m l3h3t
 most m3G a f3ri most m3G j0n a f3ri 
 most t3 mES
@@ -6926,7 +6924,7 @@ azt hitt3m mAr voltAl
 majd m3gmossuk dElb3
 n3 t3dd l3 most
 jO t0ryld azt
-oda  Es akkor 
+oda Es akkor 
 En tudom
 En tudom m3gCinAlni
 babAm t3 visSaj0ttEl
@@ -6940,11 +6938,11 @@ fEsylk0dl3k
 SEp kis babAm
 jaj d3 araNos vaG
 d3 most mAr baba vaG
- b3SElni tudod
+b3SElni tudod
 n3m tudod b3SElni
- kis babAm anGalkAm
+kis babAm anGalkAm
 3lmES
- homokos l3ttEl
+homokos l3ttEl
 az baj az baj
 mi van mi van Eva
 miv3l most
@@ -6992,10 +6990,10 @@ majd fAjni fog
 mind3nki majd fAjni fog holnap
 p3rS3
 naGon fAjt
- ki SOr ott homokot
+ki SOr ott homokot
 ki CinAlta
 a jAnos
- a homokot ki CinAlta
+a homokot ki CinAlta
 n3m S3r3t3m
 ojan homokos l3tt3m na most 
 jaj d3 Erd3k3s
@@ -7006,7 +7004,7 @@ G3r3 id3 baba
 mit CinAlS Evik3
 hAzat Epit3t3k Es t3n3k3d mij3n G0N0ry kark0t0d van kit@l
 kit@l kaptad
- kit@l
+kit@l
 d3 kit@l kaptad
 a barna bACitOl m3gk0S0nt3d
 naGon SEp G0N0ry n3k3d is t3tSik
@@ -7020,7 +7018,7 @@ jO kislAN voltAl
 barna bACi mij3n G0N0ry kark0t0t hozott a
 n3m a fyrd0SobAban han3m a naGSobAban
 mit hoztAl
- akkor m3giSam
+akkor m3giSam
 EvikEm nEzd drAga ott van 3G 3gES yr3s pad az l3S a t3 hajOd
 prObAld m3g
 az a m3nt0autO
@@ -7062,7 +7060,7 @@ akkor G3r3
 akkor maradjAl
 akkor maradjAl
 akkor G3r3
- akkor n3m j0S a barna bACihoz 
+akkor n3m j0S a barna bACihoz 
 jO
 most a barna bACi
 f0lv3Si a k3r3k3t
@@ -7081,7 +7079,7 @@ akkor SAllj l3
 SAllj l3 SAllj l3
 SAllj l3 SAllj l3
 kiSAllunk
-azErt  m3rt n3Gon sokan vaGunk
+azErt m3rt n3Gon sokan vaGunk
 itt van a barna bACi
 nEzd
 jaj 3lyt0tt a vonat
@@ -7131,7 +7129,7 @@ n3k3m k0S0nS
 En OrAt adok n3k3d
 jO mn3jynk az aStalhoz jO G3r3
 m3njynk az aStalhoz 
-nEzzyk m3g a r3  r3hO lacit
+nEzzyk m3g a r3 r3hO lacit
 jaj viGAzzon m3rt 3lt0ri
 3lt0rik a SEk
 n3m
@@ -7422,7 +7420,7 @@ En visSat3tt3m
 n3m 
 n3m
 sIrjAl
- sIrjAl sIrjAl
+sIrjAl sIrjAl
 3l3g3t farkas
 n3m UG k3ll
 UG3
@@ -7790,7 +7788,7 @@ hol az orr
 S@N3g3n
 sokkal naGobb a h3j3d
 ig3n
-akkor  tEis
+akkor tEis
 a gAbor mit CinAlt
 3lm3nt a gAbor
 3lm3nt
@@ -7935,10 +7933,10 @@ lEG Siv3s s3gitsEl
 k0S0n0m SEp3n Gurika
 Gurika nEzd
 IG 0sS3rakod a kockAt
-Es IG hozom  lEG Siv3s
+Es IG hozom lEG Siv3s
 mit k3r3s3l Gurika
 most k3ll 3nni UG3
-a poharakat  0sS3rakom jO
+a poharakat 0sS3rakom jO
 ig3n
 hova m3Gynk
 itt a koNhAban
@@ -7975,7 +7973,7 @@ igazAn sok sok G3r3k van itt
 Es mind3nki S3r3t
 valamit 3nni
 ig3n
-kim3Gynk pisilni Es k3r3ss3t3k  
+kim3Gynk pisilni Es k3r3ss3t3k 
 valamit 3nni
 most n3m k3ll l3S3dni
 n3m k3ll l3S3dni most
@@ -7997,7 +7995,7 @@ k3ll
 han3m 
 k0S0n0m SEp3n
 mEg tovabb
-lEpC@  Epitsynk jO
+lEpC@ Epitsynk jO
 3z jO
 hol van a mOkus
 n3m Sabad 3lv3nni
@@ -8213,7 +8211,7 @@ na G3r3 Gurika
 mit mondaS
 3vv3l fujjad
 add id3 3G kiCit a Gurinak t3ssEk
-n3  Cak UG fujj
+n3 Cak UG fujj
 fujjad 
 n3m SOl
 hoG n3m SOl 3z
@@ -8225,7 +8223,7 @@ ig3n
 Cukd 0sS3 a SAdat jOl 3s UG fUjd
 3r@s3n
 n3 fogd b3 itt a lukat
- Cak
+Cak
 Cak a vEgEt
 Cak a vEgEt
 n3 n3 az 3gES3t
@@ -8615,7 +8613,6 @@ yG3s vaG Gurika
 n3m l3S akkor
 n3m l3S sok
 akkor n3m l3S sok
- 
 majd valahoG m3gCinAljuk
 mindjArt
 valami kis daru
@@ -8642,7 +8639,7 @@ Cak l3Sorul
 ninC h3j
 b3l3bujt
 3zt n3m oda
- most inkAbb 3G vitrolAs hajO
+most inkAbb 3G vitrolAs hajO
 vitorlAs hajO 
 az ArbOca
 3lm3nt 
@@ -8658,7 +8655,7 @@ jaj d3 G0N0rY l3S 3z lacika
 3z mi l3S
 3z most daru
 jobb l3nn3 ha m3g l3h3tn3 r0gzit3ni m3rt mindig l3CUSik
-m3rt n3m l3h3t jO k3r3k3t CinAlni  
+m3rt n3m l3h3t jO k3r3k3t CinAlni 
 t3ssEk
 most n3m fog m3nni most
 3z az 3NEm
@@ -8708,11 +8705,10 @@ t3ssEk
 n3m Capkodunk
 a k0S0n0m hol marad
 n3 v3dd 3l dinik3 
- 
 l3h3t
-dinik3 n3m   tudod
+dinik3 n3m tudod
 sok mindig
-  jO
+jO
 ig3n
 daru naGobb mint a duru
 motorozni akarS
@@ -8743,10 +8739,9 @@ mi van a k0tEN3d mi van a k0tEN3db3n
 GurikAm
 n3mCak rOka han3m kalapod
 t0bb n3m fEr b3l3
-hm hAt IG  
+hm hAt IG 
 t0bb3t n3m t0bb3t n3m
 n3m CinAlS b3l@l3 s3mmit
- 
 hol van a halaCka
 itt van a halaCka
 bumm 
@@ -8756,7 +8751,7 @@ kalapot kapott
 itt a rOka
 ki kapta a rOka
 lAtod
-ott a kalap  naG SElY kalap
+ott a kalap naG SElY kalap
 barna bACi m3g3Si a rOka
 m3g fog 3nni
 most a kis rOka fog jAtSani v3l3
@@ -8907,7 +8902,7 @@ SAmoljunk
 SAmoljunk jO
 3G jO k3tt@ n3m n3m n3m
 na mit CinAlS
- SAmolni hoG k3ll
+SAmolni hoG k3ll
 hol a mAsik
 hol van
 mit CinAlS
@@ -9002,7 +8997,7 @@ naGon fAj
 hol fAj
 mutasd m3g 
 itt 3z a rES
- most jobb l3S
+most jobb l3S
 naGon fAj
 naGon fAj
 most jobb
@@ -9123,7 +9118,7 @@ barna bACi En vaGok a barna bACi
 n3m a n3v3m n3m az En n3v3m
 hol van az
 a rOkanak az apukAja
-oh ott a bACi aki  itt lAtod
+oh ott a bACi aki itt lAtod
 lAtod a bACit G3r3 id3 
 ott a bACi
 ott van
@@ -9356,7 +9351,7 @@ b3m3nt
 Ert3m akkor b3m3G
 most 3l@S0r itt van az
 itt van az Ut
-Guri itt az  
+Guri itt az 
 Atm3G a hIdon
 ig3n l3h3t
 Cak G3r3 oda 
@@ -9372,7 +9367,7 @@ itt lAtom hoG 3G ComO jAtEk van itt lAtod
 jO
 3z 3G halaCka
 ig3n
-r3ndb3n van 3lm3G3k  
+r3ndb3n van 3lm3G3k 
 b3zArtad m3rt
 n3m fEr b3l3
 s3m a hajO
@@ -9380,7 +9375,7 @@ mindjArt j0n visSa a naGmama
 j0n mindjArt visSa
 most jAtSol 3G kiCit
 3bEd3lS
-Es ha j0n  
+Es ha j0n 
 hoG tudS jAtSani
 3l@bb m3nt dolgozni
 t3dd b3l3
@@ -9449,14 +9444,14 @@ jaj d3 SEp
 3z a miCoda n3m tudom miCoda
 mi 3z
 valami 3z
-haj  
+haj 
 juj
 akkor S3p3n uSik a halaCka
 k0rb3 k0rb3
 En is haG CinAljam 3G kiCit jO
 m3g3ng3d3d
 d3 fiG3ld 
-a rOka is  
+a rOka is 
 juj d3 mOkAs
 @ 3zt tudja
 tudja bizoN
@@ -9474,7 +9469,7 @@ nEzz id3 k3tt@ halaCka USik b3nn3
 ig3n
 lAtod k3tt@ halaCka
 a naG hal m3g a kis G3r3k3
- a k3tt@
+a k3tt@
 hoG USnak
 na
 k0rb3
@@ -9583,8 +9578,8 @@ itt 3z a autO
 n3m Cak itt f0lm3G han3m itt van 3G t3ng3r lAtod
 itt
 itt van a t3ng3r
-3  
- itt van a t3ng3r
+3 
+itt van a t3ng3r
 id3 &m3
 id3 m3h3t
 id3 m3h3tS
@@ -9654,7 +9649,7 @@ az naGon jO
 naGon jO
 jaj 3z a G0N0rY kuTa
 jaj naGon jO
- 3z S3bb mint az autO
+3z S3bb mint az autO
 mond k0S0n0m SEp3n
 na mond
 k0S0nd m3g
@@ -9783,7 +9778,7 @@ naGon okos
 Es a naGpapAval is
 mind3nkiv3l
 naG a lakAsotok
-jaj d3  hAN SobAtok van
+jaj d3 hAN SobAtok van
 is
 n3k3d is SobAd van
 3G3dyl vaG ninC t3stvEr3d
@@ -10461,7 +10456,7 @@ hasad hol van
 hol van a hasad
 oda
 m3njynk oda
- m3njynk
+m3njynk
 G3r3 f0l
 oda
 b3
@@ -10637,7 +10632,7 @@ jO
 vaG nEzzyk az 3gErkEt jO
 itt van az 3gErk3
 itt van az EgEr
- lAtod itt van
+lAtod itt van
 b3nt van
 huzd ki
 huzd ki
@@ -10841,7 +10836,7 @@ mAsikat
 3z kis kuTus
 Sica volt az UG3
 En rajzoltam
-k0S0n0m itt a  itt a lAba
+k0S0n0m itt a itt a lAba
 itt van akuTa
 itt a rOkakOma
 rOkakOma
@@ -11029,7 +11024,6 @@ n3m fAj
 most jO
 n3k3d is fAj
 n3k3d is fAj
- 
 tAncoljunk
 tAncoljunk kiCit jO
 az n3m
@@ -11191,7 +11185,7 @@ yljynk
 yljynk
 az a CuNa cica
 n3m tudod annak a n3vEt
-l3h3t  
+l3h3t 
 na m3sElj
 m3sElj Cak n3k3m
 m3sElj Cak n3k3m
@@ -11285,7 +11279,7 @@ mit CinAlS
 zolikA is akarja oda m3nni
 zolika t3 is akarS odam3nni
 ojan Erd3k3s
- m3h3t
+m3h3t
 m3njynk nEzni
 nEzni
 uu l33sEl
@@ -11337,7 +11331,7 @@ aludni m3Gynk jO
 SEp Almotokat kivAnok
 m3Gynk aludni jO
 AGikOba
- az En halaCkAm
+az En halaCkAm
 k3tt@n
 k3tt@ van nAlad
 k3tt@ mi
@@ -11415,7 +11409,7 @@ oda
 odam3njynk
 oda
 oda jO
- kocka
+kocka
 mi van
 zoli az n3m Sabad
 az n3m Sabad
@@ -11590,7 +11584,7 @@ Sia monCi
 Sia monCi
 akarS 
 az is
-a  hol van
+a hol van
 n3m lAtom
 ott van
 hAt igaz
@@ -11821,7 +11815,7 @@ oh n3m UG
 oda
 itt ninC G3r3 zoli
 G3r3 zoli
- uj d3 G0N0rY banda
+uj d3 G0N0rY banda
 mi van n3ki
 k0tEN3 van n3ki
 hAt
@@ -11837,7 +11831,7 @@ t3 n3m tudod
 papIros
 papIros
 nEzzyk m3g 3zt a rAdiOt
- 3z
+3z
 En is kEr3k
 na t3ssEk G3r3k3k m3gmondani n3k3m hoG mit adtam
 3z ki
@@ -11923,7 +11917,7 @@ jO volt
 finom
 finom
 finom volt
- n3m volt finom
+n3m volt finom
 n3m naGon finom UG3
 n3m naGon finom
 itt n3m naGon 3z n3m naGon finom 3z a papIr
@@ -12449,7 +12443,7 @@ SEk
 SEkk3l
 SEkk3l UG3
 mi 3s3tt l3
- jO
+jO
 a SEk 3s3tt l3 UG3
 mi 3z
 zoli mi 3z
@@ -13197,7 +13191,7 @@ t3 r3pylS
 O az kij0tt
 viGAzz 3z j0tt
 mi van itt
- n3m jO
+n3m jO
 n3m jO
 b3k0tl3k jO
 most jO
@@ -13236,7 +13230,7 @@ ott van
 itt van a
 3ldobta
 mit dobta 3l
-jaj d3  3z a rAdiO
+jaj d3 3z a rAdiO
 G0N0rY rAdiO UG3
 m3njynk a rAdiOhoz
 kis t3k3rCk3
@@ -13280,7 +13274,7 @@ jO
 mEg 3GS3r nEzzyk mEg
 s3mmi baj UG3
 mangO
- a mangO
+a mangO
 hol van a magnO
 itt van a mangO
 k3tt@ mangO
@@ -13597,7 +13591,7 @@ UG3 SEp
 O az SEp zoli
 mij3n SEp
 z0ld
-ott van a naG  UG3
+ott van a naG UG3
 hol van a ti3d
 m3G3k En
 zoli
@@ -14543,7 +14537,7 @@ ig3n 3z a CuNa 3gEr
 hol van a SEp 3gErk3
 itt a SEp 3gErk3
 CuNa
- UG3
+UG3
 mi 3z
 n3m rOka kOma
 mi 3z
@@ -14653,7 +14647,7 @@ vau vau vau vau
 aludni a vauvau talAn l3h3t
 koCival n3m l3h3t jAtSani 
 koCival n3m l3h3t
-n3m kErS  n3m akarS
+n3m kErS n3m akarS
 SAmIt
 SAmOljunk
 3G
@@ -14867,7 +14861,7 @@ n3m itt most
 hol van a Asik halaCka
 halaCka 
 Cak hol vaG halaCkAm
- hol van
+hol van
 hol van
 mutasd m3g hol van a mAsik halaCka
 hol van a mAsik halaCka
@@ -16866,7 +16860,7 @@ m3gvan zolika
 m3g
 m3nj3t3k Cak inn3n
 m3nj3t3k Cak inn3n
- a SAjAba
+a SAjAba
 n3m S3r3t
 magnO
 bogAr
@@ -16994,7 +16988,7 @@ mEg 3G3t
 jO akkor En is
 ott a bicikli is
 m3gnEzzyk a bicikli
- UG3
+UG3
 l3
 jO
 itt mAr a naG
@@ -17684,7 +17678,7 @@ ig3n a marCi nEnin3k t3l3fonAl
 na m3njynk l3 most jO
 jO
 n3m mES l3
-azt a  n3m kapS
+azt a n3m kapS
 t3 s3 kapS
 odat3S3m
 viGAzz ugrAlni n3m Sabad
@@ -17847,7 +17841,7 @@ t3 a zolika vaG
 akkor hozzAl Es itt van a kislAN 
 itt a nEg3r kislAN
 ninC
- van rajta
+van rajta
 hallod
 mi van a k3z3db3n
 nEzz id3 mi van a k3z3db3n
@@ -17870,7 +17864,7 @@ n3m m3G
 NaklAnc n3m m3G rAd
 d3
 d3 m3G
- rEgi duna kis katona ugorj a dunAba
+rEgi duna kis katona ugorj a dunAba
 dyd0ld l3
 S3gEN
 n3m Sabad UG m3gytni
@@ -18473,12 +18467,12 @@ Es t3 mondd m3g n3k3m rosSAlkodni fogS
 t3 s3 fogS rosSAlkodni
 mutasd m3k3m hoG k3ll jAtSani
 d3 n3m Sabad j0nni Es akkor mindjArt j0v0k Es n3m l3S s3mmi baj
-anika anika itt van  anika
+anika anika itt van anika
 G3r3 m3gfAzol
 jO
 l3t3ttEl mind3nt
 n3m rosSAlkodtAl
-itt van a  t3ssEk
+itt van a t3ssEk
 mi
 m3jik az a ti3d
 ja f0lv3S3m
@@ -18646,7 +18640,7 @@ s3nki bAntott
 apu bAn
 UG
 kikapott
- k3ll viGAzni
+k3ll viGAzni
 CuNa apuka
 SEp az apukAd
 ig3n
@@ -19821,7 +19815,7 @@ mik 3z3k
 galok jO
 n3m k3ll fElni most 3lt3S3m a dobozba jO
 Coki
-add id3  jO t0rp3 jO
+add id3 jO t0rp3 jO
 a kulComat
 n3m Sabad b3j0nni a barna bACinak n3m vaGok C3C3m@
 CuNa
@@ -20461,7 +20455,7 @@ vErni Sabad
 n3m fogS bAntani a magnOt
 biStos
 azt is m3gfogod
- a zolit jO
+a zolit jO
 n3k3d is k3ll m3nni
 most mAr n3m j0sS majd 3bEd3lni fogS
 3bEd3lni most dugd 3l
@@ -20493,7 +20487,7 @@ miv3l Sabad jAtSani
 avval Sabad 
 En is CiaAljak
 mit CinAljak
- a k3z3m3t
+a k3z3m3t
 b3 k3ll Cukni
 r3nd3s
 r3nd3s fiU
