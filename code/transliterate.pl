@@ -28,8 +28,8 @@ my @trPair;
 my $line;
 
 # Setup Unicode input and output
-binmode STDOUT, ":utf8";
-binmode STDIN, ":utf8";
+binmode STDOUT, ":utf16";
+binmode STDIN, ":utf16";
 binmode STDERR, ":utf8";
 
 my $usage = "\nUsage: ./transliterate.pl KEY-FILE [FILES-TO-TRANSLITERATE]\n\n";
@@ -38,7 +38,7 @@ my $keyFile = shift @ARGV;
 
 
 open(KEYFILE, $keyFile);
-binmode KEYFILE, ":utf8";
+binmode KEYFILE, ":utf16";
 while (<KEYFILE>)
 {
 	chomp;
