@@ -80,6 +80,7 @@ let uniformPhonotactics = ref false
 let weightedSum = ref false
 let subseqDenom = ref false
 let currentOutputChannel = ref stdout
+let semisupervisedUpdating = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -121,6 +122,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
+					"--semisupervisedUpdating", Arg.Set semisupervisedUpdating, " When doing semisupervised segmenting with the supervisedFor flag, resume learning process after supervised portion of corpus.";
+					"-su", Arg.Set semisupervisedUpdating, " Short for --semisupervisedUpdating";
 					"--stabilityThreshold", Arg.Set_string stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
 					"-st", Arg.Set_string stabilityThreshold, " Short for --stabilityThreshold";
 					"--subseqDenominator", Arg.Set subseqDenom, " For lexical score, calculate probability word is a word, rather than probability of word occuring in corpus.";
@@ -1051,6 +1054,22 @@ let subsequence_updater_outer sentence =
 		)
 		lastCharList;;
 
+(* Prints out segmented utterance *)
+let rec print_segmented_utterance segmentation sentence (incrementAmount:num) =
+	if (List.length segmentation) > 1 then
+		begin
+			let startChar = List.nth segmentation 0 in
+			let endChar = List.nth segmentation 1 in
+			let newWord = String.sub sentence startChar (endChar - startChar) in
+			if (incrementAmount =/ (num_of_int 1)) then
+				begin
+					printf "%s" newWord;
+					if (List.length segmentation > 2) then
+						printf "%s" !wordDelimiter
+				end;
+			print_segmented_utterance (List.tl segmentation) sentence incrementAmount
+		end;;
+
 
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
@@ -1203,16 +1222,26 @@ let incremental_processor utteranceList =
 												[|(num_of_int 1), (fst (segmentation_of_segmented_sentence sentence))|])) in
 					if (!displayLineNumbers) then
 						fprintf !currentOutputChannel "%d: " (utteranceCount + 1);
-					Array.iter (fun (incrementAmount, segmentation) -> 
-										lexicon_updater 
-											segmentation 
-											sentence (if (not !uniformPhonotactics) then
-															[PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence]
-														else
-															[FamiliarWordCue.update_evidence])
-											incrementAmount
-									) 
-									segmentations;
+					if ((!supervisedFor > utteranceCount) || (!semisupervisedUpdating)) then
+						Array.iter (fun (incrementAmount, segmentation) -> 
+											lexicon_updater 
+												segmentation 
+												sentence 
+												(if (not !uniformPhonotactics) then
+													[PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence]
+												else
+													[FamiliarWordCue.update_evidence])
+												incrementAmount
+										) 
+										segmentations
+					else
+						Array.iter (fun (incrementAmount, segmentation) -> 
+											print_segmented_utterance 
+												segmentation 
+												sentence
+												incrementAmount
+										) 
+										segmentations;
 					if (!printUtteranceDelimiter) then
 						fprintf !currentOutputChannel "%s" !utteranceDelimiter;		
 					fprintf !currentOutputChannel "\n";
@@ -1319,4 +1348,3 @@ if !featureCountsOut <> "" then
 (* Dump n-gram counts if requested *)
 if !syllableCountsOut <> "" then
 	SyllableNgramCue.dump !syllableCountsOut;;
-	
