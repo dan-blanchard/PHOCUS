@@ -498,6 +498,7 @@ struct
 								wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstSyllListLength))
 							)
 							ngramList;
+						(*  countProposedNgrams does not seem to work properly with syllable BIGRAMS without subseqDenom*)
 						let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 						let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in
 						if (currentTotalNgramsArray.(0) >/ (num_of_int 0)) && (Hashtbl.mem currentNgramCountsArray.(0) !wordDelimiter) then
@@ -1077,7 +1078,10 @@ let default_evidence_combiner word =
 	let phonemeScore = if (!phonemeWindow > 0) then (PhonemeNgramCue.eval_word word ( */ )) else badScoreNum in
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word ( */ )) else (num_of_int 0) in
 	if (!verbose) then
-		eprintf "Familiar score for %s = %s\nSyllable score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 syllableScore) word (approx_num_exp 10 phonemeScore);
+		begin
+			eprintf "Familiar score for %s = %s\nSyllable score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 syllableScore) word (approx_num_exp 10 phonemeScore);
+			flush stderr
+ 		end;
 	if (FamiliarWordCue.use_score word) then
 		familiarScore
 	else
