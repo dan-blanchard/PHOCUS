@@ -513,7 +513,7 @@ struct
 										let ngramSyllableArray = Array.sub syllablesWithBoundary firstSyll !syllableWindow in
 										let ngram = string_of_syllable_array ngramSyllableArray in
 										let ngramScore = prob_ngram ngramSyllableArray.(0) ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
-										(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+										eprintf "\tNgram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore);
 										score := (combine !score ngramScore)
 									)
 									(List.init ((Array.length syllablesWithBoundary) - (!syllableWindow - 1)) (fun a -> a));
@@ -529,6 +529,7 @@ struct
 	let update_evidence (newWord:string) (incrementAmount:num)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			let syllabifiedWord = syllabify newWord in
+			eprintf "\nSyllabified word: %s\n" syllabifiedWord;
 			let syllables = String.nsplit syllabifiedWord !syllableDelimiter in 
 			let syllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
 															 (if !syllableWindow > 1 then 
@@ -545,12 +546,12 @@ struct
 			List.iter (* Get n-gram counts of all size *)
 				(fun currentWindowSizeMinusOne ->
 					let currentSyllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
-																	 (if currentWindowSizeMinusOne > 0 then 
-																		[!wordDelimiter] @ syllables @ [!wordDelimiter]
-																	else 
-																		syllables @ [!wordDelimiter])
-																else
-																	syllables) in										
+																		(if currentWindowSizeMinusOne > 0 then 
+																			[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																		else 
+																			syllables @ [!wordDelimiter])
+																	else
+																		syllables) in										
 					let ngramFirstSyllListLength = (Array.length currentSyllablesWithBoundary) - currentWindowSizeMinusOne in 
 					let ngramFirstSyllList = List.init ngramFirstSyllListLength (fun a -> a) in
 					List.iter (* Loop through all n-grams of current size *)
@@ -560,6 +561,8 @@ struct
 								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +/ incrementAmount)
 							else
 								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram incrementAmount;
+							eprintf "\tSyllable n-gram: %s\n" ngram;
+							flush stderr
 						)
 						ngramFirstSyllList;
 					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstSyllListLength))
@@ -898,13 +901,13 @@ struct
 	
 	let update_evidence (newWord:string) (incrementAmount:num)= 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
-		let wordWithBoundary = (if not !ignoreWordBoundary then 
-									(if !featureWindow > 1 then 
-										!wordDelimiter ^ newWord ^ !wordDelimiter 
-									else 
-										newWord ^ !wordDelimiter)
-								else
-									newWord) in
+			let wordWithBoundary = (if not !ignoreWordBoundary then 
+										(if !featureWindow > 1 then 
+											!wordDelimiter ^ newWord ^ !wordDelimiter 
+										else 
+											newWord ^ !wordDelimiter)
+									else
+										newWord) in
 			let wordWindow = (if (String.length wordWithBoundary) < !featureWindow then
 									String.length wordWithBoundary
 							else
