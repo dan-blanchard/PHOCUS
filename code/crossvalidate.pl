@@ -33,8 +33,8 @@ my $usage = "\nK-Fold Cross-Validater\n\n" .
 			"Options:\n" . 
 			"\t-e FLAGS\tFlags to pass on to errors.pl. (Must enclose in quotes.)\n" .
 			"\t-k NUM_FOLDS\tSpecifies number of folds for cross-validation. (Default = 10)\n" .
-			"\t-p PREFIX\tFile prefix for temporary fold files. Note: All files with this prefix are DELETED when script ends. (Default = 'cvfoldtemp')\n" .
-			"\t-t TRAINING_FOLDS\tNumber of folds to train on.  (Default = 1)\n" .
+			"\t-p PREFIX\tFile prefix for temporary fold files. Note: All files with this prefix are DELETED when script ends. (Default = '.cvfoldtemp')\n" .
+			"\t-t TEST_FOLDS\tNumber of folds to test on.  (Default = 1)\n" .
 			"\t-d \t\tDo NOT delete files that begin with PREFIX when done. (Although any existing ones are still destroyed when the script is first run.)\n" .
 			"\t-v \t\tOutput result of running errors.pl for each individual fold.\n";
 
@@ -44,9 +44,8 @@ die $usage if @ARGV < 2;
 my $segmenter = shift @ARGV;
 my $corpus = shift @ARGV;
 
-my $prefix = "cvfoldtemp";
+my $prefix = ".cvfoldtemp";
 my $folds = 10;
-my $trainingFolds = 1;
 
 if ($opt_p)
 {
@@ -59,9 +58,11 @@ if ($opt_k)
 	$folds = $opt_k;
 }
 
+my $trainingFolds = $folds - 1;
+
 if ($opt_t)
 {
-	$trainingFolds = $opt_t;
+	$trainingFolds = $folds - $opt_t;
 }
 
 my @allFiles = <$prefix*>;
