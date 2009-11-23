@@ -1222,7 +1222,7 @@ let incremental_processor utteranceList =
 												[|(num_of_int 1), (fst (segmentation_of_segmented_sentence sentence))|])) in
 					if (!displayLineNumbers) then
 						fprintf !currentOutputChannel "%d: " (utteranceCount + 1);
-					if ((!supervisedFor > utteranceCount) || (!semisupervisedUpdating)) then
+					if ((!supervisedFor = 0) || (!supervisedFor > utteranceCount) || (!semisupervisedUpdating)) then
 						Array.iter (fun (incrementAmount, segmentation) -> 
 											lexicon_updater 
 												segmentation 
