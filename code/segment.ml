@@ -1329,7 +1329,7 @@ if (!interactive) then
 				let command = String.nsplit (read_line ()) !wordDelimiter in
 				match command with
 				  "syllabify" :: args -> List.iter (fun arg -> printf "%s%s" (syllabify arg) !wordDelimiter) args; printf "\n"
-				| "score" :: args -> printf "Total = %s" (approx_num_exp 10 (List.fold_left (fun acc x -> acc */ x) (num_of_int 1) (List.map eval_word args))); printf "\n"
+				| "score" :: args -> printf "Total = %s" (approx_num_exp 10 (List.fold_left (fun acc x -> printf "chosen score: %s\n" (approx_num_exp 10 x); acc */ x) (num_of_int 1) (List.map eval_word args))); printf "\n"
 				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_float (float_of_string incrementAmount)); ()
  				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n"
 				| _ -> printf "Unknown command.\n"
