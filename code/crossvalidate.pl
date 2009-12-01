@@ -109,7 +109,7 @@ for (my $i = 0; $i < $folds; $i++)
 	{
 		`cat $f >> $prefix-gold-current`;
 	}
-	print "Segmenting fold $i...";
+	print "Segmenting fold $i with command '$segmenter $trainingSize'...";
 	`$segmenter $trainingSize $prefix-gold-current | tail -n $testSize >> $prefix-results`;
 	`tail -n $testSize $prefix-gold-current >> $prefix-gold`;
 	print "done\n";
