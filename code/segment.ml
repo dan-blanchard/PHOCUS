@@ -81,6 +81,7 @@ let weightedSum = ref false
 let subseqDenom = ref false
 let currentOutputChannel = ref stdout
 let semisupervisedUpdating = ref false
+let initializeSyllables = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -102,6 +103,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-iw", Arg.Set ignoreWordBoundary, " Short for --ignoreWordBoundary";
 					"--initialCount", Arg.Set_string initialNgramCount, " Count assigned to phonotactic largest n-grams before they are seen (default = 1.0)";
 					"-ic", Arg.Set_string initialNgramCount, " Short for --initialCount";
+					"--initializeSyllables", Arg.Set initializeSyllables, " Initialize syllable n-gram distrubtion to initialCount for all possible syllables with onsets and codas up to length 3 with all syllabic nuclei (diphthongs included).";
+					"-is", Arg.Set initializeSyllables, " Short for --initializeSyllables";
 					"--interactive", Arg.Set interactive, " After reading in corpus, user can specify an utterance number to segment up to, and query scores for possible segmentations.";
 					"-i", Arg.Set interactive, " Short for --interactive";
 					"--jointProbability", Arg.Set jointProb, " Use joint probabilities instead of conditional";
@@ -161,8 +164,8 @@ Arg.parse (Arg.align arg_spec_list) process_anon_args usage;;
 if (!mbdp) then	initialNgramCount := "0.0";;
 
 (* Convert command-line arguments to their Num versions *)
-let badScoreNum = num_of_float_string !badScore;;
-let stabilityThresholdNum = num_of_float_string !stabilityThreshold;;
+let badScoreNum = num_of_float_string !badScore
+let stabilityThresholdNum = num_of_float_string !stabilityThreshold
 let initialNgramCountNum = num_of_float_string !initialNgramCount;;
 (* let decayNum = num_of_float_string !decayFactor;; *)
 
@@ -171,16 +174,19 @@ let initialNgramCountNum = num_of_float_string !initialNgramCount;;
 if !featureFile <> "" then
 	Featurechart.read_feature_file !featureFile;;
 
-let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data);;
-let hash_fprint_num file = Hashtbl.iter (fun key data -> fprintf file "%s\t%s\n" key (approx_num_exp 10 data));;
-let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data);;
+let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data)
+let hash_fprint_num file = Hashtbl.iter (fun key data -> fprintf file "%s\t%s\n" key (approx_num_exp 10 data))
+let hash_fprint_int file = Hashtbl.iter (fun key data -> fprintf file "%s\t%d\n" key data)
+
+let stringset_of_list stringList = List.fold_right StringSet.add stringList StringSet.empty
 
 let removeDelimitersPattern = regexp (!wordDelimiter ^ "+")
 
 let (diphthongs, vowels) = if (!featureFile <> "" ) then 
 								StringSet.partition (fun phone -> (String.length phone) > 1) (Featurechart.phones_for_features (StringSet.singleton "+syllabic"))
 							else
-								(StringSet.empty, StringSet.empty)
+								((stringset_of_list ["9I";"OI";"9U"]), (stringset_of_list ["&";"6";"9";"A";"E";"I";"O";"U";"a";"e";"i";"o";"u";"R";"~";"M";"L"])) 
+								
 let diphthongPattern = regexp (if (!featureFile <> "" ) then
 									if (StringSet.is_empty diphthongs) then
 										"(9I)|(OI)|(9U)"
@@ -239,17 +245,17 @@ let syllabify (word:string) =
 		""
 
 (* Takes a list of strings and returns all permutations of them of length (n + 1) *)		
-let rec permutations permList n = 
+let rec permutations permList delimiter n = 
 	if n = 0 then
 		permList
 	else
 		List.fold_left
 			(fun resultList item -> 
-				let concatList = List.map (fun x -> x ^ item) permList in
+				let concatList = List.map (fun x -> x ^ delimiter ^ item) permList in
 				resultList @ concatList
 			) 
 			[]
-			(permutations permList (n - 1));;
+			(permutations permList delimiter (n - 1));;
 
 
 module type CUE =
@@ -438,12 +444,76 @@ struct
 	let totalNgramsArray = Array.init (!syllableWindow) (fun a -> (num_of_int 0))
 	let typesWithCountArray = Array.init 3 (fun a -> num_of_int 0)
 	let ngramList = List.init !syllableWindow (fun a -> a) (* Use this for List.Iter to loop through ngram sizes instead of using a for loop *)
+	let maxOnsetLength = 3
+	let maxCodaLength = 3
 	
 	(* Check if we can even syllabify word *)	
 	let use_score (word:string) = ((syllabify word) = "") 
 	
 	(* Initialize the counts so we get a uniform distribution *)
-	let initialize initialCount = ()
+	let initialize initialCount = 
+		eprintf "Building phoneme list...\n";
+		flush stderr;
+		if (!initializeSyllables) then
+			(* Don't forget about adding permutations with word boundaries as syllables *)
+			let phonemeList = Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'")) in
+			eprintf "Building consonant list...\n";
+			flush stderr;
+			let consonantList = List.map (Std.string_of_char) (String.explode (replace ~rex:noVowelsPattern (String.concat "" phonemeList))) in
+			eprintf "Building onset list...\n";
+			flush stderr;			
+			let onsetList = List.fold_left 
+							(fun currentOnsetList currentOnsetLengthMinusOne ->
+								currentOnsetList @ (permutations consonantList "" currentOnsetLengthMinusOne)
+							)
+							[]
+							(List.init maxOnsetLength (fun a -> a)) in
+			eprintf "Building nucleus list...\n";
+			flush stderr;			
+			let nucleusList = (StringSet.elements diphthongs) @ (StringSet.elements vowels) in
+			eprintf "Building coda list...\n";
+			flush stderr;			
+			let codaList = List.fold_left 
+							(fun currentOnsetList currentOnsetLengthMinusOne ->
+								currentOnsetList @ (permutations consonantList "" currentOnsetLengthMinusOne)
+							)
+							[]
+							(List.init maxCodaLength (fun a -> a)) in
+			eprintf "Building syllable list...\n";
+			flush stderr;
+			let syllableList = [!wordDelimiter] @ List.fold_left 
+										(fun currentSyllableList onset -> 
+											currentSyllableList @ List.fold_left
+																	(fun currentNucleusList nucleus -> 
+																		currentNucleusList @ List.fold_left
+																								(fun currentCodaList coda -> 
+																									currentCodaList @ [onset ^ nucleus ^ coda]
+																								)
+																								[]
+																								codaList											
+																	)
+																	[]
+																	nucleusList
+										)
+										[]
+										onsetList in
+			List.iter (fun a -> eprintf "%s\n" a) syllableList;
+			flush stderr;
+			let numSyllables = num_of_int (List.length syllableList) in
+			List.iter 
+				(fun currentWindowSizeMinusOne ->
+					let syllablePermutationList = permutations syllableList !syllableDelimiter currentWindowSizeMinusOne in
+					let currentIncrementAmount = initialCount */ (power_num numSyllables (num_of_int (!syllableWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!syllableWindow - currentWindowSizeMinusOne)) in
+					List.iter
+						(fun ngram ->
+							Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram currentIncrementAmount;
+							totalNgramsArray.(currentWindowSizeMinusOne) <- totalNgramsArray.(currentWindowSizeMinusOne) +/ currentIncrementAmount
+						)
+						syllablePermutationList
+				)
+				ngramList
+		else
+			()
 	
 	(* Collapse syllable array into string. *)
 	let string_of_syllable_array syllableArray =
@@ -600,7 +670,7 @@ struct
 		let numPhonemes = num_of_int (List.length phonemeList) in
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
-				let phonemePermutationList = permutations phonemeList currentWindowSizeMinusOne in
+				let phonemePermutationList = permutations phonemeList "" currentWindowSizeMinusOne in
 				let currentIncrementAmount = initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne)) in
 				List.iter
 					(fun ngram ->
@@ -776,7 +846,7 @@ struct
 		let numFeatureValues =  num_of_int (List.length featureValueList) in
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
-				let featurePermutationList = permutations featureValueList currentWindowSizeMinusOne in
+				let featurePermutationList = permutations featureValueList "" currentWindowSizeMinusOne in
 				let currentIncrementAmount = initialCount */ (power_num numFeatureValues (num_of_int (!featureWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!featureWindow - currentWindowSizeMinusOne)) in
 				List.iter
 					(fun ngram -> 
@@ -1006,6 +1076,8 @@ if !corpus <> "" then
 		(* Initialize phoneme counts, if not MBDP *)
 		if (not !mbdp) && (!phonemeWindow > 0) then
 			PhonemeNgramCue.initialize initialNgramCountNum;
+		if (not !mbdp) && (!syllableWindow > 0) then
+			SyllableNgramCue.initialize initialNgramCountNum;
 		if (!featureFile <> "") && (!featureWindow > 0) then
 			FeatureNgramCue.initialize initialNgramCountNum
 	with e ->
