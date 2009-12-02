@@ -498,7 +498,7 @@ struct
 								wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstSyllListLength))
 							)
 							ngramList;
-						(*  countProposedNgrams does not seem to work properly with syllable BIGRAMS without subseqDenom*)
+						(*  countProposedNgrams does not seem to work properly with syllable BIGRAMS without subseqDenom *)
 						let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
 						let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in
 						if (currentTotalNgramsArray.(0) >/ (num_of_int 0)) && (Hashtbl.mem currentNgramCountsArray.(0) !wordDelimiter) then
@@ -511,9 +511,11 @@ struct
 								List.iter (* Get ngram scores *)
 									(fun firstSyll ->
 										let ngramSyllableArray = Array.sub syllablesWithBoundary firstSyll !syllableWindow in
+										let prefix = string_of_syllable_array (Array.sub ngramSyllableArray 0 (!syllableWindow - 1)) in
 										let ngram = string_of_syllable_array ngramSyllableArray in
-										let ngramScore = prob_ngram ngramSyllableArray.(0) ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
-										(* eprintf "\tNgram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore); *)
+										let ngramScore = prob_ngram prefix ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray in
+										(* eprintf "\tPrefix = '%s'\n\tNgram score for '%s' = %s\n" prefix ngram (approx_num_exp 10 ngramScore);
+										flush stderr; *)
 										score := (combine !score ngramScore)
 									)
 									(List.init ((Array.length syllablesWithBoundary) - (!syllableWindow - 1)) (fun a -> a));
