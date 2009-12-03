@@ -544,7 +544,7 @@ struct
 										else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
 											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (succ_num (Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram))
 										else
-											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (num_of_int 1);
+											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (succ_num initialCountsArray.(currentWindowSizeMinusOne));
 									)
 									ngramFirstSyllList;
 								wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstSyllListLength))
@@ -611,15 +611,15 @@ struct
 					List.iter (* Loop through all n-grams of current size *)
 						(fun firstSyll ->
 							let ngram = string_of_syllable_array (Array.sub currentSyllablesWithBoundary firstSyll (currentWindowSizeMinusOne + 1)) in
-							if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
+							if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then								
 								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +/ incrementAmount)
 							else
-								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram incrementAmount;
+								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCountsArray.(currentWindowSizeMinusOne) +/ incrementAmount)
 							(* eprintf "\tSyllable n-gram: %s\n" ngram;
 							flush stderr *)
 						)
 						ngramFirstSyllList;
-					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstSyllListLength))
+					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ ((num_of_int ngramFirstSyllListLength) */ incrementAmount))
 				)
 				wordNgramList
 	
@@ -711,7 +711,7 @@ struct
 								else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
 									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (succ_num (Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram))
 								else
-									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (num_of_int 1);
+									Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) ngram (succ_num initialCountsArray.(currentWindowSizeMinusOne));
 							)
 							ngramFirstCharList;
 						wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstCharListLength))
@@ -778,10 +778,10 @@ struct
 							if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) ngram then
 								Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) ngram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) ngram) +/ incrementAmount)
 							else
-								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram incrementAmount;
+								Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram (initialCountsArray.(currentWindowSizeMinusOne) +/ incrementAmount);
 						)
 						ngramFirstCharList;
-					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ (num_of_int ngramFirstCharListLength))
+					totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ ((num_of_int ngramFirstCharListLength) */ incrementAmount))
 				)
 				wordNgramList
 	
@@ -920,7 +920,7 @@ struct
 										else if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
 											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram (succ_num (Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram))
 										else
-											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram (num_of_int 1);
+											Hashtbl.add wordNgramCountsArray.(currentWindowSizeMinusOne) featureGram (succ_num initialCountsArray.(currentWindowSizeMinusOne));											
 										wordTotalNgramsArray.(currentWindowSizeMinusOne) <- (succ_num totalNgramsArray.(currentWindowSizeMinusOne))
 									)
 									ngramFeatureSet
@@ -1026,7 +1026,7 @@ struct
 									if Hashtbl.mem ngramCountsArray.(currentWindowSizeMinusOne) featureGram then
 										Hashtbl.replace ngramCountsArray.(currentWindowSizeMinusOne) featureGram ((Hashtbl.find ngramCountsArray.(currentWindowSizeMinusOne) featureGram) +/ incrementAmount)
 									else
-										Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) featureGram incrementAmount;
+										Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) featureGram (initialCountsArray.(currentWindowSizeMinusOne) +/ incrementAmount);
 									totalNgramsArray.(currentWindowSizeMinusOne) <- (totalNgramsArray.(currentWindowSizeMinusOne) +/ incrementAmount)
 								)
 								ngramFeatureSet
