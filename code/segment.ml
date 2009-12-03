@@ -487,11 +487,13 @@ struct
 		if (!initializeSyllables) then
 			(* Don't forget to add one to number of syllable types for word boundary *)
 			let numSyllables = ((num_of_string (input_line (Unix.open_process_in ("tr ' ' '\\n' < " ^ !corpus ^ 
-				" | sort | uniq | ./syllabify.pl | tr '.' '\\n' | sort | uniq | wc -l | gsed 's/^[ \\t]*//'")))) +/ (num_of_int 1)) in
+				" | sort | uniq | ./syllabify.pl | tr '.' '\\n' | sort | uniq | wc -l | gsed 's/^[ \\t]*//'")))) +/ (num_of_int 1)) in			
 			List.iter 
-				(fun currentWindowSizeMinusOne ->					
+				(fun currentWindowSizeMinusOne ->
 					initialCountsArray.(currentWindowSizeMinusOne) <- initialCount */ (power_num numSyllables (num_of_int (!syllableWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!syllableWindow - currentWindowSizeMinusOne));
-					totalNgramsArray.(currentWindowSizeMinusOne) <- numPermutations initialCountsArray.(currentWindowSizeMinusOne) (num_of_int (currentWindowSizeMinusOne + 1))
+					totalNgramsArray.(currentWindowSizeMinusOne) <- (numPermutations numSyllables (num_of_int (currentWindowSizeMinusOne + 1))) */ initialCountsArray.(currentWindowSizeMinusOne);
+					(* eprintf "Initial n-gram counts for length %d: %s\n\tTotal n-grams: %s\n\tNum syllables: %s\n" (currentWindowSizeMinusOne + 1) (approx_num_exp 10 initialCountsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 totalNgramsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 numSyllables);
+					flush stderr *)
 				)
 				ngramList
 		else
