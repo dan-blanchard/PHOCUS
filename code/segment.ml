@@ -82,6 +82,7 @@ let subseqDenom = ref false
 let currentOutputChannel = ref stdout
 let semisupervisedUpdating = ref false
 let initializeSyllables = ref false
+let scorePiecewise = ref false
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -125,8 +126,12 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
 					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
+					"--scorePiecewise", Arg.Set scorePiecewise, " Score potential words based on their Strictly 2-Piecewise factors (i.e., long distance pairs for vowel and consonantal harmony).";
+					"-sp", Arg.Set scorePiecewise, " Short for --scorePiecewise";					
 					"--semisupervisedUpdating", Arg.Set semisupervisedUpdating, " When doing semisupervised segmenting with the supervisedFor flag, resume learning process after supervised portion of corpus.";
 					"-su", Arg.Set semisupervisedUpdating, " Short for --semisupervisedUpdating";
+					"--scorePiecewise", Arg.Set semisupervisedUpdating, " When doing semisupervised segmenting with the supervisedFor flag, resume learning process after supervised portion of corpus.";
+					"-sp", Arg.Set semisupervisedUpdating, " Short for --semisupervisedUpdating";					
 					"--stabilityThreshold", Arg.Set_string stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
 					"-st", Arg.Set_string stabilityThreshold, " Short for --stabilityThreshold";
 					"--subseqDenominator", Arg.Set subseqDenom, " For lexical score, calculate probability word is a word, rather than probability of word occuring in corpus.";
@@ -243,6 +248,33 @@ let syllabify (word:string) =
 		end
 	else
 		""
+
+(* Returns a list of all the precedence pairs in the given word. *)
+let get_pairs word = 
+	let indexArray = Array.init (String.length word) (fun a -> a) in
+	let seenPhonemes = Hashtbl.create 40 in
+	Array.fold_left 
+		(fun currentPairs currentFirstIndex ->
+			let currentFirst = (String.sub word currentFirstIndex 1) in
+			if (Hashtbl.mem seenPhonemes currentFirst) then
+				currentPairs
+			else
+				begin
+					Hashtbl.add seenPhonemes currentFirst true;
+					if ((currentFirst = !wordDelimiter) && (currentFirstIndex = 0)) then
+						currentPairs @ [currentFirst ^ (String.sub word 1 1)]
+					else
+						currentPairs @ (String.fold_left
+											(fun pairs currentSecond ->
+												(currentFirst ^ (String.of_char currentSecond)) :: pairs
+											)
+											[]
+											(String.slice word ~first:(currentFirstIndex + 1)))
+				end
+		)
+		[]
+		indexArray
+
 
 (* Takes a list of strings and returns all permutations of them of length (n + 1) *)		
 let rec permutations permList delimiter n = 
@@ -816,6 +848,147 @@ struct
 		close_out oc
 end
 
+(* Stricly-2-Piecewise Learner*)
+module PhonemePiecewiseCue : CUE =
+struct
+	open NgramProbs
+	
+	let ngramCountsArray = Array.init 2 (fun a -> Hashtbl.create (int_of_float (10.0 ** (float (a + 2))))) 
+	let totalNgramsArray = Array.init 2 (fun a -> num_of_int 0)
+	let hasStabilized = ref false
+	let typesWithCountArray = Array.init 3 (fun a -> num_of_int 0)
+	let initialCountsArray = Array.init 2 (fun a -> num_of_int 0)
+		
+	(* Initialize the counts so we get a uniform distribution *)
+	let initialize initialCount =
+		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))) in
+		let numPhonemes = num_of_int (List.length phonemeList) in
+		let pairPermutationList = permutations phonemeList "" 1 in
+		let pairIncrementAmount = initialCount in
+		let singleIncrementAmount = initialCount */ numPhonemes */ (num_of_int 2) in
+		initialCountsArray.(1) <- pairIncrementAmount;
+		initialCountsArray.(0) <- singleIncrementAmount;
+		List.iter
+			(fun ngram ->
+				Hashtbl.add ngramCountsArray.(1) ngram pairIncrementAmount;
+				totalNgramsArray.(1) <- totalNgramsArray.(1) +/ pairIncrementAmount
+			)
+			pairPermutationList;
+		List.iter
+			(fun ngram ->
+				Hashtbl.add ngramCountsArray.(0) ngram singleIncrementAmount;
+				totalNgramsArray.(0) <- totalNgramsArray.(0) +/ singleIncrementAmount
+			)
+			phonemeList
+
+	(* Returns frequency that word occurs in lexicon. *)
+	let eval_word (word:string) combine = 
+		let wordNgramCountsArray = Array.init 2 (fun a -> Hashtbl.create 100) in
+		let wordTotalNgramsArray = Array.init 2 (fun a -> num_of_int 0) in
+		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
+		let wordWithBoundary = (if not !ignoreWordBoundary then 											 
+										!wordDelimiter ^ word ^ !wordDelimiter 
+									else
+										word) in
+		let wordTypes = num_of_int (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
+		let totalWordsNum = (if !mbdp then (succ_num !totalWords) else !totalWords) in
+		let score = ref (num_of_int 0) in
+		if (String.length wordWithBoundary) < !phonemeWindow then
+			badScoreNum
+		else	
+			begin
+				let wordPiecewisePairs = get_pairs wordWithBoundary in
+				List.iter (* Get pair and single counts *)
+					(fun ngram ->						
+						if Hashtbl.mem wordNgramCountsArray.(1) ngram then
+							Hashtbl.replace wordNgramCountsArray.(1) ngram (succ_num (Hashtbl.find wordNgramCountsArray.(1) ngram))
+						else if Hashtbl.mem ngramCountsArray.(1) ngram then
+							Hashtbl.add wordNgramCountsArray.(1) ngram (succ_num (Hashtbl.find ngramCountsArray.(1) ngram))
+						else
+							Hashtbl.add wordNgramCountsArray.(1) ngram (succ_num initialCountsArray.(1));
+
+						let firstChar = String.sub ngram 0 1 in
+						if Hashtbl.mem wordNgramCountsArray.(0) firstChar then
+							Hashtbl.replace wordNgramCountsArray.(0) firstChar (succ_num (Hashtbl.find wordNgramCountsArray.(0) firstChar))
+						else if Hashtbl.mem ngramCountsArray.(0) firstChar then
+							Hashtbl.add wordNgramCountsArray.(0) firstChar (succ_num (Hashtbl.find ngramCountsArray.(0) firstChar))
+						else
+							Hashtbl.add wordNgramCountsArray.(0) firstChar (succ_num initialCountsArray.(0))
+					)
+					wordPiecewisePairs;
+				wordTotalNgramsArray.(1) <- totalNgramsArray.(1) +/ (num_of_int (List.length wordPiecewisePairs));
+				wordTotalNgramsArray.(0) <- totalNgramsArray.(0) +/ (num_of_int (List.length wordPiecewisePairs));
+				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
+				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
+				if (not !mbdp) then
+					score := wordTypes // (wordTypes +/ totalWordsNum)
+				else
+					score := num_of_int 1;
+				score := !score */ (if !phonemeWindow > 1 then 
+											num_of_int 1
+										else
+											(num_of_int 1) // ((num_of_int 1) -/ ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) // currentTotalNgramsArray.(0)))); (* This term is necessary because the empty word is not really in the lexicon. *)
+				(* eprintf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
+				List.iter (* Get ngram scores *)
+					(fun ngram ->
+						let ngramScore = prob_ngram (String.sub ngram 0 1) ngram 1 currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
+						(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+						score := (combine !score ngramScore)
+					)
+					wordPiecewisePairs;
+				if (not !mbdp) then
+					!score
+				else
+					begin
+						let adjustment = (sixOverPiSquared */ (wordTypes // (totalWordsNum))) */ (square_num ((pred_num wordTypes) // wordTypes)) in
+						(* eprintf "Score adjustment = %F\n" adjustment; *)
+						(* eprintf "Raw phoneme score = %F\n" !score; *)
+						!score */ adjustment
+					end
+			end
+	
+	let update_evidence (newWord:string) (incrementAmount:num) = 
+		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
+			begin
+				let wordWithBoundary = (if (not !ignoreWordBoundary) then 
+											(!wordDelimiter ^ newWord ^ !wordDelimiter) 
+										else
+											newWord) in
+				let wordPiecewisePairs = (get_pairs wordWithBoundary) in
+				totalNgramsArray.(1) <- totalNgramsArray.(1) +/ ((num_of_int (List.length wordPiecewisePairs)) */ incrementAmount);
+				totalNgramsArray.(0) <- totalNgramsArray.(0) +/ ((num_of_int (List.length wordPiecewisePairs)) */ incrementAmount);
+				List.iter (* Get pair and single counts *)
+					(fun ngram ->						
+						let firstChar = (String.sub ngram 0 1) in
+	 					if Hashtbl.mem ngramCountsArray.(1) ngram then
+							Hashtbl.replace ngramCountsArray.(1) ngram incrementAmount
+						else
+							Hashtbl.add ngramCountsArray.(1) ngram (initialCountsArray.(1) +/ incrementAmount);
+						if Hashtbl.mem ngramCountsArray.(0) firstChar then
+							Hashtbl.replace ngramCountsArray.(0) firstChar incrementAmount
+						else
+							Hashtbl.add ngramCountsArray.(0) firstChar (initialCountsArray.(0) +/ incrementAmount)
+					)
+					wordPiecewisePairs
+			end
+	
+	
+	let use_score (word:string) = true
+		
+
+	(* Dump the table associated with this cue to a file. *)
+	let dump dumpFile = 
+		let oc = open_out dumpFile in
+		List.iter
+			(fun currentWindowSizeMinusOne ->
+				fprintf oc "CURRENT WINDOW SIZE: %d\n" (currentWindowSizeMinusOne + 1);
+				hash_fprint_num oc ngramCountsArray.(currentWindowSizeMinusOne);
+			)
+			[0;1];
+		close_out oc
+end
+
+
 module FeatureNgramCue : CUE =
 struct
 	open NgramProbs
@@ -1064,6 +1237,8 @@ if !corpus <> "" then
 		(* Initialize phoneme counts, if not MBDP *)
 		if (not !mbdp) && (!phonemeWindow > 0) then
 			PhonemeNgramCue.initialize initialNgramCountNum;
+		if (!scorePiecewise) then
+			PhonemePiecewiseCue.initialize initialNgramCountNum;
 		if (not !mbdp) && (!syllableWindow > 0) then
 			SyllableNgramCue.initialize initialNgramCountNum;
 		if (!featureFile <> "") && (!featureWindow > 0) then
@@ -1140,11 +1315,12 @@ let rec print_segmented_utterance segmentation sentence (incrementAmount:num) =
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
 	let familiarScore =  (FamiliarWordCue.eval_word word ( */ )) in
+	let piecewiseScore = if (!scorePiecewise) then (PhonemePiecewiseCue.eval_word word ( */ )) else (num_of_int 1) in	
 	let phonemeScore = if (!phonemeWindow > 0) then (PhonemeNgramCue.eval_word word ( */ )) else badScoreNum in
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word ( */ )) else (num_of_int 0) in
 	if (!verbose) then
 		begin
-			eprintf "Familiar score for %s = %s\nSyllable score for %s = %s\nPhoneme score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 syllableScore) word (approx_num_exp 10 phonemeScore);
+			eprintf "Familiar score for %s = %s\nSyllable n-gram score for %s = %s\nPhoneme n-gram score for %s = %s\nPhoneme piecewise score for %s = %s\n\n" word (approx_num_exp 10 familiarScore) word (approx_num_exp 10 syllableScore) word (approx_num_exp 10 phonemeScore) word (approx_num_exp 10 piecewiseScore);
 			flush stderr
  		end;
 	if (FamiliarWordCue.use_score word) then
@@ -1153,7 +1329,7 @@ let default_evidence_combiner word =
 		if (!requireSyllabic && (SyllableNgramCue.use_score word)) || (syllableScore >/ (num_of_int 0)) then (* Can't syllabify word or score is acceptably high. *)
 			syllableScore
 		else
-			phonemeScore;;
+			phonemeScore */ piecewiseScore;;
 
 let weighted_sum_combiner filterFunctions evalFunctions weights names word =
 	let filterScore = List.fold_left (fun currentProduct filterFunc -> (filterFunc word) */ currentProduct) (num_of_int 1) filterFunctions in
@@ -1297,7 +1473,7 @@ let incremental_processor utteranceList =
 												segmentation 
 												sentence 
 												(if (not !uniformPhonotactics) then
-													[PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence]
+													[PhonemePiecewiseCue.update_evidence; PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence]
 												else
 													[FamiliarWordCue.update_evidence])
 												incrementAmount
@@ -1330,7 +1506,7 @@ let two_pass_processor utteranceList =
 			if ((!utteranceLimit = 0) || (utteranceCount < !utteranceLimit)) then
 				begin
 					let (segmentation, sentence) = segmentation_of_segmented_sentence segmentedSentence in
-					lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_int 1); 
+					lexicon_updater segmentation sentence [PhonemePiecewiseCue.update_evidence; PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_int 1); 
 					fprintf !currentOutputChannel "\n";
 					flush !currentOutputChannel;
 					Hashtbl.replace lexicon !utteranceDelimiter (succ_num (Hashtbl.find lexicon !utteranceDelimiter))
@@ -1390,10 +1566,27 @@ if (!interactive) then
 			try
 				let command = String.nsplit (read_line ()) !wordDelimiter in
 				match command with
-				  "syllabify" :: args -> List.iter (fun arg -> printf "%s%s" (syllabify arg) !wordDelimiter) args; printf "\n"
+				  "syllabify" :: args -> 
+					List.iter 
+						(fun arg -> 
+							printf "%s%s" (syllabify arg) !wordDelimiter
+						) 
+						args; 
+					printf "\n"
 				| "score" :: args -> printf "Total = %s" (approx_num_exp 10 (List.fold_left (fun acc x -> printf "chosen score: %s\n" (approx_num_exp 10 x); acc */ x) (num_of_int 1) (List.map eval_word args))); printf "\n"
+				| "pairs" :: args -> 
+					List.iter 
+						(fun arg -> 
+							List.iter 
+							(fun pair -> 
+								printf "%s\n" pair
+							) 
+							(get_pairs (!wordDelimiter ^ arg ^ !wordDelimiter)); 
+							printf "\n"
+						) 
+						args
 				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_float (float_of_string incrementAmount)); ()
- 				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n"
+ 				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n    pairs WORDS\t\tprints precedence pairs in WORDS\n"
 				| _ -> printf "Unknown command.\n"
 			with e ->
 				eof := true;
