@@ -51,6 +51,7 @@ let corpus = ref ""
 let sentenceList = ref []
 let lexiconOut = ref ""
 let phonemeCountsOut = ref ""
+let piecewiseCountsOut = ref ""
 let featureCountsOut = ref ""
 let syllableCountsOut = ref ""
 let phonemeWindow = ref 1
@@ -120,6 +121,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-nl", Arg.Set noLexicon, " Short for --noLexicon";
 					"--phonemeNgramsOut", Arg.Set_string phonemeCountsOut, " File to dump final phoneme n-gram counts to";
 					"-pn", Arg.Set_string phonemeCountsOut, " Short for --phonemeNgramsOut";
+					"--piecewiseCountsOut", Arg.Set_string piecewiseCountsOut, " File to dump final strictly two-piecewise counts to";
+					"-pc", Arg.Set_string piecewiseCountsOut, " Short for --piecewiseCountsOut";
 					"--phonemeWindow", Arg.Set_int phonemeWindow, " Window size for phoneme n-grams";
 					"-pw", Arg.Set_int phonemeWindow, " Short for --phonemeWindow";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
@@ -130,8 +133,6 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-sp", Arg.Set scorePiecewise, " Short for --scorePiecewise";					
 					"--semisupervisedUpdating", Arg.Set semisupervisedUpdating, " When doing semisupervised segmenting with the supervisedFor flag, resume learning process after supervised portion of corpus.";
 					"-su", Arg.Set semisupervisedUpdating, " Short for --semisupervisedUpdating";
-					"--scorePiecewise", Arg.Set semisupervisedUpdating, " When doing semisupervised segmenting with the supervisedFor flag, resume learning process after supervised portion of corpus.";
-					"-sp", Arg.Set semisupervisedUpdating, " Short for --semisupervisedUpdating";					
 					"--stabilityThreshold", Arg.Set_string stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
 					"-st", Arg.Set_string stabilityThreshold, " Short for --stabilityThreshold";
 					"--subseqDenominator", Arg.Set subseqDenom, " For lexical score, calculate probability word is a word, rather than probability of word occuring in corpus.";
@@ -961,11 +962,11 @@ struct
 					(fun ngram ->						
 						let firstChar = (String.sub ngram 0 1) in
 	 					if Hashtbl.mem ngramCountsArray.(1) ngram then
-							Hashtbl.replace ngramCountsArray.(1) ngram incrementAmount
+							Hashtbl.replace ngramCountsArray.(1) ngram ((Hashtbl.find ngramCountsArray.(1) ngram) +/ incrementAmount)
 						else
 							Hashtbl.add ngramCountsArray.(1) ngram (initialCountsArray.(1) +/ incrementAmount);
 						if Hashtbl.mem ngramCountsArray.(0) firstChar then
-							Hashtbl.replace ngramCountsArray.(0) firstChar incrementAmount
+							Hashtbl.replace ngramCountsArray.(0) firstChar ((Hashtbl.find ngramCountsArray.(0) firstChar) +/ incrementAmount)
 						else
 							Hashtbl.add ngramCountsArray.(0) firstChar (initialCountsArray.(0) +/ incrementAmount)
 					)
@@ -1237,7 +1238,7 @@ if !corpus <> "" then
 		(* Initialize phoneme counts, if not MBDP *)
 		if (not !mbdp) && (!phonemeWindow > 0) then
 			PhonemeNgramCue.initialize initialNgramCountNum;
-		if (!scorePiecewise) then
+		if (!scorePiecewise) && (not !goldPhonotactics) then
 			PhonemePiecewiseCue.initialize initialNgramCountNum;
 		if (not !mbdp) && (!syllableWindow > 0) then
 			SyllableNgramCue.initialize initialNgramCountNum;
@@ -1363,12 +1364,13 @@ let eval_functions = [(if (not !noLexicon) then
 					   else 
 							(fun a b -> badScoreNum));
  					  (if (!phonemeWindow > 0) then PhonemeNgramCue.eval_word else (fun a b -> badScoreNum)) ;
+					  (if (!scorePiecewise) then PhonemePiecewiseCue.eval_word else (fun a b -> badScoreNum)) ;
 					  (if (!syllableWindow > 0) then SyllableNgramCue.eval_word else (fun a b -> badScoreNum)) ;
 					  (if (!featureWindow > 0) then FeatureNgramCue.eval_word else (fun a b -> badScoreNum))];;
 
-let eval_weights = [(num_of_float 0.25) ; (num_of_float 0.25) ; (num_of_float 0.25) ; (num_of_float 0.25)];;
+let eval_weights = [(num_of_float 0.2) ; (num_of_float 0.2) ; (num_of_float 0.2) ; (num_of_float 0.2) ; (num_of_float 0.2)];;
 
-let eval_names = ["Familiar" ; "Phoneme" ; "Syllable" ; "Feature"];;
+let eval_names = ["Familiar" ; "Phoneme N-gram" ; "Phoneme Piecewise" ; "Syllable" ; "Feature"];;
 
 
 let eval_word = if (!weightedSum) then 
@@ -1602,6 +1604,11 @@ if !lexiconOut <> "" then
 (* Dump n-gram counts if requested *)
 if !phonemeCountsOut <> "" then
 	PhonemeNgramCue.dump !phonemeCountsOut;;
+
+(* Dump piecewise counts if requested *)
+if !piecewiseCountsOut <> "" then
+	PhonemePiecewiseCue.dump !piecewiseCountsOut;;
+
 
 (* Dump n-gram counts if requested *)
 if !featureCountsOut <> "" then
