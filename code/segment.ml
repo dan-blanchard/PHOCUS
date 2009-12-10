@@ -862,7 +862,7 @@ struct
 		
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
-		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))) in
+		let phonemeList = (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))) in
 		let numPhonemes = num_of_int (List.length phonemeList) in
 		let pairPermutationList = permutations phonemeList "" 1 in
 		let pairIncrementAmount = initialCount in
@@ -887,10 +887,7 @@ struct
 		let wordNgramCountsArray = Array.init 2 (fun a -> Hashtbl.create 100) in
 		let wordTotalNgramsArray = Array.init 2 (fun a -> num_of_int 0) in
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
-		let wordWithBoundary = (if not !ignoreWordBoundary then 											 
-										!wordDelimiter ^ word ^ !wordDelimiter 
-									else
-										word) in
+		let wordWithBoundary = word in
 		let wordTypes = num_of_int (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
 		let totalWordsNum = (if !mbdp then (succ_num !totalWords) else !totalWords) in
 		let score = ref (num_of_int 0) in
@@ -925,10 +922,6 @@ struct
 					score := wordTypes // (wordTypes +/ totalWordsNum)
 				else
 					score := num_of_int 1;
-				score := !score */ (if !phonemeWindow > 1 then 
-											num_of_int 1
-										else
-											(num_of_int 1) // ((num_of_int 1) -/ ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) // currentTotalNgramsArray.(0)))); (* This term is necessary because the empty word is not really in the lexicon. *)
 				(* eprintf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
 				List.iter (* Get ngram scores *)
 					(fun ngram ->
@@ -951,10 +944,7 @@ struct
 	let update_evidence (newWord:string) (incrementAmount:num) = 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			begin
-				let wordWithBoundary = (if (not !ignoreWordBoundary) then 
-											(!wordDelimiter ^ newWord ^ !wordDelimiter) 
-										else
-											newWord) in
+				let wordWithBoundary = newWord in
 				let wordPiecewisePairs = (get_pairs wordWithBoundary) in
 				totalNgramsArray.(1) <- totalNgramsArray.(1) +/ ((num_of_int (List.length wordPiecewisePairs)) */ incrementAmount);
 				totalNgramsArray.(0) <- totalNgramsArray.(0) +/ ((num_of_int (List.length wordPiecewisePairs)) */ incrementAmount);
