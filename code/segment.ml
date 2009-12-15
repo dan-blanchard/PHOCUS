@@ -276,6 +276,21 @@ let get_pairs word =
 		[]
 		indexArray
 
+(* Returns a list of pairs of strings and StringSets that represents all of the precedence relationships in the given word. *)
+let get_piecewise_set_list word = 
+	let indexArray = Array.init (String.length word) (fun a -> a) in
+	fst (Array.fold_left 
+			(fun (currentList, currentSeenSet) currentFirstIndex ->
+				let currentPhoneme = (String.sub word currentFirstIndex 1) in
+				let newSet = (StringSet.add currentPhoneme currentSeenSet) in
+				if (not (StringSet.is_empty currentSeenSet)) then
+					((currentList @ [(currentPhoneme, currentSeenSet)]), newSet)
+				else
+					(currentList, newSet)
+			)
+			([], StringSet.empty)
+			indexArray)
+
 
 (* Takes a list of strings and returns all permutations of them of length (n + 1) *)		
 let rec permutations permList delimiter n = 
@@ -859,12 +874,33 @@ struct
 	let hasStabilized = ref false
 	let typesWithCountArray = Array.init 3 (fun a -> num_of_int 0)
 	let initialCountsArray = Array.init 2 (fun a -> num_of_int 0)
-		
+	let phonemeList = ref []
+	
+	(* Calculates probability of a phoneme given a set of of phonemes that came before it. *)
+	let prob_piecewise_given_set (phoneme:string) set =
+		let prob_piecewise_helper (currentPhoneme:string) = StringSet.fold
+																(fun prefix currentProduct -> 
+																	currentProduct */ (prob_ngram prefix (prefix ^ currentPhoneme) 1 ngramCountsArray totalNgramsArray [||] ngramCountsArray initialCountsArray)
+																)
+																set 
+																(num_of_int 1)
+		in
+		let numerator = prob_piecewise_helper phoneme in
+		let denominator = List.fold_left
+							(fun currentSum currentPhoneme ->
+								(prob_piecewise_helper currentPhoneme) +/ currentSum
+							)
+							(num_of_int 0)
+							!phonemeList 
+		in
+		numerator // denominator
+	
+	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
-		let phonemeList = (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))) in
-		let numPhonemes = num_of_int (List.length phonemeList) in
-		let pairPermutationList = permutations phonemeList "" 1 in
+		phonemeList := !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'")));
+		let numPhonemes = num_of_int (List.length !phonemeList) in
+		let pairPermutationList = permutations !phonemeList "" 1 in
 		let pairIncrementAmount = initialCount in
 		let singleIncrementAmount = initialCount */ numPhonemes */ (num_of_int 2) in
 		initialCountsArray.(1) <- pairIncrementAmount;
@@ -880,71 +916,36 @@ struct
 				Hashtbl.add ngramCountsArray.(0) ngram singleIncrementAmount;
 				totalNgramsArray.(0) <- totalNgramsArray.(0) +/ singleIncrementAmount
 			)
-			phonemeList
+			!phonemeList
 
 	(* Returns frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
-		let wordNgramCountsArray = Array.init 2 (fun a -> Hashtbl.create 100) in
-		let wordTotalNgramsArray = Array.init 2 (fun a -> num_of_int 0) in
-		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
-		let wordWithBoundary = word in
-		let wordTypes = num_of_int (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
-		let totalWordsNum = (if !mbdp then (succ_num !totalWords) else !totalWords) in
+		let wordWithBoundary = (if not !ignoreWordBoundary then 
+									!wordDelimiter ^ word ^ !wordDelimiter 
+								else
+									word) in
 		let score = ref (num_of_int 0) in
 		if (String.length wordWithBoundary) < !phonemeWindow then
 			badScoreNum
 		else	
 			begin
-				let wordPiecewisePairs = get_pairs wordWithBoundary in
-				List.iter (* Get pair and single counts *)
-					(fun ngram ->						
-						if Hashtbl.mem wordNgramCountsArray.(1) ngram then
-							Hashtbl.replace wordNgramCountsArray.(1) ngram (succ_num (Hashtbl.find wordNgramCountsArray.(1) ngram))
-						else if Hashtbl.mem ngramCountsArray.(1) ngram then
-							Hashtbl.add wordNgramCountsArray.(1) ngram (succ_num (Hashtbl.find ngramCountsArray.(1) ngram))
-						else
-							Hashtbl.add wordNgramCountsArray.(1) ngram (succ_num initialCountsArray.(1));
-
-						let firstChar = String.sub ngram 0 1 in
-						if Hashtbl.mem wordNgramCountsArray.(0) firstChar then
-							Hashtbl.replace wordNgramCountsArray.(0) firstChar (succ_num (Hashtbl.find wordNgramCountsArray.(0) firstChar))
-						else if Hashtbl.mem ngramCountsArray.(0) firstChar then
-							Hashtbl.add wordNgramCountsArray.(0) firstChar (succ_num (Hashtbl.find ngramCountsArray.(0) firstChar))
-						else
-							Hashtbl.add wordNgramCountsArray.(0) firstChar (succ_num initialCountsArray.(0))
+				score := (num_of_int 1);
+				List.iter (* Get piecewise scores *)
+					(fun (currentPhoneme, currentSet) ->
+						let piecewiseScore = prob_piecewise_given_set currentPhoneme currentSet in
+						score := (combine !score piecewiseScore)
 					)
-					wordPiecewisePairs;
-				wordTotalNgramsArray.(1) <- totalNgramsArray.(1) +/ (num_of_int (List.length wordPiecewisePairs));
-				wordTotalNgramsArray.(0) <- totalNgramsArray.(0) +/ (num_of_int (List.length wordPiecewisePairs));
-				let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
-				let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in								
-				if (not !mbdp) then
-					score := wordTypes // (wordTypes +/ totalWordsNum)
-				else
-					score := num_of_int 1;
-				(* eprintf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
-				List.iter (* Get ngram scores *)
-					(fun ngram ->
-						let ngramScore = prob_ngram (String.sub ngram 0 1) ngram 1 currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
-						(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
-						score := (combine !score ngramScore)
-					)
-					wordPiecewisePairs;
-				if (not !mbdp) then
-					!score
-				else
-					begin
-						let adjustment = (sixOverPiSquared */ (wordTypes // (totalWordsNum))) */ (square_num ((pred_num wordTypes) // wordTypes)) in
-						(* eprintf "Score adjustment = %F\n" adjustment; *)
-						(* eprintf "Raw phoneme score = %F\n" !score; *)
-						!score */ adjustment
-					end
+					(get_piecewise_set_list wordWithBoundary);
+				!score
 			end
 	
 	let update_evidence (newWord:string) (incrementAmount:num) = 
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			begin
-				let wordWithBoundary = newWord in
+				let wordWithBoundary = (if not !ignoreWordBoundary then 
+											!wordDelimiter ^ newWord ^ !wordDelimiter 
+										else
+											newWord) in
 				let wordPiecewisePairs = (get_pairs wordWithBoundary) in
 				totalNgramsArray.(1) <- totalNgramsArray.(1) +/ ((num_of_int (List.length wordPiecewisePairs)) */ incrementAmount);
 				totalNgramsArray.(0) <- totalNgramsArray.(0) +/ ((num_of_int (List.length wordPiecewisePairs)) */ incrementAmount);
@@ -962,7 +963,6 @@ struct
 					)
 					wordPiecewisePairs
 			end
-	
 	
 	let use_score (word:string) = true
 		
