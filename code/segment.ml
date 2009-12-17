@@ -1306,7 +1306,7 @@ let rec print_segmented_utterance segmentation sentence (incrementAmount:num) =
 (* Backs-off from familiar word score to phoneme n-gram score. *)
 let default_evidence_combiner word =
 	let familiarScore =  (FamiliarWordCue.eval_word word ( */ )) in
-	let piecewiseScore = if (!scorePiecewise) then (PhonemePiecewiseCue.eval_word word ( */ )) else (num_of_int 1) in	
+	let piecewiseScore = if (!scorePiecewise) then (PhonemePiecewiseCue.eval_word word ( */ )) else badScoreNum in	
 	let phonemeScore = if (!phonemeWindow > 0) then (PhonemeNgramCue.eval_word word ( */ )) else badScoreNum in
 	let syllableScore = if (!syllableWindow > 0) then (SyllableNgramCue.eval_word word ( */ )) else (num_of_int 0) in
 	if (!verbose) then
@@ -1320,7 +1320,15 @@ let default_evidence_combiner word =
 		if (!requireSyllabic && (SyllableNgramCue.use_score word)) || (syllableScore >/ (num_of_int 0)) then (* Can't syllabify word or score is acceptably high. *)
 			syllableScore
 		else
-			phonemeScore */ piecewiseScore;;
+			if (!scorePiecewise) then
+				begin
+					if (!phonemeWindow > 0) then
+						phonemeScore */ piecewiseScore
+					else
+						piecewiseScore
+				end
+			else
+				phonemeScore;;
 
 let weighted_sum_combiner filterFunctions evalFunctions weights names word =
 	let filterScore = List.fold_left (fun currentProduct filterFunc -> (filterFunc word) */ currentProduct) (num_of_int 1) filterFunctions in
