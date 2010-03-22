@@ -23,7 +23,7 @@ use Getopt::Std;
 use POSIX;
 
 local $| = 1;
-our ($opt_k,$opt_p,$opt_e,$opt_t,$opt_v,$opt_d);
+our ($opt_k,$opt_p,$opt_e,$opt_t,$opt_v,$opt_d,$opt_u);
 my $usage = "\nK-Fold Cross-Validater\n\n" . 
 			"Usage: ./crossvalidate.pl [OPTIONS] SEGMENTATION_COMMAND TRUE_CORPUS\n\n" . 
 			"SEGMENTATION_COMMAND = A string (enclosed by quotes) that specifies the segmenter to run" .
@@ -34,12 +34,13 @@ my $usage = "\nK-Fold Cross-Validater\n\n" .
 			"\t-e FLAGS\tFlags to pass on to errors.pl. (Must enclose in quotes.)\n" .
 			"\t-k NUM_FOLDS\tSpecifies number of folds for cross-validation. (Default = 10)\n" .
 			"\t-p PREFIX\tFile prefix for temporary fold files. Note: All files with this prefix are DELETED when script ends. (Default = '.cvfoldtemp')\n" .
-			"\t-t TEST_FOLDS\tNumber of folds to test on.  (Default = 1)\n" .
+			"\t-t TEST_FOLDS\tNumber of folds to test on.  (Default = 1, cannot specify 0)\n" .
 			"\t-d \t\tDo NOT delete files that begin with PREFIX when done. (Although any existing ones are still destroyed when the script is first run.)\n" .
+			"\t-u \t\tAll runs completely unsupervised.  This flag is necessary because '-t 0' will not work as expected.\n" .
 			"\t-v \t\tOutput result of running errors.pl for each individual fold.\n";
 
 # Handle arguments
-getopts('e:k:p:t:dv');
+getopts('e:k:p:t:dvu');
 die $usage if @ARGV < 2;
 my $segmenter = shift @ARGV;
 my $corpus = shift @ARGV;
@@ -63,6 +64,11 @@ my $trainingFolds = $folds - 1;
 if ($opt_t)
 {
 	$trainingFolds = $folds - $opt_t;
+}
+
+if ($opt_u)
+{
+	$trainingFolds = 0;
 }
 
 my @allFiles = <$prefix*>;
