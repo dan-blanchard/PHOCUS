@@ -84,6 +84,7 @@ let currentOutputChannel = ref stdout
 let semisupervisedUpdating = ref false
 let initializeSyllables = ref false
 let scorePiecewise = ref false
+let repeatDelimiter = ref 1 
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -127,6 +128,8 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-pw", Arg.Set_int phonemeWindow, " Short for --phonemeWindow";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
+					"--repeatDelimiter", Arg.Set_int repeatDelimiter, " Number of word delimiter symbols to insert between words.  (Default = 1)";
+					"-rd", Arg.Set_int repeatDelimiter, " Short for --repeatDelimiter";
 					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
 					"--scorePiecewise", Arg.Set scorePiecewise, " Score potential words based on their Strictly 2-Piecewise factors (i.e., long distance pairs for vowel and consonantal harmony).";
@@ -1554,6 +1557,10 @@ if (!interactive) then
 							else
 								!utteranceLimit)
 	end;;
+
+
+(* Repeat wordDelimiter as necessary *)
+wordDelimiter := String.make !repeatDelimiter (String.get !wordDelimiter 0);;
 		
 sentence_processor !sentenceList;;
 
@@ -1564,7 +1571,7 @@ if (!interactive) then
 		while (not !eof) do
 			printf "\n#: ";
 			try
-				let command = String.nsplit (read_line ()) !wordDelimiter in
+				let command = String.nsplit (read_line ()) " " in
 				match command with
 				  "syllabify" :: args -> 
 					List.iter 
@@ -1598,7 +1605,7 @@ if (!interactive) then
 (* Dump lexicon if requested *)
 if !lexiconOut <> "" then
 	FamiliarWordCue.dump !lexiconOut;;
-	
+
 (* Dump n-gram counts if requested *)
 if !phonemeCountsOut <> "" then
 	PhonemeNgramCue.dump !phonemeCountsOut;;
@@ -1606,7 +1613,6 @@ if !phonemeCountsOut <> "" then
 (* Dump piecewise counts if requested *)
 if !piecewiseCountsOut <> "" then
 	PhonemePiecewiseCue.dump !piecewiseCountsOut;;
-
 
 (* Dump n-gram counts if requested *)
 if !featureCountsOut <> "" then
