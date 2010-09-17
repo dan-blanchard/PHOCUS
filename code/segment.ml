@@ -43,7 +43,7 @@ let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
 let badScore =  ref "0.0"
-let initialNgramCount = ref "1.0"
+let initialNgramCount = ref "0.0001"
 let syllableDelimiter = ref "."
 let wordDelimiter = ref " "
 let utteranceDelimiter = ref "$"
@@ -85,6 +85,7 @@ let semisupervisedUpdating = ref false
 let initializeSyllables = ref false
 let scorePiecewise = ref false
 let repeatDelimiter = ref 1 
+let unseenSubseqNum = ref (num_of_float 0.5)
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -104,7 +105,7 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-hp", Arg.Set countProposedNgrams, " Short for --hypotheticalPhonotactics";
 					"--ignoreWordBoundary", Arg.Set ignoreWordBoundary, " When calculating phoneme/syllable/etc. n-gram scores, do not include word boundary.";
 					"-iw", Arg.Set ignoreWordBoundary, " Short for --ignoreWordBoundary";
-					"--initialCount", Arg.Set_string initialNgramCount, " Count assigned to phonotactic largest n-grams before they are seen (default = 1.0)";
+					"--initialCount", Arg.Set_string initialNgramCount, " Count assigned to phonotactic largest n-grams before they are seen (default = 0.0001)";
 					"-ic", Arg.Set_string initialNgramCount, " Short for --initialCount";
 					"--initializeSyllables", Arg.Set initializeSyllables, " Initialize syllable n-gram by finding all syllables in gold corpus and setting their counts to one in advance.";
 					"-is", Arg.Set initializeSyllables, " Short for --initializeSyllables";
@@ -138,7 +139,7 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-su", Arg.Set semisupervisedUpdating, " Short for --semisupervisedUpdating";
 					"--stabilityThreshold", Arg.Set_string stabilityThreshold, " When --waitForStablePhonemeDist is enabled, all the ratio between all phoneme counts when they are updated must be greater than stabilityThreshold before model will start segmenting. (default = 0.99)";
 					"-st", Arg.Set_string stabilityThreshold, " Short for --stabilityThreshold";
-					"--subseqDenominator", Arg.Set subseqDenom, " For lexical score, calculate probability word is a word, rather than probability of word occuring in corpus.";
+					"--subseqDenominator", Arg.Set subseqDenom, " For all scores, calculate probability sequence of characters is in a word, rather than probability of them occuring in corpus.";
 					"-sd", Arg.Set subseqDenom, " Short for --subseqDenom";
 					"--supervisedFor", Arg.Set_int supervisedFor, " Number of utterances to use given word-boundaries for.  (Default = 0, unsupervised learner)";
 					"-sf", Arg.Set_int supervisedFor, " Short for --supervisedFor";
@@ -318,7 +319,32 @@ let rec numPermutationsRecurser n r =
 let numPermutations n r =
 	numPermutationsRecurser n (n -/ r +/ (num_of_int 1))
 
-	
+
+(*************** SUBSEQUENCES ***********)	
+let subseqCounts = Hashtbl.create 100000
+let tempSubseqCounts = Hashtbl.create 1000
+
+let update_subseq_count (newSeq:string) (incrementAmount:num)= 
+	if Hashtbl.mem tempSubseqCounts newSeq then
+		Hashtbl.replace tempSubseqCounts newSeq ((Hashtbl.find tempSubseqCounts newSeq) +/ incrementAmount)
+	else
+		Hashtbl.add tempSubseqCounts newSeq incrementAmount(* ;
+				if (!verbose) then
+					eprintf "\tUpdated count for %s to %s\n" newSeq (approx_num_exp 10 (Hashtbl.find tempSubseqCounts newSeq)) *)
+
+let commit_subseq_counts () = 
+	Hashtbl.iter 
+		(fun subseq count -> 
+			if Hashtbl.mem subseqCounts subseq then
+				Hashtbl.replace subseqCounts subseq ((Hashtbl.find subseqCounts subseq) +/ count)
+			else
+				Hashtbl.add subseqCounts subseq count(* ;
+								if (!verbose) then
+									eprintf "\tUpdated count for %s to %s\n" subseq (approx_num_exp 10 (Hashtbl.find subseqCounts subseq)) *)
+		)
+		tempSubseqCounts;
+	Hashtbl.clear tempSubseqCounts
+
 module type CUE =
 sig
 	(* Returns probability that proposed word is a word.
@@ -341,8 +367,6 @@ end
 module FamiliarWordCue = 
 struct
 	let lastSeen = Hashtbl.create 10000
-	let subseqCounts = Hashtbl.create 100000
-	let tempSubseqCounts = Hashtbl.create 1000
 	
 	(* Returns frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine =
@@ -378,27 +402,7 @@ struct
 		close_out oc
 	
 	let use_score (word:string) = (not !noLexicon) && (Hashtbl.mem lexicon word) 
-	
-	let update_subseq_count (newSeq:string) (incrementAmount:num)= 
-		if Hashtbl.mem tempSubseqCounts newSeq then
-			Hashtbl.replace tempSubseqCounts newSeq ((Hashtbl.find tempSubseqCounts newSeq) +/ incrementAmount)
-		else
-			Hashtbl.add tempSubseqCounts newSeq incrementAmount(* ;
-					if (!verbose) then
-						eprintf "\tUpdated count for %s to %s\n" newSeq (approx_num_exp 10 (Hashtbl.find tempSubseqCounts newSeq)) *)
 
-	let commit_subseq_counts () = 
-		Hashtbl.iter 
-			(fun subseq count -> 
-				if Hashtbl.mem subseqCounts subseq then
-					Hashtbl.replace subseqCounts subseq ((Hashtbl.find subseqCounts subseq) +/ count)
-				else
-					Hashtbl.add subseqCounts subseq count(* ;
-									if (!verbose) then
-										eprintf "\tUpdated count for %s to %s\n" subseq (approx_num_exp 10 (Hashtbl.find subseqCounts subseq)) *)
-			)
-			tempSubseqCounts;
-		Hashtbl.clear tempSubseqCounts
 	
 	let update_evidence (newWord:string) (incrementAmount:num)= 
 		totalWords := !totalWords +/ incrementAmount;
@@ -508,15 +512,44 @@ struct
 			end;;
 
 	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
-	let prob_ngram_joint prefix ngram n wordNgramCountsArray wordTotalNgramsArray =
+	let prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray initialCountsArray =
 		(Hashtbl.find wordNgramCountsArray.(n) ngram) // wordTotalNgramsArray.(n);;
+
+	(* Computes the joint probability that an n-gram is inside a word;  n is actually n - 1 in this function *)
+	let prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray =
+		if (n = 0) then
+			num_of_int 1
+		else
+			if (Hashtbl.mem subseqCounts ngram) then
+				begin					
+					if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
+						(Hashtbl.find wordNgramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngram) +/ initialCountsArray.(n))
+					else if (Hashtbl.mem ngramCountsArray.(n) ngram) then
+						(Hashtbl.find ngramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngram) +/ initialCountsArray.(n))
+					else
+						initialCountsArray.(n) // ((Hashtbl.find subseqCounts ngram) +/ initialCountsArray.(n)) (* I don't think this should be possible*)
+				end
+			else
+				begin
+					!unseenSubseqNum
+				end;;
+
+	(* Computes the conditional probability that an n-gram is inside a word;  n is actually n - 1 in this function *)
+	let prob_ngram_subseq_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray =
+		if (Hashtbl.mem subseqCounts prefix) then
+			(prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray) // (prob_ngram_subseq_joint prefix (n - 1) wordNgramCountsArray ngramCountsArray initialCountsArray)
+		else
+			!unseenSubseqNum;;			
 
 	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 	let prob_ngram prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray = 
-		match (!jointProb, !smooth) with 
-			(false, true)  -> prob_ngram_kneser_ney prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray
-		|	(false, false) -> prob_ngram_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray
-		| 	(_,_) -> prob_ngram_joint prefix ngram n wordNgramCountsArray wordTotalNgramsArray;;
+		if (!subseqDenom) then
+			prob_ngram_subseq_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray
+		else
+			match (!jointProb, !smooth) with 
+				(false, true)  -> prob_ngram_kneser_ney prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray
+			|	(false, false) -> prob_ngram_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray
+			| 	(_,_) -> prob_ngram_joint ngram n wordNgramCountsArray wordTotalNgramsArray initialCountsArray;;
 end
 
 module SyllableNgramCue : CUE =
@@ -822,7 +855,7 @@ struct
 												else 
 													newWord ^ !wordDelimiter)
 											else
-												newWord) in							
+												newWord) in
 					let ngramFirstCharListLength = (String.length currentWordWithBoundary) - currentWindowSizeMinusOne in 
 					let ngramFirstCharList = List.init ngramFirstCharListLength (fun a -> a) in
 					List.iter (* Loop through all n-grams of current size *)
@@ -1266,14 +1299,14 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
 			lexicon_updater (List.tl segmentation) sentence updateFunctions incrementAmount
 		end
 	else
-		FamiliarWordCue.commit_subseq_counts ();;
+		commit_subseq_counts ();;
 
 (* These two functions are used for updating the subsequence counts if we're doing a supervised pass through the corpus.*)
 let rec subsequence_updater_inner subUtterance firstChar lastChar =
 	if firstChar <= lastChar then
 		begin
 			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
-			FamiliarWordCue.update_subseq_count newSubUtterance (num_of_int 1);
+			update_subseq_count newSubUtterance (num_of_int 1);
 			subsequence_updater_inner subUtterance (firstChar + 1) lastChar 
 		end
 	else
@@ -1284,7 +1317,7 @@ let subsequence_updater_outer sentence =
 	Array.iter
 		(fun lastChar ->
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
-			FamiliarWordCue.update_subseq_count subUtterance (num_of_int 1);						
+			update_subseq_count subUtterance (num_of_int 1);						
 			subsequence_updater_inner subUtterance 1 lastChar
 		)
 		lastCharList;;
@@ -1383,7 +1416,7 @@ let rec mbdp_inner subUtterance firstChar lastChar bestList =
 	if firstChar <= lastChar then
 		begin
 			let newSubUtterance = String.sub subUtterance firstChar ((lastChar + 1) - firstChar) in
-			FamiliarWordCue.update_subseq_count newSubUtterance (num_of_int 1);			
+			update_subseq_count newSubUtterance (num_of_int 1);			
 			let wordScore = eval_word newSubUtterance in
 			let oldBestProduct = fst (bestList.(firstChar - 1)) in
 			let lastCharBestProduct = fst (bestList.(lastChar)) in
@@ -1402,7 +1435,7 @@ let mbdp_outer sentence =
 		(fun oldBestList lastChar ->
 			(* eprintf "LastChar: %i\tString length: %i\n" lastChar (String.length sentence); *)
 			let subUtterance = String.sub sentence 0 (lastChar + 1) in
-			FamiliarWordCue.update_subseq_count subUtterance (num_of_int 1);						
+			update_subseq_count subUtterance (num_of_int 1);						
 			let newBestList = Array.append oldBestList [|((eval_word subUtterance), 0)|] in
 			mbdp_inner subUtterance 1 lastChar newBestList
 		)
