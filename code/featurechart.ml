@@ -1,6 +1,6 @@
 (*	
 	PHOCUS: PHOnotactic CUe Segmenter - Feature Chart Module
-	Copyright (C) 2007-2009 Dan Blanchard.
+	Copyright (C) 2007-2010 Dan Blanchard.
 	
 	This file is part of PHOCUS.
 	
