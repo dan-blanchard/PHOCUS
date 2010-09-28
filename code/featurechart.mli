@@ -18,7 +18,7 @@
 	along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open ExtString
+open Batteries
 
 type feature_chart = 
 { 

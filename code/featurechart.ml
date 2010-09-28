@@ -18,8 +18,9 @@
 	along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open ExtList
-open ExtString
+open Batteries
+open List
+open String
 open Printf
 
 module StringSet =  Set.Make(String)
@@ -41,7 +42,7 @@ let chart =
 let read_feature_file featureFile =
 	let ic = open_in featureFile in
 	try
-		let fileLines = Std.input_list ic in
+		let fileLines = List.of_enum (BatIO.lines_of ic) in
 		close_in ic;
 		(* Fill feature list *)
 		List.iter 

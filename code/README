@@ -22,7 +22,7 @@ The default mode is PHOCUS-1.
 Build Instructions for segment.ml
 ---------------------------------
 
-Dependencies: caml-pcre, extlib
+Dependencies: caml-pcre, OCaml Batteries Included
 
 To build a particular program (e.g., segment.ml), just use ocamlbuild.  
 

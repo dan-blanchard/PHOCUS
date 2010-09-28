@@ -1,1 +1,1 @@
-<*.mli> or <*.ml> or <*.native> or <*.byte>: pkg_extlib, pkg_pcre, pkg_unix, pkg_num
+<*.mli> or <*.ml> or <*.native> or <*.byte>: pkg_batteries, pkg_threads, pkg_pcre

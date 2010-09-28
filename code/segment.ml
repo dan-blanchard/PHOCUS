@@ -18,11 +18,9 @@
 	along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Batteries
 open Pcre
 open Printf
-open ExtList
-open ExtString
-open ExtArray
 open Num
 
 module StringSet = Set.Make(String)
@@ -735,7 +733,7 @@ struct
 	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
-		let phonemeList = !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))) in
+		let phonemeList = !wordDelimiter :: (List.of_enum (BatIO.lines_of (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'")))) in
 		let numPhonemes = num_of_int (List.length phonemeList) in
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
@@ -934,7 +932,7 @@ struct
 	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
-		phonemeList := !wordDelimiter :: (Std.input_list (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'")));
+		phonemeList := !wordDelimiter :: (List.of_enum (BatIO.lines_of (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'"))));
 		let numPhonemes = num_of_int (List.length !phonemeList) in
 		let pairPermutationList = permutations !phonemeList "" 1 in
 		let pairIncrementAmount = initialCount in
@@ -1028,7 +1026,7 @@ struct
 	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
-		let featureList = Std.input_list (Unix.open_process_in ("head -n 1 " ^ !featureFile ^ " | gsed -r 's/^\\t//' | tr '\\t' '\\n'")) in
+		let featureList = List.of_enum (BatIO.lines_of (Unix.open_process_in ("head -n 1 " ^ !featureFile ^ " | gsed -r 's/^\\t//' | tr '\\t' '\\n'"))) in
 		let featureValueList = (List.map (fun a -> "+" ^ a) featureList) @ (List.map (fun a -> "-" ^ a) featureList) in
 		let numFeatureValues =  num_of_int (List.length featureValueList) in
 		List.iter 
@@ -1259,7 +1257,7 @@ end;;
 if !corpus <> "" then
 	let ic = open_in !corpus in
 	try
-		sentenceList := Std.input_list ic;
+		sentenceList := List.of_enum (BatIO.lines_of ic);
 		close_in ic;
 		(* Initialize phoneme counts, if not MBDP *)
 		if (not !mbdp) && (!phonemeWindow > 0) then
@@ -1275,7 +1273,7 @@ if !corpus <> "" then
 		raise e
 else
 	begin
-		sentenceList := Std.input_list stdin;
+		sentenceList := List.of_enum (BatIO.lines_of stdin);
 		close_in stdin
 	end;;
 
