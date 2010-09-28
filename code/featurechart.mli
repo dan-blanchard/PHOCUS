@@ -19,11 +19,12 @@
 *)
 
 open Batteries
+open Set
 
 type feature_chart = 
 { 
-	phonesToFeatures : (string, Set.Make(String).t) Hashtbl.t;
-	featuresToPhones : (string, Set.Make(String).t) Hashtbl.t;
+	phonesToFeatures : (string, StringSet.t) Hashtbl.t;
+	featuresToPhones : (string, StringSet.t) Hashtbl.t;
 	mutable features : string list
 }
 
@@ -31,10 +32,10 @@ type feature_chart =
 val read_feature_file : string -> unit
 
 (* Returns a StringSet of features given a phone*)
-val features_for_phone : string -> Set.Make(String).t
+val features_for_phone : string -> StringSet.t
 
 (* Returns a StringSet of phones given a StringSet of features*)
-val phones_for_features : Set.Make(String).t -> Set.Make(String).t
+val phones_for_features : StringSet.t -> StringSet.t
 
 (* Prints a StringSet of features *)
-val print_string_set : Set.Make(String).t -> unit
+val print_string_set : StringSet.t -> unit

@@ -19,16 +19,13 @@
 *)
 
 open Batteries
-open List
-open String
 open Printf
-
-module StringSet =  Set.Make(String)
+open Set
 
 type feature_chart = 
 { 
-	phonesToFeatures : (string, Set.Make(String).t) Hashtbl.t;
-	featuresToPhones : (string, Set.Make(String).t) Hashtbl.t;
+	phonesToFeatures : (string, StringSet.t) Hashtbl.t;
+	featuresToPhones : (string, StringSet.t) Hashtbl.t;
 	mutable features : string list
 }
 

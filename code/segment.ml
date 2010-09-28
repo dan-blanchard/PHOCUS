@@ -20,23 +20,17 @@
 
 open Batteries
 open Pcre
-open Printf
 open Num
-
-module StringSet = Set.Make(String)
-
-(* Converts floats to Nums *)
-let num_of_float floatNum = 
-	let (integer, decimal) = String.split (Printf.sprintf "%.14f" floatNum) "." in
-	(num_of_string integer) +/ (num_of_string (decimal ^ " / " ^ (Printf.sprintf "%.0f" (10.0 ** (float_of_int ((String.length decimal)))))))
+open Printf
+open Set
 
 (* Converts floats to Nums *)
 let num_of_float_string floatNum = 
 	let (integer, decimal) = String.split floatNum "." in
-	(num_of_string integer) +/ (num_of_string (decimal ^ " / " ^ (Printf.sprintf "%.0f" (10.0 ** (float_of_int ((String.length decimal)))))))
+	(BatNum.of_string integer) +/ (BatNum.of_string (decimal ^ " / " ^ (sprintf "%.0f" (10.0 ** (Float.of_int (String.length decimal))))))
 
-let e = num_of_float 2.71828183
-let sixOverPiSquared = num_of_float 0.607927102
+let e = BatNum.of_float 2.71828183
+let sixOverPiSquared = BatNum.of_float 0.607927102
 let printUtteranceDelimiter = ref false
 let displayLineNumbers = ref false
 let featureFile = ref ""
@@ -83,7 +77,7 @@ let semisupervisedUpdating = ref false
 let initializeSyllables = ref false
 let scorePiecewise = ref false
 let repeatDelimiter = ref 1 
-let unseenSubseqNum = ref (num_of_float 0.5)
+let unseenSubseqNum = ref (BatNum.of_float 0.5)
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
 let process_anon_args corpusFile = corpus := corpusFile
@@ -179,7 +173,7 @@ let initialNgramCountNum = num_of_float_string !initialNgramCount;;
 
 
 (* Read feature file, if specifed *)
-if !featureFile <> "" then
+if not (String.is_empty !featureFile) then
 	Featurechart.read_feature_file !featureFile;;
 
 let hash_fprint_float file = Hashtbl.iter (fun key data -> fprintf file "%s\t%g\n" key data)
@@ -190,7 +184,7 @@ let stringset_of_list stringList = List.fold_right StringSet.add stringList Stri
 
 let removeDelimitersPattern = regexp (!wordDelimiter ^ "+")
 
-let (diphthongs, vowels) = if (!featureFile <> "" ) then 
+let (diphthongs, vowels) = if not (String.is_empty !featureFile) then 
 								StringSet.partition (fun phone -> (String.length phone) > 1) (Featurechart.phones_for_features (StringSet.singleton "+syllabic"))
 							else
 								((stringset_of_list ["9I";"OI";"9U"]), (stringset_of_list ["&";"6";"9";"A";"E";"I";"O";"U";"a";"e";"i";"o";"u";"R";"~";"M";"L"])) 
@@ -568,7 +562,7 @@ struct
 	let initialize initialCount = 
 		if (!initializeSyllables) then
 			(* Don't forget to add one to number of syllable types for word boundary *)
-			let numSyllables = ((num_of_string (input_line (Unix.open_process_in ("tr ' ' '\\n' < " ^ !corpus ^ 
+			let numSyllables = ((BatNum.of_string (input_line (Unix.open_process_in ("tr ' ' '\\n' < " ^ !corpus ^ 
 				" | sort | uniq | ./syllabify.pl | tr '.' '\\n' | sort | uniq | wc -l | gsed 's/^[ \\t]*//'")))) +/ (num_of_int 1)) in			
 			List.iter 
 				(fun currentWindowSizeMinusOne ->
@@ -1400,7 +1394,7 @@ let eval_functions = [(if (not !noLexicon) then
 					  (if (!syllableWindow > 0) then SyllableNgramCue.eval_word else (fun a b -> badScoreNum)) ;
 					  (if (!featureWindow > 0) then FeatureNgramCue.eval_word else (fun a b -> badScoreNum))];;
 
-let eval_weights = [(num_of_float 0.2) ; (num_of_float 0.2) ; (num_of_float 0.2) ; (num_of_float 0.2) ; (num_of_float 0.2)];;
+let eval_weights = [(BatNum.of_float 0.2) ; (BatNum.of_float 0.2) ; (BatNum.of_float 0.2) ; (BatNum.of_float 0.2) ; (BatNum.of_float 0.2)];;
 
 let eval_names = ["Familiar" ; "Phoneme N-gram" ; "Phoneme Piecewise" ; "Syllable" ; "Feature"];;
 
@@ -1623,7 +1617,7 @@ if (!interactive) then
 							printf "\n"
 						) 
 						args
-				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_float (float_of_string incrementAmount)); ()
+				| "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (BatNum.of_float (float_of_string incrementAmount)); ()
  				| "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n    pairs WORDS\t\tprints precedence pairs in WORDS\n"
 				| _ -> printf "Unknown command.\n"
 			with e ->
