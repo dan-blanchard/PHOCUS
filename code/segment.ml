@@ -76,7 +76,6 @@ let currentOutputChannel = ref stdout
 let semisupervisedUpdating = ref false
 let initializeSyllables = ref false
 let scorePiecewise = ref false
-let repeatDelimiter = ref 1 
 let unseenSubseqNum = ref (BatNum.of_float 0.5)
 
 (* Process command-line arguments - this code must precede module definitions in order for their variables to get initialized correctly *)
@@ -121,8 +120,6 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-pw", Arg.Set_int phonemeWindow, " Short for --phonemeWindow";
 					"--printUtteranceDelimiter", Arg.Set printUtteranceDelimiter, " Print utterance delimiter at the end of each utterance";
 					"-pu", Arg.Set printUtteranceDelimiter, " Short for --printUtteranceDelimiter";
-					"--repeatDelimiter", Arg.Set_int repeatDelimiter, " Number of word delimiter symbols to insert between words.  (Default = 1)";
-					"-rd", Arg.Set_int repeatDelimiter, " Short for --repeatDelimiter";
 					"--requireSyllabic", Arg.Set requireSyllabic, " Require each proposed word to contain at least one syllabic sound.  (Requires --featureChart that includes 'syllabic' as feature)";
 					"-rs", Arg.Set requireSyllabic, " Short for --requireSyllabic";
 					"--scorePiecewise", Arg.Set scorePiecewise, " Score potential words based on their Strictly 2-Piecewise factors (i.e., long distance pairs for vowel and consonantal harmony).";
@@ -554,6 +551,7 @@ struct
 	let maxOnsetLength = 3
 	let maxCodaLength = 3
 	let initialCountsArray = Array.init (!syllableWindow) (fun a -> num_of_int 0)
+	let wordDelimiterList = List.init (if (!syllableWindow > 1) then !syllableWindow - 1 else !syllableWindow) (fun a -> !wordDelimiter)
 	
 	(* Check if we can even syllabify word *)	
 	let use_score (word:string) = ((syllabify word) = "") 
@@ -593,9 +591,9 @@ struct
 				let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
 				let syllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
 																 (if !syllableWindow > 1 then 
-																	[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																	wordDelimiterList @ syllables @ wordDelimiterList
 																else 
-																	syllables @ [!wordDelimiter])
+																	syllables @ wordDelimiterList)
 															else
 																syllables) in										
 				let score = ref (num_of_int 0) in
@@ -607,9 +605,9 @@ struct
 							(fun currentWindowSizeMinusOne ->
 								let currentSyllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
 																				 (if currentWindowSizeMinusOne > 0 then 
-																					[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																					wordDelimiterList @ syllables @ wordDelimiterList
 																				else 
-																					syllables @ [!wordDelimiter])
+																					syllables @ wordDelimiterList)
 																			else
 																				syllables) in										
 								let ngramFirstSyllListLength = (Array.length currentSyllablesWithBoundary) - currentWindowSizeMinusOne in 
@@ -665,9 +663,9 @@ struct
 			let syllables = String.nsplit syllabifiedWord !syllableDelimiter in 
 			let syllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
 															 (if !syllableWindow > 1 then 
-																[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																wordDelimiterList @ syllables @ wordDelimiterList
 															else 
-																syllables @ [!wordDelimiter])
+																syllables @ wordDelimiterList)
 														else
 															syllables) in										
 			let wordWindow = (if (Array.length syllablesWithBoundary) < !syllableWindow then
@@ -679,9 +677,9 @@ struct
 				(fun currentWindowSizeMinusOne ->
 					let currentSyllablesWithBoundary = Array.of_list (if not !ignoreWordBoundary then 
 																		(if currentWindowSizeMinusOne > 0 then 
-																			[!wordDelimiter] @ syllables @ [!wordDelimiter]
+																			wordDelimiterList @ syllables @ wordDelimiterList
 																		else 
-																			syllables @ [!wordDelimiter])
+																			syllables @ wordDelimiterList)
 																	else
 																		syllables) in										
 					let ngramFirstSyllListLength = (Array.length currentSyllablesWithBoundary) - currentWindowSizeMinusOne in 
@@ -724,6 +722,7 @@ struct
 	let oldUnigramCounts = Hashtbl.create 40
 	let hasStabilized = ref false
 	let initialCountsArray = Array.init (!phonemeWindow) (fun a -> num_of_int 0)
+	let wordDelimiterString = String.make (if (!phonemeWindow > 1) then !phonemeWindow - 1 else !phonemeWindow) (String.get !wordDelimiter 0) 
 	
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
@@ -758,9 +757,9 @@ struct
 		let wordTypesWithCountArray = Array.init 3 (fun a -> typesWithCountArray.(a)) in
 		let wordWithBoundary = (if not !ignoreWordBoundary then 
 									(if !phonemeWindow > 1 then 
-										!wordDelimiter ^ word ^ !wordDelimiter 
+										wordDelimiterString ^ word ^ wordDelimiterString
 									else 
-										word ^ !wordDelimiter)
+										word ^ wordDelimiterString)
 								else
 									word) in							
 		let wordTypes = num_of_int (Hashtbl.length lexicon) in (* Don't need to add one for MBDP because the initial addition of the utterance delimiter makes this one higher *)
@@ -774,9 +773,9 @@ struct
 					(fun currentWindowSizeMinusOne ->
 						let currentWordWithBoundary = (if not !ignoreWordBoundary then 
 													(if currentWindowSizeMinusOne > 0 then 
-														!wordDelimiter ^ word ^ !wordDelimiter 
+														wordDelimiterString ^ word ^ wordDelimiterString
 													else 
-														word ^ !wordDelimiter)
+														word ^ wordDelimiterString)
 												else
 													word) in							
 						let ngramFirstCharListLength = (String.length currentWordWithBoundary) - currentWindowSizeMinusOne in 
@@ -829,9 +828,9 @@ struct
 		if (!tokenPhonotactics || (not (Hashtbl.mem lexicon newWord))) then
 			let wordWithBoundary = (if not !ignoreWordBoundary then 
 										(if !phonemeWindow > 1 then 
-											!wordDelimiter ^ newWord ^ !wordDelimiter 
+											wordDelimiterString ^ newWord ^ wordDelimiterString 
 										else 
-											newWord ^ !wordDelimiter)
+											newWord ^ wordDelimiterString)
 									else
 										newWord) in
 			let wordWindow = (if (String.length wordWithBoundary) < !phonemeWindow then
@@ -843,9 +842,9 @@ struct
 				(fun currentWindowSizeMinusOne ->
 					let currentWordWithBoundary = (if not !ignoreWordBoundary then 
 												(if currentWindowSizeMinusOne > 0 then 
-													!wordDelimiter ^ newWord ^ !wordDelimiter 
+													wordDelimiterString ^ newWord ^ wordDelimiterString 
 												else 
-													newWord ^ !wordDelimiter)
+													newWord ^ wordDelimiterString)
 											else
 												newWord) in
 					let ngramFirstCharListLength = (String.length currentWordWithBoundary) - currentWindowSizeMinusOne in 
@@ -1582,11 +1581,7 @@ if (!interactive) then
 							else
 								!utteranceLimit)
 	end;;
-
-
-(* Repeat wordDelimiter as necessary *)
-wordDelimiter := String.make !repeatDelimiter (String.get !wordDelimiter 0);;
-		
+	
 sentence_processor !sentenceList;;
 
 if (!interactive) then
