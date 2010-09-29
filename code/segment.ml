@@ -727,26 +727,21 @@ struct
 	(* Initialize the counts so we get a uniform distribution *)
 	let initialize initialCount =
 		let phonemeList = !wordDelimiter :: (List.of_enum (BatIO.lines_of (Unix.open_process_in ("gsed -r 's/(.)/\\1\\n/g' " ^ !corpus ^ " | gsed '/^$/d' | sort -u | gsed '/[ \\t]/d'")))) in
-		let numPhonemes = num_of_int (List.length phonemeList) in
+		let numPhonemes = num_of_int (List.length phonemeList) in		
 		List.iter 
 			(fun currentWindowSizeMinusOne ->
-				let phonemePermutationList = permutations phonemeList "" currentWindowSizeMinusOne in
-				let currentIncrementAmount = initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne)) in
 				initialCountsArray.(currentWindowSizeMinusOne) <- initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne));
-				List.iter
-					(fun ngram ->
-						Hashtbl.add ngramCountsArray.(currentWindowSizeMinusOne) ngram currentIncrementAmount;
-						totalNgramsArray.(currentWindowSizeMinusOne) <- totalNgramsArray.(currentWindowSizeMinusOne) +/ currentIncrementAmount
-					)
-					phonemePermutationList;
+				totalNgramsArray.(currentWindowSizeMinusOne) <- (numPermutations numPhonemes (num_of_int (currentWindowSizeMinusOne + 1))) */ initialCountsArray.(currentWindowSizeMinusOne);
+				(* eprintf "Initial n-gram counts for length %d: %s\n\tTotal n-grams: %s\n\tNum phonemes: %s\n" (currentWindowSizeMinusOne + 1) (approx_num_exp 10 initialCountsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 totalNgramsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 numPhonemes);
+				flush stderr *)
 				if (currentWindowSizeMinusOne = 0) then
+					let phonemePermutationList = permutations phonemeList "" currentWindowSizeMinusOne in
+					let currentIncrementAmount = initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne)) in
 					List.iter
 						(fun ngram ->
 							Hashtbl.add oldUnigramCounts ngram currentIncrementAmount;
 						)
 						phonemePermutationList
-				else
-					()
 			)
 			ngramList
 
