@@ -506,10 +506,13 @@ struct
 
 	(* Computes the joint probability that an n-gram is inside a word;  n is actually n - 1 in this function *)
 	let prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray =
-		if (n = 0) then
-			num_of_int 1
+		let ngramWithoutBoundaries = BatString.strip ~chars:!wordDelimiter ngram in (* Will not remove characters from the middle *)
+		if (n = 0) or ((String.length ngramWithoutBoundaries) = 0) then
+			begin
+				(* eprintf "N was 1 or length was 0.\n"; *)
+				num_of_int 1
+			end
 		else
-			let ngramWithoutBoundaries = BatString.strip ~chars:!wordDelimiter ngram in (* Will not remove characters from the middle *)
 			let nWithoutBoundaries = (String.length ngramWithoutBoundaries) - 1 in
 			if (Hashtbl.mem subseqCounts ngramWithoutBoundaries) then
 				begin					
@@ -519,9 +522,15 @@ struct
 							(Hashtbl.find wordNgramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))
 						end
 					else if (Hashtbl.mem ngramCountsArray.(n) ngram) then
-						(Hashtbl.find ngramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))
+						begin
+							(* eprintf "\tNgram count for %s = %s\tSubseq count = %s\n" (approx_num_exp 10 (Hashtbl.find ngramCountsArray.(n) ngram)) ngram (approx_num_exp 10 ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))); *)
+							(Hashtbl.find ngramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))
+						end
 					else
-						initialCountsArray.(n) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries)) (* I don't think this should be possible*)
+						begin
+							(* eprintf "\tNgram count for %s = %s\tSubseq count = %s (only occurred across boundaries before)\n" (approx_num_exp 10 initialCountsArray.(n)) ngram (approx_num_exp 10 ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))); *)
+							initialCountsArray.(n) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries)) (* I don't think this should be possible*)
+						end
 				end
 			else
 				begin
@@ -531,10 +540,7 @@ struct
 
 	(* Computes the conditional probability that an n-gram is inside a word;  n is actually n - 1 in this function *)
 	let prob_ngram_subseq_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray =
-		if (Hashtbl.mem subseqCounts prefix) then
-			(prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray) // (prob_ngram_subseq_joint prefix (n - 1) wordNgramCountsArray ngramCountsArray initialCountsArray)
-		else
-			!unseenSubseqNum;;			
+		(prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray) // (prob_ngram_subseq_joint prefix (n - 1) wordNgramCountsArray ngramCountsArray initialCountsArray);;
 
 	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 	let prob_ngram prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray = 
