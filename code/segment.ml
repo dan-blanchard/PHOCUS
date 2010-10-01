@@ -509,17 +509,23 @@ struct
 		if (n = 0) then
 			num_of_int 1
 		else
-			if (Hashtbl.mem subseqCounts ngram) then
+			let ngramWithoutBoundaries = BatString.strip ~chars:!wordDelimiter ngram in (* Will not remove characters from the middle *)
+			let nWithoutBoundaries = (String.length ngramWithoutBoundaries) - 1 in
+			if (Hashtbl.mem subseqCounts ngramWithoutBoundaries) then
 				begin					
 					if (Hashtbl.mem wordNgramCountsArray.(n) ngram) then
-						(Hashtbl.find wordNgramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngram) +/ initialCountsArray.(n))
+						begin
+							(* eprintf "\tNgram count for %s = %s\tSubseq count = %s\n" (approx_num_exp 10 (Hashtbl.find wordNgramCountsArray.(n) ngram)) ngram (approx_num_exp 10 ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))); *)
+							(Hashtbl.find wordNgramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))
+						end
 					else if (Hashtbl.mem ngramCountsArray.(n) ngram) then
-						(Hashtbl.find ngramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngram) +/ initialCountsArray.(n))
+						(Hashtbl.find ngramCountsArray.(n) ngram) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries))
 					else
-						initialCountsArray.(n) // ((Hashtbl.find subseqCounts ngram) +/ initialCountsArray.(n)) (* I don't think this should be possible*)
+						initialCountsArray.(n) // ((Hashtbl.find subseqCounts ngramWithoutBoundaries) +/ initialCountsArray.(nWithoutBoundaries)) (* I don't think this should be possible*)
 				end
 			else
 				begin
+					(* eprintf "%s is unseen!\n" ngramWithoutBoundaries; *)
 					!unseenSubseqNum
 				end;;
 
@@ -533,7 +539,12 @@ struct
 	(* Computes the probability of an n-gram within a word;  n is actually n - 1 in this function *)
 	let prob_ngram prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray = 
 		if (!subseqDenom) then
-			prob_ngram_subseq_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray
+			begin
+				if (!jointProb) then
+					prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray
+				else
+					prob_ngram_subseq_conditional prefix ngram n wordNgramCountsArray wordTotalNgramsArray ngramCountsArray initialCountsArray
+			end
 		else
 			match (!jointProb, !smooth) with 
 				(false, true)  -> prob_ngram_kneser_ney prefix ngram n wordNgramCountsArray wordTotalNgramsArray wordTypesWithCountArray ngramCountsArray
@@ -804,7 +815,7 @@ struct
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
 						let ngramScore = prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
-						(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+						(* eprintf "\tNgram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore); *)
 						score := (combine !score ngramScore)
 					)
 					(List.init ((String.length wordWithBoundary) - (!phonemeWindow - 1)) (fun a -> a));
