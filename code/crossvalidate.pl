@@ -21,9 +21,10 @@
 use strict;
 use Getopt::Std;
 use POSIX;
+use List::Util 'shuffle';
 
 local $| = 1;
-our ($opt_k,$opt_p,$opt_e,$opt_t,$opt_v,$opt_d,$opt_u);
+our ($opt_k,$opt_p,$opt_e,$opt_t,$opt_v,$opt_d,$opt_u,$opt_r);
 my $usage = "\nK-Fold Cross-Validater\n\n" . 
 			"Usage: ./crossvalidate.pl [OPTIONS] SEGMENTATION_COMMAND TRUE_CORPUS\n\n" . 
 			"SEGMENTATION_COMMAND = A string (enclosed by quotes) that specifies the segmenter to run" .
@@ -36,11 +37,12 @@ my $usage = "\nK-Fold Cross-Validater\n\n" .
 			"\t-p PREFIX\tFile prefix for temporary fold files. Note: All files with this prefix are DELETED when script ends. (Default = '.cvfoldtemp')\n" .
 			"\t-t TEST_FOLDS\tNumber of folds to test on.  (Default = 1, cannot specify 0)\n" .
 			"\t-d \t\tDo NOT delete files that begin with PREFIX when done. (Although any existing ones are still destroyed when the script is first run.)\n" .
-			"\t-u \t\tAll runs completely unsupervised.  This flag is necessary because '-t 0' will not work as expected.\n" .
+			"\t-r \t\tRandomize order of test folds.\n" .
+			"\t-u \t\tAll runs completely unsupervised.  This flag is necessary because '-t 0' will not work as expected. Implies '-r', because it would be useless otherwise.\n" .
 			"\t-v \t\tOutput result of running errors.pl for each individual fold.\n";
 
 # Handle arguments
-getopts('e:k:p:t:dvu');
+getopts('e:k:p:t:dvur');
 die $usage if @ARGV < 2;
 my $segmenter = shift @ARGV;
 my $corpus = shift @ARGV;
@@ -69,6 +71,7 @@ if ($opt_t)
 if ($opt_u)
 {
 	$trainingFolds = 0;
+	$opt_r = 1;
 }
 
 my @allFiles = <$prefix*>;
@@ -108,8 +111,12 @@ for (my $i = 0; $i < $folds; $i++)
 		if (!$training{$j})
 		{
 			push @test, $currentFiles[$j];
-			# Should probably add randomization code back in here.
 		}
+	}
+	# Randomize test folds list
+	if ($opt_r)
+	{
+		@test = shuffle(@test);
 	}
 	foreach my $f (@test)
 	{

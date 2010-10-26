@@ -659,7 +659,7 @@ struct
 										let prefix = string_of_syllable_array (Array.sub ngramSyllableArray 0 (!syllableWindow - 1)) in
 										let ngram = string_of_syllable_array ngramSyllableArray in
 										let ngramScore = prob_ngram prefix ngram (!syllableWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
-										(* eprintf "\tPrefix = '%s'\n\tNgram score for '%s' = %s\n" prefix ngram (approx_num_exp 10 ngramScore);
+										(* eprintf "\tPrefix = '%s'\n\tn-gram score for '%s' = %s\n" prefix ngram (approx_num_exp 10 ngramScore);
 										flush stderr; *)
 										score := (combine !score ngramScore)
 									)
@@ -821,7 +821,7 @@ struct
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
 						let ngramScore = prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
-						(* eprintf "\tNgram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore); *)
+						(* eprintf "\tn-gram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore); *)
 						score := (combine !score ngramScore)
 					)
 					(List.init ((String.length wordWithBoundary) - (!phonemeWindow - 1)) (fun a -> a));
@@ -1147,7 +1147,7 @@ struct
 					(fun firstChar ->
 						let ngram = String.sub wordWithBoundary firstChar !featureWindow in
 						let ngramScore = prob_ngram (String.sub ngram 0 (!featureWindow - 1)) ngram (!featureWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
-						(* eprintf "\tNgram score for %s = %F\n" ngram ngramScore; *)
+						(* eprintf "\tn-gram score for %s = %F\n" ngram ngramScore; *)
 						score := (combine !score ngramScore)
 					)
 					(List.init ((String.length wordWithBoundary) - (!featureWindow - 1)) (fun a -> a));
