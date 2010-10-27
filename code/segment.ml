@@ -760,7 +760,9 @@ struct
 						)
 						phonemePermutationList
 			)
-			ngramList
+			ngramList;
+		Hashtbl.add ngramCountsArray.(0) !wordDelimiter initialCountsArray.(0)
+		
 
 	(* Returns frequency that word occurs in lexicon. *)
 	let eval_word (word:string) combine = 
