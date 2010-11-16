@@ -26,7 +26,13 @@ open Set
 
 (* Converts floats to Nums *)
 let num_of_float_string floatNum = 
-	let (integer, decimal) = String.split floatNum "." in
+	let (integer, decimal) = 
+		try 
+			String.split floatNum "." 
+		with 
+			Not_found ->  (* This happens if user specifies an integer on command-line instead of a float *)
+				(floatNum, "0") 
+	in
 	(BatNum.of_string integer) +/ (BatNum.of_string (decimal ^ " / " ^ (sprintf "%.0f" (10.0 ** (Float.of_int (String.length decimal))))))
 
 let e = BatNum.of_float 2.71828183
