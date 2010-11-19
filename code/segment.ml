@@ -140,7 +140,7 @@ let arg_spec_list =["--badScore", Arg.Set_string badScore, " Score assigned when
 					"-sf", Arg.Set_int supervisedFor, " Short for --supervisedFor";
 					"--syllableNgramsOut", Arg.Set_string syllableCountsOut, " File to dump final syllable n-gram counts to";
 					"-sn", Arg.Set_string syllableCountsOut, " Short for --syllableNgramsOut";
-					"--syllableWindow", Arg.Set_int syllableWindow, " Window size for syllable n-grams";
+					"--syllableWindow", Arg.Set_int syllableWindow, " Window size for syllable n-grams (Note: does not entail --initialSyllables)";
 					"-sw", Arg.Set_int syllableWindow, " Short for --syllableWindow";
 					"--tokenPhonotactics", Arg.Set tokenPhonotactics, " Update phoneme n-gram counts once per word occurrence, instead of per word type.";
 					"-tp", Arg.Set tokenPhonotactics, " Short for --tokenPhonotactics";
@@ -512,7 +512,7 @@ struct
 
 	(* Computes the joint probability that an n-gram is inside a word;  n is actually n - 1 in this function *)
 	let prob_ngram_subseq_joint ngram n wordNgramCountsArray ngramCountsArray initialCountsArray =
-		let ngramWithoutBoundaries = BatString.strip ~chars:!wordDelimiter ngram in (* Will not remove characters from the middle *)
+		let ngramWithoutBoundaries = BatString.strip ~chars:!wordDelimiter ngram in (* Will NOT remove characters from the middle *)
 		if (n = 0) or ((String.length ngramWithoutBoundaries) = 0) then
 			begin
 				(* eprintf "N was 1 or length was 0.\n"; *)
