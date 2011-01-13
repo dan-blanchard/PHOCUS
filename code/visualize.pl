@@ -23,7 +23,7 @@ use Cairo;
 use Math::Round qw(nearest_ceil);
 
 my $scale = 4;
-my $corpusLength = 9790;
+my $corpusLength = 8502;
 my $width = 100;
 my $margin = $scale * 10;
 my $padding = 1;
@@ -85,7 +85,7 @@ if ($hash_marks)
 	$cr->rectangle(int($margin / 3), $y + $padding * $raw_y, int($margin / 3), $scale);
 	if($show_scale)
 	{
-		$cr->set_source_rgb((($max_r - $min_r) * $y_scale) + $min_r, (($max_g - $min_g) * $y_scale) + $min_g, (($max_b - $min_b) * $y_scale) + $min_b);
+		$cr->set_source_rgb($max_r, $max_g, $max_b);
 	}
 	else
 	{

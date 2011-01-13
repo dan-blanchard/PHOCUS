@@ -36,13 +36,13 @@ my $usage = "\nK-Fold Cross-Validater\n\n" .
 			"\t-k NUM_FOLDS\tSpecifies number of folds for cross-validation. (Default = 10)\n" .
 			"\t-p PREFIX\tFile prefix for temporary fold files. Note: All files with this prefix are DELETED when script ends. (Default = '.cvfoldtemp')\n" .
 			"\t-t TEST_FOLDS\tNumber of folds to test on.  (Default = 1, cannot specify 0)\n" .
+			"\t-u UNSUPERVISED_FOLDS\tNumber of folds to exclude from testing and supervised training. (Default = 0)\n" .
 			"\t-d \t\tDo NOT delete files that begin with PREFIX when done. (Although any existing ones are still destroyed when the script is first run.)\n" .
 			"\t-r \t\tRandomize order of test folds.\n" .
-			"\t-u \t\tAll runs completely unsupervised.  This flag is necessary because '-t 0' will not work as expected. Implies '-r', because it would be useless otherwise.\n" .
 			"\t-v \t\tOutput result of running errors.pl for each individual fold.\n";
 
 # Handle arguments
-getopts('e:k:p:t:dvur');
+getopts('e:k:p:t:u:dvr');
 die $usage if @ARGV < 2;
 my $segmenter = shift @ARGV;
 my $corpus = shift @ARGV;
@@ -61,18 +61,17 @@ if ($opt_k)
 	$folds = $opt_k;
 }
 
-my $trainingFolds = $folds - 1;
+my $trainingFolds = $folds;
+my $testFolds = 1; 
 
 if ($opt_t)
 {
-	$trainingFolds = $folds - $opt_t;
+	$testFolds = $opt_t;
 }
 
-if ($opt_u)
-{
-	$trainingFolds = 0;
-	$opt_r = 1;
-}
+$trainingFolds -= $testFolds; # Exclude test folds from training.
+
+my $unsupervisedFolds = $opt_u;
 
 my @allFiles = <$prefix*>;
 if (scalar(@allFiles) > 0)
@@ -89,6 +88,7 @@ my $ir;
 @allFiles = <$prefix*>;
 my $trainingSize = $foldSize * $trainingFolds;
 my $testSize = $corpusLength - $trainingSize;
+$trainingSize -= $foldSize * $unsupervisedFolds; # Remove unsupervised training folds from training size calculation
 my @currentFiles;
 my $trainingIndex;
 for (my $i = 0; $i < $folds; $i++)
