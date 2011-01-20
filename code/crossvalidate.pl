@@ -122,19 +122,12 @@ for (my $i = 0; $i < $folds; $i++)
 	{
 		`cat $f >> $prefix-gold-current`;
 	}
-	if ($trainingSize > 0)
-	{
-		print "Segmenting fold $i with command '$segmenter $trainingSize'...";
-		`$segmenter $trainingSize $prefix-gold-current | tail -n $testSize >> $prefix-results`;		
-		`tail -n $testSize $prefix-gold-current >> $prefix-gold`;
-	}
-	else
-	{
-		print "Segmenting fold $i with command '$segmenter'...";
-		`$segmenter $prefix-gold-current >> $prefix-results`;
-		`cat $prefix-gold-current >> $prefix-gold`;
-	}
+
+	print "Segmenting fold $i with command '$segmenter $trainingSize'...";
+	`$segmenter $trainingSize $prefix-gold-current | tail -n $testSize >> $prefix-results`;		
+	`tail -n $testSize $prefix-gold-current >> $prefix-gold`;
 	print "done\n";
+
 	if ($opt_v)
 	{
 		print `./errors.pl $opt_e $prefix-gold $prefix-results`;
