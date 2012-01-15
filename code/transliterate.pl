@@ -1,20 +1,20 @@
 #!/usr/bin/perl
 
-# Corpus Transliterater 
+# Corpus Transliterater
 # Copyright (C) 2007-2010 Dan Blanchard.
-# 
+#
 # This file is part of PHOCUS.
-# 
+#
 # PHOCUS is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#     
+#
 # PHOCUS is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#     
+#
 # You should have received a copy of the GNU General Public License
 # along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -30,7 +30,7 @@ my $line;
 # Setup Unicode input and output
 binmode STDOUT, ":utf16";
 binmode STDIN, ":utf16";
-binmode STDERR, ":utf8";
+binmode STDERR, ":utf16";
 
 my $usage = "\nUsage: ./transliterate.pl KEY-FILE [FILES-TO-TRANSLITERATE]\n\n";
 die $usage if @ARGV < 1;
@@ -50,9 +50,9 @@ close(KEYFILE);
 while (<>)
 {
 	$line = $_;
-	for (my $i = 0; $i < scalar(@pairs); $i++) 
+	for (my $i = 0; $i < scalar(@pairs); $i++)
 	{
-		$line =~ s/$pairs[$i][0]/$pairs[$i][1]/g;
+		$line =~ s/\Q$pairs[$i][0]\E/$pairs[$i][1]/g;
 	}
 	print $line;
 }
