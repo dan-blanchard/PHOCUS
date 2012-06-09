@@ -2,7 +2,7 @@
 
 '''
     PHOCUS: PHOnotactic CUe Segmenter
-    Copyright (C) 2007-2010 Dan Blanchard.
+    Copyright (C) 2007-2012 Dan Blanchard.
 
     This file is part of PHOCUS.
 
@@ -22,17 +22,22 @@
 
 import argparse
 import copy
+import os
 from abc import ABCMeta, abstractmethod
 from fractions import Fraction
 from itertools import chain, product
+from operator import mul
 
+import regex as re
 from probability import FreqDist, LidstoneProbDist, ConditionalFreqDist, ConditionalProbDist
 from ngram import NgramModel
 from nltk.util import ingrams
+from featurechart import PhonologicalFeatureChartReader
 
 # Global vars
 subseq_counts = FreqDist(counttype=Fraction)
 args = None
+feature_chart = None
 
 
 class PartialCountNgramModel(NgramModel):
@@ -44,20 +49,20 @@ class PartialCountNgramModel(NgramModel):
         training.
 
         @param n: the order of the language model (ngram size)
-        @type n: C{int}
+        @type n: L{int}
         @param train: the training text
-        @type train: C{list} of C{string} (or C{list} of C{string} C{list}s)
+        @type train: L{list} of L{str} (or L{list} of L{str} L{list}s)
         @param estimator: a function for generating a probability distribution
-        @type estimator: a function that takes a C{ConditionalFreqDist} and
-              returns a C{ConditionalProbDist}
+        @type estimator: a function that takes a L{ConditionalFreqDist} and
+              returns a L{ConditionalProbDist}
         @param freqtype: the type to use to store the counts in the underlying frequency distribution
         @type freqtype: any numeric type
-        @param estimator_args: Extra arguments for C{estimator}.
+        @param estimator_args: Extra arguments for L{estimator}.
             These arguments are usually used to specify extra
             properties for the probability distributions of individual
             conditions, such as the number of bins they contain.
         @type estimator_args: (any)
-        @param estimator_kw_args: Extra keyword arguments for C{estimator}.
+        @param estimator_kw_args: Extra keyword arguments for L{estimator}.
         @type estimator_kw_args: (any)
         """
 
@@ -71,18 +76,19 @@ class PartialCountNgramModel(NgramModel):
         self._estimator_args = estimator_args
         self._estimator_kw_args = estimator_kw_args
 
-        for utterance in train:
-            for ngram in ingrams(chain(self._padding, utterance, self._padding), n):
-                self._ngrams.add(ngram)
-                context = tuple(ngram[:-1])
-                token = ngram[-1]
-                cfd[context].inc(token)
+        if train:
+            for utterance in train:
+                for ngram in ingrams(chain(self._padding, utterance, self._padding), n):
+                    self._ngrams.add(ngram)
+                    context = tuple(ngram[:-1])
+                    token = ngram[-1]
+                    cfd[context].inc(token)
 
-        self._model = ConditionalProbDist(cfd, estimator, counttype=freqtype, *estimator_args, **estimator_kw_args)
+        self._model = ConditionalProbDist(cfd, estimator, *estimator_args, **estimator_kw_args)
 
         # recursively construct the lower-order models
         if n > 1:
-            self._backoff = NgramModel(n - 1, train, estimator, *estimator_args, **estimator_kw_args)
+            self._backoff = NgramModel(n - 1, train, estimator, freqtype, *estimator_args, **estimator_kw_args)
 
     def update(self, samples, increase_amount=1):
         cond_samples = []
@@ -102,16 +108,19 @@ class Cue(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, initial_count):
+    def __init__(self, initial_count, score_combiner=lambda scores: reduce(mul, scores)):
         '''
             Initializes any counts to their default values, if necessary
             @param initial_count: the count to assign to unseen instances of this cues
-            @type initial_count: C{Fraction}
+            @type initial_count: L{Fraction}
+            @param score_combiner: Function to combine scores in eval_word
+            @type score_combiner: C{function}
         '''
         self._initial_count = initial_count
+        self._score_combiner = score_combiner
 
     @abstractmethod
-    def eval_word(self, word, score_combiner):
+    def eval_word(self, word):
         '''
             Returns probability that proposed word is a word.
             Takes function that determines how to combine scores in the case of sub-scores as argument.
@@ -154,7 +163,7 @@ class FamiliarWordCue(Cue):
     def total_words(self):
         return self._lexicon.N()
 
-    def eval_word(self, word, score_combiner):
+    def eval_word(self, word):
         '''
             Returns probability that proposed word is a word.
             Takes function that determines how to combine scores in the case of sub-scores as argument.
@@ -192,25 +201,26 @@ class NgramCue(Cue):
         Feature that scores words based on their constituent n-grams.
     '''
 
-    def __init__(self, n, initial_count, num_unigrams, hypothetical_phonotactics=False):
+    def __init__(self, n, initial_count, num_unigrams, hypothetical_phonotactics=False, score_combiner=lambda scores: reduce(mul, scores)):
         '''
             @param n: the order of the language model (ngram size)
-            @type n: C{int}
+            @type n: L{int}
             @param initial_count: the initial count used for unseen n-grams
-            @type initial_count: C{Fraction}
+            @type initial_count: L{Fraction}
             @param num_unigrams: the number of possible unigrams types for the current cue
-            @type num_unigrams: C{int}
-            @param hypothetical_phonotactics: should n-gram counts be temporarily updated to include hypothetical words' n-grams?
-            @type hypothetical_phonotactics: C{bool}
+            @type num_unigrams: L{int}
+            @param hypothetical_phonotactics: should n-gram counts be temporarily updated to include hypothetical word's n-grams?
+            @type hypothetical_phonotactics: L{bool}
+            @param score_combiner: Function to combine scores in eval_word
+            @type score_combiner: C{function}
         '''
-        super(NgramCue, self).__init__(initial_count)
+        super(NgramCue, self).__init__(initial_count, score_combiner)
 
         self._n = n
         self._ngram_model = PartialCountNgramModel(n, None, LidstoneProbDist, Fraction, initial_count, bins=num_unigrams)
         self._hypothetical_phonotactics = hypothetical_phonotactics
-        self._token_phonotactics = token_phonotactics
 
-    def eval_word(self, word, score_combiner):
+    def eval_word(self, word):
         '''
             Returns probability that proposed word is a word.
             Takes function that determines how to combine scores in the case of sub-scores as argument.
@@ -226,8 +236,8 @@ class NgramCue(Cue):
 
         # If I want to duplicate functionality of OCaml code, should probably make my own ProbDist that inherits from Lidstone,
         # otherwise this won't do the denominator adjustments and other stuff.
-        return score_combiner([self._ngram_model.prob(tuple(ngram[:-1]), ngram[-1]) for ngram in
-                               ingrams(chain(self._ngram_model._padding, word, self._ngram_model._padding), self._n)])
+        return self._score_combiner([self._ngram_model.prob(tuple(ngram[:-1]), ngram[-1]) for ngram in
+                                     ingrams(chain(self._ngram_model._padding, word, self._ngram_model._padding), self._n)])
 
     def update_evidence(self, word, increase_amount):
         # Used to have token phonotactics check here in OCaml code, but that really breaks the separation of the different cues.
@@ -236,11 +246,66 @@ class NgramCue(Cue):
 
     def dump(self, dump_file):
         # TODO: implement this function
-        pass
+        raise NotImplementedError
 
-    # Might want to make this abstract and create sub-classes for phoneme and syllable n-grams
+    @abstractmethod
     def use_score(self, word):
         pass
+
+
+class SyllableNgramCue(NgramCue):
+    """ NgramCue that calculates probabilities for sequences of syllables."""
+    def __init__(self, n, initial_count, num_unigrams, hypothetical_phonotactics=False, score_combiner=lambda scores: reduce(mul, scores)):
+        super(SyllableNgramCue, self).__init__(n, initial_count, num_unigrams, hypothetical_phonotactics, score_combiner)
+        self._vowels = feature_chart.phones_for_features("+syllabic")
+        self._vowel_re = re.compile("[" + ''.join([re.escape(vowel) for vowel in self._vowels if len(vowel) == 1]) + "]")
+        self._diphthongs = set([vowel for vowel in self._vowels if len(vowel) > 1])
+
+    def syllabify(self, word):
+        syllables = None
+        if self._vowel_re.search(word):
+            syllables = list(word)
+            # Find all the diphthongs first
+            i = 0
+            while i < len(syllables) - 1:
+                if ''.join(syllables[i:i + 2]) in self._diphthongs:
+                    syllables[i] = ''.join(syllables[i:i + 2])
+                    del syllables[i + 1]
+                i += 1
+
+            # Keep adding onsets and codas one at a time (onsets before codas) until we can't
+            prev_list = None
+            while prev_list != syllables:
+                prev_list = syllables[:]
+                # Onsets
+                num_removed = 0
+                for i in range(1, len(syllables)):
+                    adjusted_index = i - num_removed
+                    if self._vowel_re.search(syllables[adjusted_index]) and not self._vowel_re.search(syllables[adjusted_index - 1]):
+                        syllables[adjusted_index] = ''.join(syllables[adjusted_index - 1: adjusted_index + 1])
+                        del syllables[adjusted_index - 1]
+                        num_removed += 1
+                # Codas
+                num_inserted = 0
+                for i in range(0, len(syllables) - 1):
+                    adjusted_index = i + num_inserted
+                    if adjusted_index < len(syllables) - 1:
+                        if self._vowel_re.search(syllables[adjusted_index]) and not self._vowel_re.search(syllables[adjusted_index + 1]):
+                            syllables[adjusted_index] = ''.join(syllables[adjusted_index: adjusted_index + 2])
+                            del syllables[adjusted_index + 1]
+                            num_inserted += 1
+        return syllables
+
+    def use_score(self, word):
+        return bool(self.syllabify(word))
+
+
+class PhonemeNgramCue(NgramCue):
+    """ NgramCue that calculates probabilities for sequences of phonemes."""
+
+    def use_score(self, word):
+        # TODO: implement this function
+        raise NotImplementedError
 
 
 if __name__ == '__main__':
@@ -250,7 +315,7 @@ if __name__ == '__main__':
                         type=Fraction, default="0.0")
     parser.add_argument("-df", "--decayFactor", help="Exponent used to calculate memory decay (0 = no decay).",
                         type=Fraction, default="0.0")
-    parser.add_argument("-fc", "--featureChart", help="Feature chart file", type=argparse.FileType('r'))
+    parser.add_argument("-fc", "--featureChart", help="Feature chart file", default=os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'corpora', 'br.tab'))
     parser.add_argument("-fo", "--featureNgramsOut", help="File to dump final feature n-gram counts to",
                         type=argparse.FileType('w'))
     parser.add_argument("-fw", "--featureWindow", help="Window size for feature n-grams", type=int)
@@ -356,3 +421,6 @@ if __name__ == '__main__':
 
     if args.mbdp:
         args.initialCount = Fraction(0)
+
+    feature_chart = PhonologicalFeatureChartReader(*os.path.split(args.featureChart))
+
