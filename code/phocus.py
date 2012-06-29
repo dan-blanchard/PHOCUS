@@ -428,7 +428,7 @@ class Segmenter(cmd.Cmd, object):
         segmentation[-1] = True
         first_char = best_starts[-1]
         while first_char > 0:
-            segmentation[first_char] = True
+            segmentation[first_char - 1] = True
             first_char = best_starts[first_char - 1]
 
         return [(Fraction(1), segmentation)]
@@ -666,7 +666,7 @@ if __name__ == '__main__':
 
     # TODO: fix this next line so hypothetical phonotactics is actually passed as an argument.
     cues = [FamiliarWordCue(args.initialCount),
-            PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart._phones_to_features.viewkeys() if len(phone) == 1]), feature_chart)]
+            PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart._phones_to_features.viewkeys() if len(phone) == 1]))]
 
     if args.interactive:
         utterance_limit = int(raw_input("Utterance number to process to: "))
