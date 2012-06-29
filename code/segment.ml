@@ -1453,7 +1453,7 @@ let rec nbest_inner subUtterance firstChar lastChar bestList n =
             let oldBestProdPair = PairSet.max_elt (bestList.(firstChar - 1)) in
             let oldBestProduct = fst oldBestProdPair in
             let minPreviousPair = PairSet.min_elt (bestList.(lastChar)) in
-            let lastCharBestProduct = fst minPreviousPair in
+            let lastCharBestProduct = fst minPreviousPair in            
             let scoreProduct = wordScore */ oldBestProduct in
             if scoreProduct >/ lastCharBestProduct then
                 let lastCharPairSet = PairSet.add (scoreProduct, firstChar) (if ((PairSet.cardinal bestList.(lastChar)) >= n) then (PairSet.remove minPreviousPair bestList.(lastChar)) else bestList.(lastChar)) in
@@ -1496,6 +1496,7 @@ let rec viterbi_inner subUtterance firstChar lastChar bestList =
             let oldBestProduct = fst (bestList.(firstChar - 1)) in
             let lastCharBestProduct = fst (bestList.(lastChar)) in
             let scoreProduct = wordScore */ oldBestProduct in
+            (* eprintf "scoreProduct: %s\tlastCharBestProduct: %s\n" (approx_num_exp 10 scoreProduct) (approx_num_exp 10 lastCharBestProduct); *)
             if scoreProduct >/ lastCharBestProduct then
                 viterbi_inner subUtterance (firstChar + 1) lastChar (Array.concat [(Array.sub bestList 0 lastChar); [|(scoreProduct, firstChar)|]; (Array.sub bestList (lastChar + 1) ((Array.length bestList) - (lastChar + 1)))])
             else
