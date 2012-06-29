@@ -2129,7 +2129,7 @@ class ConditionalProbDist(ConditionalProbDistI):
     def update(self, cond_samples, inc_amount=1):
         for (cond, sample) in cond_samples:
             if cond in self._pdists:
-                self._pdists[cond].inc(sample, inc_amount)
+                self._pdists[cond].update([sample], inc_amount)
 
     def __len__(self):
         return len(self._pdists)

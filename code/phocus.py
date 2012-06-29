@@ -51,7 +51,7 @@ class PartialCountNgramModel(NgramModel):
         @type n: L{int}
         @param train: the training text
         @type train: L{list} of L{str} (or L{list} of L{str} L{list}s)
-        @param estimator: a function for generating a probability distribution
+        @param estimator: a function for generating a probability distribution (must take FreqDist as first argument, and n as second)
         @type estimator: a function that takes a L{ConditionalFreqDist} and
               returns a L{ConditionalProbDist}
         @param freqtype: the type to use to store the counts in the underlying frequency distribution
@@ -83,11 +83,11 @@ class PartialCountNgramModel(NgramModel):
                     token = ngram[-1]
                     cfd[context].inc(token)
 
-        self._model = ConditionalProbDist(cfd, estimator, self._freqtype, *estimator_args, **estimator_kw_args)
+        self._model = ConditionalProbDist(cfd, estimator, self._freqtype, n, *estimator_args, **estimator_kw_args)
 
         # recursively construct the lower-order models
         if n > 1:
-            self._backoff = NgramModel(n - 1, train, estimator, freqtype, *estimator_args, **estimator_kw_args)
+            self._backoff = PartialCountNgramModel(n - 1, train, estimator, freqtype, *estimator_args, **estimator_kw_args)
 
     def update(self, samples, increase_amount=1):
         cond_samples = []
@@ -165,11 +165,9 @@ class FamiliarWordCue(Cue):
         Feature that scores words based on their lexical frequency.
     '''
 
-    def __init__(self, initial_count, mbdp=False, subseq_counts=None, type_denom=False, bad_score=0):
+    def __init__(self, mbdp=False, subseq_counts=None, type_denom=False, bad_score=0):
         '''
             Initializes any counts to their default values, if necessary
-            @param initial_count: the count to assign to unseen instances of this cues
-            @type initial_count: L{Fraction}
             @param mbdp: Use MBDP-1 score adjustments when calculating word scores.
             @type mbdp: L{bool}
             @param subseq_counts: A frequency distribution for storing subsequence counts. Should use the same one for all L{Cues}
@@ -179,7 +177,7 @@ class FamiliarWordCue(Cue):
                                Should only be on for Venkataraman.
             @type type_denom: L{bool}
         '''
-        super(FamiliarWordCue, self).__init__(initial_count, subseq_counts=subseq_counts)
+        super(FamiliarWordCue, self).__init__(Fraction(0), subseq_counts=subseq_counts)
         self._phonotactic = False
         self._lexicon = FreqDist(counttype=Fraction)
         self._mbdp = mbdp
@@ -251,7 +249,9 @@ class NgramCue(Cue):
         super(NgramCue, self).__init__(initial_count, score_combiner)
 
         self._n = n
-        self._ngram_model = PartialCountNgramModel(n, None, LidstoneProbDist, Fraction, initial_count, num_unigrams)
+        self._ngram_model = PartialCountNgramModel(n, None, lambda freqdist, n, initial_count, bins:
+                                                            LidstoneProbDist(freqdist, initial_count, bins ** n),
+                                                   Fraction, initial_count, num_unigrams)
         self._hypothetical_phonotactics = hypothetical_phonotactics
 
     def eval_word(self, word):
@@ -276,6 +276,7 @@ class NgramCue(Cue):
         # Used to have token phonotactics check here in OCaml code, but that really breaks the separation of the different cues.
         # I'll take care of checking that the word isn't in the lexicon (or token phonotactics has been specified) outside of this class.
         self._ngram_model.update([word])
+        # print self._ngram_model
 
     def dump(self, dump_file):
         '''
@@ -346,7 +347,7 @@ class PhonemeNgramCue(NgramCue):
         return True
 
 
-class Segmenter(object):
+class Segmenter(cmd.Cmd, object):
     """ A PHOCUS word segmentation model"""
 
     def __init__(self, cues, evidence_combiner, feature_chart, search_func=None, word_delimiter=' ', utterance_limit=0, supervised=0,
@@ -370,7 +371,7 @@ class Segmenter(object):
         self.word_delimiter = word_delimiter
         self.eval_word = partial(evidence_combiner, self.cues)
         self.subseq_counts = FreqDist(counttype=Fraction)
-        self.feature_chart = None
+        self.feature_chart = feature_chart
         self.search_func = self.viterbi_segmentation_search if not search_func else search_func
         self.utterance_limit = utterance_limit
         self.supervised = supervised
@@ -415,9 +416,12 @@ class Segmenter(object):
             for first_char in range(1, last_char + 1):
                 word_score = self.eval_word(sentence[first_char:last_char + 1])
                 new_score_product = word_score * best_products[first_char - 1]
+                # print >> sys.stderr, "scoreProduct: {}\tlastCharBestProduct: {}".format(float(new_score_product), float(best_products[last_char]))
                 if new_score_product > best_products[last_char]:
                     best_products[last_char] = new_score_product
                     best_starts[last_char] = first_char
+
+        # print "Best products: {}\t Best starts: {}".format(best_products, best_starts)
 
         # Extract segmentation from best_starts list
         segmentation = [False] * len(sentence)
@@ -476,6 +480,32 @@ class Segmenter(object):
                 self.output_channel.flush()
                 # Update count of utterance_delimiter in lexicon
                 self.evidence_updater(Fraction(1), [True], self.utterance_delimiter, lambda cue: isinstance(cue, FamiliarWordCue))
+            else:
+                break
+
+    ### Interactive mode functions ####
+    def do_score(self, words):
+        ''' Returns the score for the given words given the current cues. '''
+        for word in words.split():
+            backoff_combiner(self.cues, word, verbose=True)
+
+    def do_add(self, arg_string):
+        ''' Increases the frequencies of the given words by the given amount. '''
+        arg_list = arg_string.split()
+        increase_amount = arg_list.pop(0)
+        sentence = ' '.join(arg_list)
+        self.evidence_updater(Fraction(increase_amount), segmentation_list_for_segmented_sentence(sentence), sentence)
+
+    def do_syllabify(self, words):
+        ''' Breaks up the given words into syllables. '''
+        for word in words.split():
+            print SyllableNgramCue(1, 0, 10, self.feature_chart).syllabify(word)
+
+    def do_exit(self, s):
+        ''' Exit the program. '''
+        return True
+
+    do_EOF = do_exit
 
 
 def backoff_combiner(cues, word, verbose=False):
@@ -515,6 +545,7 @@ def segmentation_list_for_segmented_sentence(segmented_sentence, word_delimiter=
     return segmentation
 
 
+# Main Program
 if __name__ == '__main__':
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='PHOCUS is a word segmentation system.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -634,7 +665,12 @@ if __name__ == '__main__':
     feature_chart = PhonologicalFeatureChartReader(*os.path.split(args.featureChart))
 
     # TODO: fix this next line so hypothetical phonotactics is actually passed as an argument.
-    cues = [PhonemeNgramCue(args.phonemeWindow, args.initialCount, len(feature_chart._phones_to_features), feature_chart), FamiliarWordCue(args.initialCount)]
+    cues = [FamiliarWordCue(args.initialCount),
+            PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart._phones_to_features.viewkeys() if len(phone) == 1]), feature_chart)]
+
+    if args.interactive:
+        utterance_limit = int(raw_input("Utterance number to process to: "))
+        args.utteranceLimit = -1 if utterance_limit == 0 else utterance_limit
 
     segmenter = Segmenter(cues, backoff_combiner, feature_chart, word_delimiter=args.wordDelimiter, utterance_limit=args.utteranceLimit, supervised=args.supervisedFor,
                  wait_until_utterance=args.waitUntilUtterance, wait_for_stable_phoneme_dist=args.waitForStablePhonemeDist, output_channel=sys.stdout,
@@ -642,3 +678,6 @@ if __name__ == '__main__':
                  print_utterance_delimiter=args.printUtteranceDelimiter, utterance_delimiter=args.utteranceDelimiter)
 
     segmenter.incremental_processor(args.corpus)
+
+    if args.interactive:
+        segmenter.cmdloop()
