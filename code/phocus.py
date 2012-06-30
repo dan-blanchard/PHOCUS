@@ -291,11 +291,13 @@ class NgramCue(Cue):
 
 class SyllableNgramCue(NgramCue):
     """ NgramCue that calculates probabilities for sequences of syllables."""
-    def __init__(self, n, initial_count, num_unigrams, feature_chart, hypothetical_phonotactics=False, score_combiner=lambda scores: reduce(mul, scores), subseq_counts=None):
-        super(SyllableNgramCue, self).__init__(n, initial_count, num_unigrams, hypothetical_phonotactics, score_combiner, subseq_counts)
+    def __init__(self, n, initial_count, true_words, feature_chart, hypothetical_phonotactics=False,
+                 score_combiner=lambda scores: reduce(mul, scores), subseq_counts=None):
         self._vowels = feature_chart.phones_for_features("+syllabic")
         self._vowel_re = re.compile("[" + ''.join([re.escape(vowel) for vowel in self._vowels if len(vowel) == 1]) + "]")
         self._diphthongs = set([vowel for vowel in self._vowels if len(vowel) > 1])
+        super(SyllableNgramCue, self).__init__(n, initial_count, len(set(chain(*[self.syllabify(word) for word in true_words]))),
+              hypothetical_phonotactics, score_combiner, subseq_counts)
 
     def syllabify(self, word):
         syllables = None
@@ -362,7 +364,8 @@ class Segmenter(cmd.Cmd, object):
         @type evidence_combiner: C{function} that takes two arguments: a list of L{Cue}s and a word
         @param feature_chart: The phonological feature chart for the corpus.
         @type feature_chart: L{PhonologicalFeatureChartReader}
-        @param word_delimiter: The word delimiter that may be currently separating words in the sentence. (They will all be removed before segmenting.)
+        @param word_delimiter: The word delimiter that may be currently separating words in the sentence. (They will all be removed before
+                               segmenting.)
         @type word_delimiter: L{basestring}
         '''
         super(Segmenter, self).__init__()
@@ -370,7 +373,6 @@ class Segmenter(cmd.Cmd, object):
         self.evidence_combiner = evidence_combiner
         self.word_delimiter = word_delimiter
         self.eval_word = partial(evidence_combiner, self.cues)
-        self.subseq_counts = FreqDist(counttype=Fraction)
         self.feature_chart = feature_chart
         self.search_func = self.viterbi_segmentation_search if not search_func else search_func
         self.utterance_limit = utterance_limit
@@ -415,6 +417,7 @@ class Segmenter(cmd.Cmd, object):
             # best_products[last_char] contains the actual score for the optimal word
             for first_char in range(1, last_char + 1):
                 word_score = self.eval_word(sentence[first_char:last_char + 1])
+                # print "Score for {1}: {0}".format(word_score, sentence[first_char:last_char + 1])
                 new_score_product = word_score * best_products[first_char - 1]
                 # print >> sys.stderr, "scoreProduct: {}\tlastCharBestProduct: {}".format(float(new_score_product), float(best_products[last_char]))
                 if new_score_product > best_products[last_char]:
@@ -508,7 +511,7 @@ class Segmenter(cmd.Cmd, object):
     do_EOF = do_exit
 
 
-def backoff_combiner(cues, word, verbose=False):
+def backoff_combiner(cues, word, bad_score=Fraction(0), verbose=False):
     '''
     Calculates the scores for all the cues in the given list and then chooses the first one where cue.use_score(word) is True.
     '''
@@ -519,6 +522,8 @@ def backoff_combiner(cues, word, verbose=False):
     for i, cue in enumerate(cues):
         if cue.use_score(word):
             return scores[i]
+    else:
+        return bad_score
 
 
 def weighted_sum_combiner(cues, word, weights=None, verbose=False):
@@ -549,7 +554,7 @@ def segmentation_list_for_segmented_sentence(segmented_sentence, word_delimiter=
 if __name__ == '__main__':
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='PHOCUS is a word segmentation system.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("corpus", help="File to segment (any existing occurrences of word delimiter will be removed).",
+    parser.add_argument("corpus", help="File to segment (any existing occurrences of word delimiter will be removed before segmenting).",
                         type=argparse.FileType('r'), default='-')
     parser.add_argument("-bs", "--badScore", help="Score assigned when word length is less than window size.",
                         type=Fraction, default="0.0")
@@ -627,7 +632,7 @@ if __name__ == '__main__':
     parser.add_argument("-so", "--syllableNgramsOut", help="File to dump final syllable n-gram counts to",
                         type=argparse.FileType('w'))
     parser.add_argument("-sw", "--syllableWindow",
-                        help="Window size for syllable n-grams (Note: does not entail --initialSyllables)", type=int, default=1)
+                        help="Window size for syllable n-grams (Note: does not entail --initialSyllables)", type=int, default=0)
     parser.add_argument("-tp", "--tokenPhonotactics",
                         help="Update phoneme n-gram counts once per word occurrence, instead of per word type.",
                         action="store_true")
@@ -663,16 +668,26 @@ if __name__ == '__main__':
         args.initialCount = Fraction(0)
 
     feature_chart = PhonologicalFeatureChartReader(*os.path.split(args.featureChart))
+    subseq_counts = FreqDist(counttype=Fraction) if args.subseqDenominator else None
 
-    # TODO: fix this next line so hypothetical phonotactics is actually passed as an argument.
-    cues = [FamiliarWordCue(args.initialCount),
-            PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart._phones_to_features.viewkeys() if len(phone) == 1]))]
+    # Put cue list together
+    cues = [FamiliarWordCue(args.initialCount, subseq_counts=subseq_counts)] if not args.noLexicon else []
+    # Syllables
+    if args.syllableWindow:
+        corpus_name = args.corpus.name
+        true_words = args.corpus.read().replace('\n', args.wordDelimiter).split(args.wordDelimiter)
+        args.corpus.close()
+        args.corpus = open(corpus_name)
+        cues.append(SyllableNgramCue(args.syllableWindow, args.initialCount, true_words, feature_chart, hypothetical_phonotactics=args.hypotheticalPhonotactics, subseq_counts=subseq_counts))
+    # Phonemes
+    if args.phonemeWindow:
+        cues.append(PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart._phones_to_features.viewkeys() if len(phone) == 1]), hypothetical_phonotactics=args.hypotheticalPhonotactics))
 
     if args.interactive:
         utterance_limit = int(raw_input("Utterance number to process to: "))
         args.utteranceLimit = -1 if utterance_limit == 0 else utterance_limit
 
-    segmenter = Segmenter(cues, backoff_combiner, feature_chart, word_delimiter=args.wordDelimiter, utterance_limit=args.utteranceLimit, supervised=args.supervisedFor,
+    segmenter = Segmenter(cues, partial(backoff_combiner, verbose=args.verbose), feature_chart, word_delimiter=args.wordDelimiter, utterance_limit=args.utteranceLimit, supervised=args.supervisedFor,
                  wait_until_utterance=args.waitUntilUtterance, wait_for_stable_phoneme_dist=args.waitForStablePhonemeDist, output_channel=sys.stdout,
                  semi_supervised_updating=args.supervisedUpdating, uniform_phonotactics=args.uniformPhonotactics, display_line_numbers=args.lineNumbers,
                  print_utterance_delimiter=args.printUtteranceDelimiter, utterance_delimiter=args.utteranceDelimiter)
