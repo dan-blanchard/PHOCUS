@@ -825,12 +825,13 @@ struct
                                             num_of_int 1
                                         else
                                             (num_of_int 1) // ((num_of_int 1) -/ ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) // currentTotalNgramsArray.(0)))); (* This term is necessary because the empty word is not really in the lexicon. *)
-                (* eprintf "basePhonemeScore = %F\twordDelimiterCount = %F\twordtotal = %F\n" !score (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) currentTotalNgramsArray.(0);  *)
+                (* eprintf "basePhonemeScore = %s\twordDelimiterCount = %s\twordtotal = %s\n" (approx_num_exp 10 !score) (approx_num_exp 10 (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter)) (approx_num_exp 10 currentTotalNgramsArray.(0)); *)
                 List.iter (* Get ngram scores *)
                     (fun firstChar ->
                         let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
                         let ngramScore = prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
                         (* eprintf "\tn-gram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore); *)
+                        (* eprintf "\tn-gram count for %s = %s\n" ngram (approx_num_exp 10 (if Hashtbl.mem currentNgramCountsArray.(!phonemeWindow - 1) ngram then (Hashtbl.find currentNgramCountsArray.(!phonemeWindow - 1) ngram) else initialCountsArray.(!phonemeWindow - 1))); *)
                         score := (combine !score ngramScore)
                     )
                     (List.init ((String.length wordWithBoundary) - (!phonemeWindow - 1)) (fun a -> a));
@@ -1320,6 +1321,8 @@ let rec lexicon_updater segmentation sentence updateFunctions (incrementAmount:n
             lexicon_updater (List.tl segmentation) sentence updateFunctions incrementAmount
         end
     else
+        (* eprintf "Increment amount = %s\n" (approx_num_exp 10 incrementAmount); *)
+        (* flush stderr; *)
         commit_subseq_counts ();;
 
 (* These two functions are used for updating the subsequence counts if we're doing a supervised pass through the corpus.*)
@@ -1453,7 +1456,7 @@ let rec nbest_inner subUtterance firstChar lastChar bestList n =
             let oldBestProdPair = PairSet.max_elt (bestList.(firstChar - 1)) in
             let oldBestProduct = fst oldBestProdPair in
             let minPreviousPair = PairSet.min_elt (bestList.(lastChar)) in
-            let lastCharBestProduct = fst minPreviousPair in            
+            let lastCharBestProduct = fst minPreviousPair in
             let scoreProduct = wordScore */ oldBestProduct in
             if scoreProduct >/ lastCharBestProduct then
                 let lastCharPairSet = PairSet.add (scoreProduct, firstChar) (if ((PairSet.cardinal bestList.(lastChar)) >= n) then (PairSet.remove minPreviousPair bestList.(lastChar)) else bestList.(lastChar)) in
@@ -1699,7 +1702,9 @@ if (!interactive) then
                             printf "\n"
                         )
                         args
-                | "add" :: incrementAmount :: args -> let (segmentation, sentence) = segmentation_of_word_list args in lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (BatNum.of_float (float_of_string incrementAmount)); ()
+                | "add" :: inc :: args ->
+                    let (segmentation, sentence) = segmentation_of_word_list args in
+                    lexicon_updater segmentation sentence [PhonemeNgramCue.update_evidence; SyllableNgramCue.update_evidence; FamiliarWordCue.update_evidence] (num_of_float_string inc)
                 | "help" :: [] -> printf "Available commands: \n    add INCREMENT-AMOUNT WORDS\tincreases the frequencies of WORDS by INCREMENT-AMOUNT\n    score WORDS\t\t\treturns the scores for WORDS\n    syllabify WORDS\t\tbreaks WORDS up into syllables\n    pairs WORDS\t\tprints precedence pairs in WORDS\n"
                 | _ -> printf "Unknown command.\n"
             with e ->
