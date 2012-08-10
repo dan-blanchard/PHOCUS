@@ -317,6 +317,11 @@ let rec numPermutationsRecurser n r =
 let numPermutations n r =
     numPermutationsRecurser n (n -/ r +/ (num_of_int 1))
 
+(* This is actually not right, so don't use it *)
+(* let num_ngram_occurences max_n curr_n num_unigrams =
+    (power_num num_unigrams (num_of_int (max_n - curr_n))) */ (num_of_int (max_n + 1 - curr_n))
+ *)
+
 
 (*************** SUBSEQUENCES ***********)
 let subseqCounts = Hashtbl.create 100000
@@ -590,6 +595,8 @@ struct
                 (fun currentWindowSizeMinusOne ->
                     initialCountsArray.(currentWindowSizeMinusOne) <- initialCount */ (power_num numSyllables (num_of_int (!syllableWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!syllableWindow - currentWindowSizeMinusOne));
                     totalNgramsArray.(currentWindowSizeMinusOne) <- (numPermutations numSyllables (num_of_int (currentWindowSizeMinusOne + 1))) */ initialCountsArray.(currentWindowSizeMinusOne);
+                    (* initialCountsArray.(currentWindowSizeMinusOne) <- initialCount */ (num_ngram_occurences !syllableWindow (currentWindowSizeMinusOne + 1) numSyllables);
+                    totalNgramsArray.(currentWindowSizeMinusOne) <- (power_num numSyllables (num_of_int (currentWindowSizeMinusOne + 1))) */ initialCountsArray.(currentWindowSizeMinusOne); *)
                     (* eprintf "Initial n-gram counts for length %d: %s\n\tTotal n-grams: %s\n\tNum syllables: %s\n" (currentWindowSizeMinusOne + 1) (approx_num_exp 10 initialCountsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 totalNgramsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 numSyllables);
                     flush stderr *)
                 )
@@ -756,8 +763,10 @@ struct
             (fun currentWindowSizeMinusOne ->
                 initialCountsArray.(currentWindowSizeMinusOne) <- initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne));
                 totalNgramsArray.(currentWindowSizeMinusOne) <- (numPermutations numPhonemes (num_of_int (currentWindowSizeMinusOne + 1))) */ initialCountsArray.(currentWindowSizeMinusOne);
+                (* initialCountsArray.(currentWindowSizeMinusOne) <- initialCount */ (num_ngram_occurences !phonemeWindow (currentWindowSizeMinusOne + 1) numPhonemes);
+                totalNgramsArray.(currentWindowSizeMinusOne) <- (power_num numPhonemes (num_of_int (currentWindowSizeMinusOne + 1))) */ initialCountsArray.(currentWindowSizeMinusOne); *)
                 (* eprintf "Initial n-gram counts for length %d: %s\n\tTotal n-grams: %s\n\tNum phonemes: %s\n" (currentWindowSizeMinusOne + 1) (approx_num_exp 10 initialCountsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 totalNgramsArray.(currentWindowSizeMinusOne)) (approx_num_exp 10 numPhonemes);
-                flush stderr *)
+                flush stderr; *)
                 if (currentWindowSizeMinusOne = 0) then
                     let phonemePermutationList = permutations phonemeList "" currentWindowSizeMinusOne in
                     let currentIncrementAmount = initialCount */ (power_num numPhonemes (num_of_int (!phonemeWindow - (currentWindowSizeMinusOne + 1)))) */ (num_of_int (!phonemeWindow - currentWindowSizeMinusOne)) in
@@ -826,13 +835,14 @@ struct
                                             num_of_int 1
                                         else
                                             (num_of_int 1) // ((num_of_int 1) -/ ((Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter) // currentTotalNgramsArray.(0)))); (* This term is necessary because the empty word is not really in the lexicon. *)
-                (* eprintf "basePhonemeScore = %s\twordDelimiterCount = %s\twordtotal = %s\n" (approx_num_exp 10 !score) (approx_num_exp 10 (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter)) (approx_num_exp 10 currentTotalNgramsArray.(0)); *)
+                (* eprintf "basePhonemeScore = %s\twordDelimiterCount = %s\twordtotal = %s\n" (approx_num_exp 10 !score) (approx_num_exp 10 (Hashtbl.find currentNgramCountsArray.(0) !wordDelimiter)) (approx_num_exp 10 currentTotalNgramsArray.(0));
+                eprintf "total number of n-grams of current size = %s\n" (approx_num_exp 10 currentTotalNgramsArray.(!phonemeWindow - 1)); *)
                 List.iter (* Get ngram scores *)
                     (fun firstChar ->
                         let ngram = String.sub wordWithBoundary firstChar !phonemeWindow in
                         let ngramScore = prob_ngram (String.sub ngram 0 (!phonemeWindow - 1)) ngram (!phonemeWindow - 1) currentNgramCountsArray currentTotalNgramsArray wordTypesWithCountArray ngramCountsArray initialCountsArray in
-                        (* eprintf "\tn-gram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore); *)
-                        (* eprintf "\tn-gram count for %s = %s\n" ngram (approx_num_exp 10 (if Hashtbl.mem currentNgramCountsArray.(!phonemeWindow - 1) ngram then (Hashtbl.find currentNgramCountsArray.(!phonemeWindow - 1) ngram) else initialCountsArray.(!phonemeWindow - 1))); *)
+                        (* eprintf "\tn-gram score for %s = %s\n" ngram (approx_num_exp 10 ngramScore);
+                        eprintf "\tn-gram count for %s = %s\n" ngram (approx_num_exp 10 (if Hashtbl.mem currentNgramCountsArray.(!phonemeWindow - 1) ngram then (Hashtbl.find currentNgramCountsArray.(!phonemeWindow - 1) ngram) else initialCountsArray.(!phonemeWindow - 1))); *)
                         score := (combine !score ngramScore)
                     )
                     (List.init ((String.length wordWithBoundary) - (!phonemeWindow - 1)) (fun a -> a));
