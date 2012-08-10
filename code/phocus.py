@@ -193,10 +193,7 @@ class NgramCue(Cue):
         '''
         self._hypothetical_phonotactics = kwargs.pop('hypothetical_phonotactics', False)
         prob_estimator = kwargs.pop('prob_estimator', lambda freqdist, curr_n, initial_count, bins: LidstoneProbDist(freqdist,
-                                                                                                                     # initial_count,
-                                                                                                                     NgramCue._base_ngram_count(n,
-                                                                                                                                                curr_n,
-                                                                                                                                                num_unigrams) * initial_count,
+                                                                                                                     initial_count,
                                                                                                                      num_unigrams))
         self._word_delimiter = kwargs.pop('word_delimiter', ' ')
         super(NgramCue, self).__init__(initial_count, **kwargs)
@@ -233,8 +230,8 @@ class NgramCue(Cue):
 
         # If I want to duplicate functionality of OCaml code, should probably make a ProbDist that inherits from Lidstone,
         # otherwise this won't do the denominator adjustments and other stuff.
-        for ngram in ingrams(chain(self._ngram_model._padding, word, self._ngram_model._padding), self._n):
-            print("Ngram: {}\tProb for {} given {}: {}".format(ngram, ngram[-1], tuple(ngram[:-1]), self._ngram_model.prob(tuple(ngram[:-1]), ngram[-1])), file=sys.stderr)
+        # for ngram in ingrams(chain(self._ngram_model._padding, word, self._ngram_model._padding), self._n):
+        #     print("Ngram: {}\tProb for {} given {}: {}".format(ngram, ngram[-1], tuple(ngram[:-1]), self._ngram_model.prob(tuple(ngram[:-1]), ngram[-1])), file=sys.stderr)
 
         if self._n > 1:
             adjustment = Fraction(1)
