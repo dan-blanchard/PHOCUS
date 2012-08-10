@@ -34,3 +34,7 @@ code/other-segmenters/*
 *.sublime*
 
 code/brent.pl
+
+*.sh
+
+code/score_seg.prl
