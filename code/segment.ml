@@ -817,7 +817,8 @@ struct
                     ngramList;
                 let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
                 let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in
-                if (not !mbdp) then
+                (* This should only be used when the lexicon is used, since it's part of the Witten-Bell smoothing. *)
+                if (not (!mbdp or !noLexicon)) then
                     score := wordTypes // (wordTypes +/ totalWordsNum)
                 else
                     score := num_of_int 1;
