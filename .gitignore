@@ -16,11 +16,21 @@ Thumbs.db
 *.o
 *.cmi
 *.cmx
+code/build/*
+code/_build/*
 
 # Results #
 ###########
 code/hungarian/*
 *.html
-*-pw-*
+*-pw*.txt
+*-sp*.txt
 code/jcl*
-code/_build/*
+code/proposal*
+code/other-segmenters/*
+
+# Misc #
+########
+*.sublime*
+
+code/brent.pl
