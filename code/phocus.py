@@ -45,7 +45,7 @@ class PartialCountNgramModel(NgramModel):
     NgramModel that supports storing counts as types other than int.
     '''
 
-    def __init__(self, n, train, estimator, freqtype, padding, *estimator_args, **estimator_kw_args):
+    def __init__(self, n, train, estimator, freqtype, padding, backoff, *estimator_args, **estimator_kw_args):
         """
         Creates an ngram language model to capture patterns in n consecutive
         words of training text.  An estimator smooths the probabilities derived
@@ -60,6 +60,8 @@ class PartialCountNgramModel(NgramModel):
         @type estimator: a function that takes a L{ConditionalFreqDist} and returns a L{ConditionalProbDist}
         @param freqtype: the type to use to store the counts in the underlying frequency distribution
         @type freqtype: any numeric type
+        @param backoff: whether or not we should use Katz back-off
+        @type backoff: L{bool}
         @param estimator_args: Extra arguments for L{estimator}.
             These arguments are usually used to specify extra
             properties for the probability distributions of individual
@@ -90,8 +92,7 @@ class PartialCountNgramModel(NgramModel):
         self._model = ConditionalProbDist(cfd, estimator, self._freqtype, n, *estimator_args, **estimator_kw_args)
 
         # recursively construct the lower-order models
-        if n > 1:
-            self._backoff = PartialCountNgramModel(n - 1, train, estimator, freqtype, padding, *estimator_args, **estimator_kw_args)
+        self._backoff = PartialCountNgramModel(n - 1, train, estimator, freqtype, padding, backoff, *estimator_args, **estimator_kw_args) if (backoff and n > 1) else None
 
     def update(self, samples, increase_amount=1):
         '''
@@ -105,8 +106,25 @@ class PartialCountNgramModel(NgramModel):
         self._model.update(cond_samples, increase_amount)
 
         # Recursively update lower-order models
-        if self._n > 1:
+        if self._backoff:
             self._backoff.update(samples, increase_amount)
+
+    def prob(self, word, context):
+        """
+        Evaluate the probability of this word in this context using Katz Backoff.
+
+        @param word: the word to get the probability of
+        @type word: C{string}
+        @param context: the context the word is in
+        @type context: C{list} of C{string}
+        """
+
+        context = tuple(context)
+        if not self._backoff or (context + (word,) in self._ngrams):
+            return self[context].prob(word)
+        else:
+            # print "Alpha: {}\tBackoff prob: {}".format(self._alpha(context), self._backoff.prob(word, context[1:]))
+            return self._alpha(context) * self._backoff.prob(word, context[1:])
 
 
 class Cue(object):
@@ -183,6 +201,8 @@ class NgramCue(Cue):
             @type initial_count: L{Fraction}
             @param num_unigrams: the number of possible unigrams types for the current cue
             @type num_unigrams: L{int}
+            @param backoff: should Katz back-off be used in underlying n-gram model
+            @type backoff: L{bool}
             @param hypothetical_phonotactics: should n-gram counts be temporarily updated to include hypothetical word's n-grams?
             @type hypothetical_phonotactics: L{bool}
             @param score_combiner: Function to combine scores in eval_word
@@ -195,27 +215,11 @@ class NgramCue(Cue):
         prob_estimator = kwargs.pop('prob_estimator', lambda freqdist, curr_n, initial_count, bins: LidstoneProbDist(freqdist,
                                                                                                                      initial_count,
                                                                                                                      num_unigrams))
+        self._backoff = kwargs.pop('backoff', False)
         self._word_delimiter = kwargs.pop('word_delimiter', ' ')
         super(NgramCue, self).__init__(initial_count, **kwargs)
         self._n = n
-        self._ngram_model = PartialCountNgramModel(n, None, prob_estimator, Fraction, self._word_delimiter, initial_count, num_unigrams)
-
-    @staticmethod
-    def _base_ngram_count(max_n, curr_n, num_unigrams):
-        '''
-        The number of times n-grams of the current size must have occurred if each n-gram of the maximum size occurred once.
-
-        @param max_n: Maximum n-gram size
-        @type max_n: L{int}
-        @param curr_n: Current n-gram size
-        @type curr_n: L{int}
-        @param num_unigrams: Number of possible unigrams
-        @type num_unigrams: L{int}
-
-        @return: The number of times n-grams of the current size must have occurred if each n-gram of the maximum size occurred once.
-        @rtype: L{int}
-        '''
-        return num_unigrams ** (max_n - curr_n) * (max_n + 1 - curr_n)
+        self._ngram_model = PartialCountNgramModel(n, None, prob_estimator, Fraction, self._word_delimiter, self._backoff, initial_count, num_unigrams)
 
     def eval_word(self, word):
         '''
@@ -682,6 +686,7 @@ def main():
                         help="After reading in corpus, user can specify an utterance number to segment up to, and query scores " +
                              "for possible segmentations.",
                         action="store_true")
+    parser.add_argument("-kb", "--katzBackoff", help="For all n-gram models, use Katz back-off.", action="store_true")
     parser.add_argument("-jp", "--jointProbability", help="Use joint probabilities instead of conditional", action="store_true")
     parser.add_argument("-lo", "--lexiconOut", help="File to dump final lexicon to", type=argparse.FileType('w'))
     parser.add_argument("-ln", "--lineNumbers", help="Display line numbers before each segmented utterance", action="store_true")
@@ -777,11 +782,11 @@ def main():
         args.corpus.close()
         args.corpus = open(corpus_name)
         cues.append(SyllableNgramCue(args.syllableWindow, args.initialCount, true_words, feature_chart, hypothetical_phonotactics=args.hypotheticalPhonotactics,
-                                     subseq_counts=subseq_counts, diphthongs=args.diphthongs))
+                                     subseq_counts=subseq_counts, diphthongs=args.diphthongs, backoff=args.katzBackoff))
     # Phonemes
     if args.phonemeWindow:
         cues.append(PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart.phones_to_features.viewkeys() if len(phone) == 1]),
-                    hypothetical_phonotactics=args.hypotheticalPhonotactics))
+                    hypothetical_phonotactics=args.hypotheticalPhonotactics, backoff=args.katzBackoff))
 
     if args.interactive:
         utterance_limit = int(raw_input("Utterance number to process to: "))
@@ -799,7 +804,8 @@ def main():
         import readline  # pylint: disable=W0611
         segmenter.cmdloop()
 
+    return segmenter
 
 # Main Program
 if __name__ == '__main__':
-    main()
+    segmenter = main()
