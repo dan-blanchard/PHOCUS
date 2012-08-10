@@ -240,14 +240,14 @@ class NgramCue(Cue):
             # print("word delimiter prob: {}".format(self._ngram_model.prob(self._word_delimiter, self._ngram_model._padding)), file=sys.stderr)
             adjustment = Fraction(1) / (Fraction(1) - self._ngram_model.prob(self._word_delimiter, self._ngram_model._padding))
 
-        print([self._ngram_model.prob(ngram[-1], tuple(ngram[:-1])) for ngram in
-                                            ingrams(chain(*([self._word_delimiter, word, self._word_delimiter] if self._n > 1 else [word, self._word_delimiter])),
-                                                          self._n)], file=sys.stderr)
+        # print([self._ngram_model.prob(ngram[-1], tuple(ngram[:-1])) for ngram in
+        #                                     ingrams(chain(*([self._word_delimiter, word, self._word_delimiter] if self._n > 1 else [word, self._word_delimiter])),
+        #                                                   self._n)], file=sys.stderr)
 
         raw_score = self._score_combiner([self._ngram_model.prob(ngram[-1], tuple(ngram[:-1])) for ngram in
                                             ingrams(chain(*([self._word_delimiter, word, self._word_delimiter] if self._n > 1 else [word, self._word_delimiter])),
                                                           self._n)])
-        print("adjustment: {:.10e}\traw score: {:.10e}".format(float(adjustment), float(raw_score)), file=sys.stderr)
+        # print("adjustment: {:.10e}\traw score: {:.10e}".format(float(adjustment), float(raw_score)), file=sys.stderr)
 
         return adjustment * raw_score
 
@@ -345,9 +345,9 @@ class SyllableNgramCue(NgramCue):
                  score_combiner=lambda scores: reduce(mul, scores), subseq_counts=None, diphthongs=None):
         self._vowels = feature_chart.phones_for_features("+syllabic")
         self._vowel_re = re.compile("[" + ''.join([re.escape(vowel) for vowel in self._vowels if len(vowel) == 1]) + "]")
-        self._diphthongs = set(diphthongs)
+        self._diphthongs = set(diphthongs) if diphthongs is not None else set()
         super(SyllableNgramCue, self).__init__(n, initial_count, len(set(chain(*[self.syllabify(word) for word in true_words]))),
-              hypothetical_phonotactics, score_combiner, subseq_counts)
+              hypothetical_phonotactics=hypothetical_phonotactics, score_combiner=score_combiner, subseq_counts=subseq_counts)
 
     def syllabify(self, word):
         '''
@@ -548,20 +548,24 @@ class Segmenter(cmd.Cmd, object):
     ### Interactive mode functions ####
     def do_score(self, words):
         ''' @return: the score for the given words given the current cues. '''
-        for word in words.split():
-            backoff_combiner(self.cues, word, verbose=True)
+        score = Fraction(1)
+        for word in words.split(self.word_delimiter):
+            score *= backoff_combiner(self.cues, word, verbose=True)
+        print("Combined score: {:.10e}\n".format(float(score)), file=sys.stderr)
 
     def do_add(self, arg_string):
         ''' Increases the frequencies of the given words by the given amount. '''
         arg_list = arg_string.split()
         increase_amount = arg_list.pop(0)
-        sentence = ' '.join(arg_list)
-        self.evidence_updater(Fraction(increase_amount), seg_list_for_segmented_sentence(sentence), sentence)
+        sentence = self.word_delimiter.join(arg_list)
+        self.evidence_updater(Fraction(increase_amount), seg_list_for_segmented_sentence(sentence), sentence.replace(self.word_delimiter, ''))
+        print()
 
     def do_syllabify(self, words):
         ''' Breaks up the given words into syllables. '''
-        for word in words.split():
-            print(SyllableNgramCue(1, 0, 10, self.feature_chart).syllabify(word))
+        for word in words.split(self.word_delimiter):
+            print(SyllableNgramCue(1, 0, [], self.feature_chart).syllabify(word))
+        print(file=sys.stderr)
 
     def do_exit(self, s):
         ''' Exit the program. '''
