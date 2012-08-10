@@ -317,7 +317,7 @@ let rec numPermutationsRecurser n r =
 let numPermutations n r =
     numPermutationsRecurser n (n -/ r +/ (num_of_int 1))
 
-(* This is actually not right, so don't use it *)
+(* This is actually not quite right because we over count based on the presence of empty strings, so don't use it *)
 (* let num_ngram_occurences max_n curr_n num_unigrams =
     (power_num num_unigrams (num_of_int (max_n - curr_n))) */ (num_of_int (max_n + 1 - curr_n))
  *)
@@ -1156,7 +1156,8 @@ struct
                     ngramList;
                 let currentTotalNgramsArray = (if !countProposedNgrams then wordTotalNgramsArray else totalNgramsArray) in
                 let currentNgramCountsArray = (if !countProposedNgrams then wordNgramCountsArray else ngramCountsArray) in
-                if (not !mbdp) then
+                (* This should only be used when the lexicon is used, since it's part of the Witten-Bell smoothing. *)
+                if (not (!mbdp or !noLexicon)) then
                     score := wordTypes // (wordTypes +/ totalWordsNum)
                 else
                     score := num_of_int 1;
