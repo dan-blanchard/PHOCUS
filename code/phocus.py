@@ -569,6 +569,7 @@ class Segmenter(cmd.Cmd, object):
 
     def do_exit(self, s):
         ''' Exit the program. '''
+        print()
         return True
 
     do_EOF = do_exit
