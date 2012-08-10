@@ -1,0 +1,8328 @@
+Segmenting fold 0 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 1 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 2 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 3 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 4 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 5 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 6 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 7 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 8 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+Segmenting fold 9 with command './segment.native -sd -rs -sw 2 -is -ic 0.0001 -pw 0 -nl -tp -su -sf 5950'...done
+
+
+Results for .cvfoldtemp1259868864-results:
+WP	FO	FU	FB	WR	TO	TU	TB	WF	BP	BR	BF	LP	LR	LF
+65.04%	28.29%	4.00%	2.67%	72.61%	12.25%	12.03%	3.11%	68.62%	72.63%	86.82%	79.10%	45.06%	51.00%	47.84%
+
+Undersegmented words
+------------------
+a:
+	aaa	9
+	abasadi	3
+	abo	3
+	abona	6
+	aee	3
+	aha	3
+	aka	1
+	akae	1
+	ake	3
+	alapeng	3
+	ale	3
+	amakotomane	2
+	amathe	3
+	amonate	6
+	ang	3
+	aore	3
+	aukhotse	1
+	awena	18
+	kaloabohobe	3
+	lapia	1
+	malapia	1
+	maotoa	1
+	metsia	2
+	metsiang	3
+	mothoamola	3
+aa:
+	aabatho	3
+	aah	1
+	aale	3
+	aaoisa	3
+aaa:
+	aaauase	3
+aabata:
+	ahaoaabata	3
+ababang:
+	aoababang	3
+abuti:
+	abutimasela	3
+	abutipateriki	7
+	abutisell	2
+	entseabuti	3
+	keabuti	24
+ach:
+	achnaee	3
+ache:
+	achebasadi	3
+	acheha	3
+	achele	3
+adula:
+	eoadula	3
+ae:
+	aebatho	3
+	aebo	6
+	aeebehe	3
+aeja:
+	mongaeja	3
+aetsa:
+	aetsabasadi	3
+	aetsati	2
+ahao:
+	ahaoaabata	3
+	fiahao	3
+	matsohoahao	3
+aid:
+	etaid	9
+ajang:
+	ajangpolokwe	3
+	ajangsengwa	3
+aje:
+	ajele	4
+ake:
+	akeauka	1
+	akeaukadime	2
+	akeuhla	2
+	akeuhlako	1
+	akeungwathele	3
+	akeutswe	3
+	eake	3
+	eeake	2
+ako:
+	akobehe	3
+	akobo	3
+	akobone	12
+	eeako	1
+	tlooako	3
+ale:
+	alena	3
+	wahaoale	3
+am:
+	amjumping	6
+amabedi:
+	matsohoamabedi	2
+ana:
+	keana	15
+	maotoana	1
+	metsiana	2
+ane:
+	keane	16
+	nkekeane	2
+aneanka:
+	aneankadieta	1
+aneantseaetsa:
+	aneantseaetsama	1
+	aneantseaetsamadi	2
+anthe:
+	antheollela	1
+	eoantheollela	2
+ao:
+	aoababang	3
+	aobana	3
+	aobasadipateriki	1
+	aokoloi	1
+apara:
+	tlooapara	3
+apole:
+	keapole	6
+aqhala:
+	sekaaqhala	1
+araba:
+	arabadi	2
+	arabapo	1
+are:
+	aretsi	1
+	areyets	3
+asatsebe:
+	mothoasatsebe	3
+ashapa:
+	ashapale	3
+atima:
+	atimamafanya	3
+atle:
+	shaatle	2
+atseha:
+	atsehaka	1
+au:
+	auba	3
+	aubasadi	3
+aufe:
+	aufelamune	2
+	eaufelamune	2
+aufile:
+	wahaoaufilela	3
+aukadime:
+	akeaukadime	2
+ausi:
+	ausia	1
+	ausiye	1
+	boausi	1
+	eausi	9
+	ebeausi	2
+	eeausi	3
+	enkeausi	3
+	hoausi	5
+	keajaausi	3
+	keausi	45
+	loausi	1
+	ooausi	6
+	sethuthuthuausi	3
+	shebapaloausi	2
+	uausi	9
+	utsebeausi	2
+	yahahoausi	1
+aya:
+	ayakae	3
+ba:
+	aba	6
+	abutiba	6
+	barona	1
+	keba	1
+	nkaba	2
+baipatile:
+	blackbaipatile	6
+baitse:
+	keujwetsebaitse	3
+bakingpowder:
+	yabakingpowder	1
+bala:
+	balaha	1
+	hebala	2
+bale:
+	bathobale	3
+bana:
+	aobana	3
+	atabana	1
+	bathobana	3
+	dumelabana	4
+	hebana	3
+	kabana	3
+	kebana	1
+	ngatabana	1
+	otlahlanyabana	3
+	potabana	3
+	tabana	1
+	wabana	2
+bane:
+	bathobane	3
+bapala:
+	sekabapala	9
+	skabapala	3
+bapaleng:
+	tloobapaleng	3
+bare:
+	bareba	3
+	barena	5
+	barenanamane	4
+bareng:
+	mbareng	3
+basadi:
+	abasadi	3
+	achebasadi	3
+	aetsabasadi	3
+	aobasadipateriki	1
+	aubasadi	3
+	basadiebe	3
+	basadiee	3
+	basadifeela	3
+	basadimoqe	3
+	basadina	3
+	basadipateriki	2
+	haobasadi	3
+	hatabasadi	3
+	hebasadipateriki	3
+	kabasadi	9
+	moholobasadi	2
+	moholobasadiya	1
+	obasadi	3
+batho:
+	aabatho	3
+	aebatho	3
+	bathoba	3
+	bathobaba	6
+	bathobale	3
+	bathobana	3
+	bathobane	3
+	bathobo	2
+	bathobosi	1
+	bathooatsaba	3
+	ebathoo	3
+	eobatho	3
+batla:
+	eebatla	3
+be:
+	kebe	3
+bea:
+	kebea	1
+	kebeamane	2
+beha:
+	behadiapole	3
+	behakatiba	6
+	behamollo	3
+	eebeha	3
+	sekabeha	3
+	sekabehabetheng	3
+behe:
+	akobehe	3
+bethe:
+	hobethe	3
+	nyabethe	2
+	tafolebethe	2
+betheng:
+	habetheng	2
+	oitsetlehilebetheng	3
+	sekabehabetheng	3
+	tlohabetheng	4
+betsa:
+	betsared	3
+bina:
+	ebina	6
+	hobina	6
+bine:
+	binehe	3
+black:
+	blackbaipatile	6
+	uentseblack	3
+bloody:
+	bloodyfool	3
+bo:
+	abo	3
+	aebo	6
+	boausi	1
+	boha	3
+	bomonate	3
+	bompha	3
+	eebo	26
+	eeboha	3
+	eeboskaqhala	1
+	eebotsamaya	3
+	helabo	1
+	uaeratabo	3
+	uamoratabo	3
+	uatsebabo	1
+	wabo	2
+bobo:
+	bobobona	3
+bohata:
+	obuabohata	3
+bohobe:
+	kaloabohobe	3
+	kebohobe	9
+boksboks:
+	naboksboks	3
+bolo:
+	bolobana	3
+	kaebolo	6
+	keankebolo	1
+	patabolo	3
+bolong:
+	wabolong	1
+bona:
+	abona	6
+	bobobona	3
+	bonama	3
+	bonamadi	2
+	bonamadinyane	1
+	bonanamane	1
+	bonatera	3
+bone:
+	akobone	12
+	kebone	3
+borikhwe:
+	keborikhwe	3
+bothetsi:
+	ubothetsi	6
+botswa:
+	ebotswa	3
+bua:
+	abua	3
+	buahe	2
+	ebua	3
+	litlharebua	3
+butle:
+	holefifibutle	3
+	mbutle	3
+	yabutle	2
+card:
+	lfcard	3
+cards:
+	twocards	3
+cents:
+	twocentsk	3
+che:
+	chedisutlehile	2
+	cheee	3
+chee:
+	cheee	2
+	cheeepate	1
+	cheeoolle	3
+cho:
+	chojwalo	3
+dali:
+	peledalid	2
+	peledalidali	2
+di:
+	diei	1
+	dieiti	2
+	dika	4
+	dikadikobong	3
+	dikae	61
+	dikalo	3
+	dikana	2
+	dimonate	3
+	ding	2
+	ditenya	3
+	ditha	1
+	hadi	3
+	lodi	3
+	tsakadikae	2
+diapole:
+	behadiapole	3
+	uaditsebadiapole	2
+diawela:
+	diaweladintho	3
+dierekise:
+	dikhobetsadierekise	3
+dieta:
+	aneankadieta	1
+	kadieta	3
+	nkadieta	2
+	oaqhomakadieta	3
+	sadieta	6
+dijo:
+	dijooadifuwa	3
+dijuniform:
+	nkadijuniformtsena	3
+dikarete:
+	dikaretenamane	3
+	kedikarete	3
+	nkadikarete	4
+	utlonkadikarete	2
+dikhobe:
+	dikhobetsa	2
+	dikhobetsadierekise	3
+	kedikhobe	3
+	kedikhobetsa	2
+dikobo:
+	kadikobo	2
+dikobong:
+	dikadikobong	3
+dikoloi:
+	madikoloi	3
+dikuku:
+	etsadikuku	3
+	kedikuku	3
+dikuskus:
+	mamellodikuskus	3
+dile:
+	empadile	2
+dimete:
+	kadimete	4
+dintho:
+	diaweladintho	3
+	feeladintho	1
+	ichdintho	1
+	lahladintho	3
+dipalo:
+	dipalodipereng	2
+dipapa:
+	kadipapa	2
+dipereng:
+	dipalodipereng	2
+dipompong:
+	utimadipompong	3
+disutlehile:
+	chedisutlehile	2
+ditapole:
+	haditapole	1
+	ophehaditapole	2
+ditono:
+	utlachaditono	3
+ditonong:
+	kaditonong	3
+ditswana:
+	aditswana	1
+	eaditswana	2
+donki:
+	eamosiyadonki	2
+	yadonki	1
+dula:
+	dulafatse	4
+	dulautlataboha	3
+	hodula	3
+	litlharedula	1
+	skadula	6
+	udutsedula	1
+dumela:
+	dumelabana	4
+e:
+	eake	3
+	easkare	3
+	eathona	3
+	eausi	6
+	ebathoo	3
+	ebina	6
+	ebo	3
+	ebotswa	3
+	ebua	3
+	eche	3
+	ee	56
+	eebeil	3
+	eebileng	3
+	eee	9
+	eeetsa	6
+	eeile	3
+	eeja	3
+	eelahle	3
+	eele	6
+	eena	3
+	eeo	3
+	eetlise	3
+	eetsa	3
+	efeta	3
+	efetelang	3
+	ekholo	6
+	ekhubedu	6
+	el	2
+	elahla	3
+	ele	26
+	elemasilo	1
+	elena	3
+	elene	3
+	emathe	2
+	emetsi	4
+	emong	3
+	empe	18
+	enamane	6
+	encha	6
+	eng	3
+	engola	3
+	entle	15
+	enyenyane	6
+	eo	19
+	eoankha	2
+	eoatla	3
+	eoile	6
+	eore	3
+	ere	3
+	esajengsengwa	2
+	et	2
+	etala	6
+	etholwana	2
+	etje	2
+	eyahao	1
+	kaee	3
+	khofue	1
+	ntie	2
+	rakhadie	3
+	tseue	3
+	yakae	12
+	yakaetala	3
+eakhele:
+	eakhelemane	1
+eala:
+	skaeala	3
+eamosiya:
+	eamosiyadonki	2
+eaudihela:
+	eeaudihela	1
+ebe:
+	basadiebe	3
+	ebeausi	2
+	ebeha	3
+	ebeu	2
+	ebeubo	1
+	ebeute	1
+ebehe:
+	aeebehe	3
+ebileng:
+	eebileng	3
+echele:
+	echelele	2
+ee:
+	achnaee	3
+	aee	3
+	basadiee	3
+	cheee	6
+	eeake	2
+	eeako	1
+	eeausi	3
+	eebatla	3
+	eebeha	3
+	eebo	26
+	eeboha	3
+	eeboskaqhala	1
+	eebotsamaya	3
+	eeee	36
+	eeelahle	3
+	eeere	3
+	eeetletse	3
+	eekenkapapa	3
+	eele	3
+	eeleetsang	3
+	eenamane	3
+	eeo	6
+	eeoitse	3
+	eeone	3
+	eepateriki	2
+	eethi	1
+	eetlo	1
+	eetswara	3
+	eeya	2
+	skankaee	3
+	tjeeee	3
+	uaee	3
+	yakaee	3
+eetsa:
+	eeetsa	6
+efe:
+	efeteri	3
+eile:
+	eeile	3
+	eilele	2
+eiti:
+	dieiti	2
+	eitirand	2
+eja:
+	eeja	3
+	skaeja	3
+eke:
+	ekentswepele	1
+ela:
+	elayaka	4
+	elayakadi	1
+elaetse:
+	elaetseba	2
+elahla:
+	sekaelahla	3
+	skaelahla	1
+elahle:
+	eeelahle	3
+	eelahle	3
+ele:
+	elenama	2
+elokisa:
+	elokisadi	3
+empa:
+	empadile	2
+	empalelo	1
+	empalelobapala	2
+	empaofihlile	1
+empe:
+	empepapa	3
+	empepina	3
+ena:
+	diena	6
+	eena	6
+	enama	1
+	enamala	2
+	kaeena	3
+	kaena	3
+	nyantloena	2
+	yakaena	6
+eng:
+	keengm	3
+enke:
+	enkeausi	3
+	rebuaenke	3
+eno:
+	dieno	3
+	eeno	3
+entse:
+	entseabuti	3
+entseere:
+	entseerebubub	3
+enwa:
+	enwaha	6
+	enwahele	3
+	enwaotlakhang	3
+	enwaotlanse	1
+	enwaotlansehaka	1
+	enwaotlare	3
+	enwaotseba	3
+	enwautlwang	3
+enyolle:
+	enyollele	3
+eo:
+	dieo	3
+	eeo	3
+	eoa	3
+	eoadula	3
+	eoantheollela	2
+	eobatho	3
+	eoo	11
+	eooaqhoma	3
+	eoorobaditswe	1
+	mosadieo	3
+	ueo	3
+	wakaeo	3
+epate:
+	cheeepate	1
+ere:
+	eeere	3
+	ereba	1
+	erei	3
+	erena	4
+	ereradi	3
+etabola:
+	skaetabola	2
+etelele:
+	yakaetelele	1
+ethiba:
+	skaethiba	1
+etlare:
+	tlalaetlare	3
+etlataboha:
+	helaetlataboha	1
+etletse:
+	eeetletse	3
+etlise:
+	eetlise	3
+etsa:
+	eetsa	3
+	litlhareetsa	3
+	skaetsa	8
+etswara:
+	skaetswara	2
+etswile:
+	heleetswile	3
+eya:
+	eyaka	7
+fa:
+	fanamane	3
+faif:
+	fofaif	6
+fatse:
+	dulafatse	4
+	fatsehe	1
+	helafatse	1
+	modimoodiqhallafatse	1
+fe:
+	tloofe	2
+	tloofena	4
+feela:
+	afeela	2
+	basadifeela	3
+	feeladintho	1
+	feelaetla	3
+	feelau	1
+	mamellofeela	1
+	mmfeela	3
+	moofeela	3
+	ubuafeela	3
+fesetereng:
+	bafesetereng	2
+feta:
+	efeta	3
+fetelang:
+	efetelang	3
+five:
+	fivesent	1
+fo:
+	fofaif	6
+	fosiks	3
+fodisa:
+	keakulafodisa	3
+fool:
+	bloodyfool	3
+fotsek:
+	fotsekho	3
+	kwalafotsek	3
+four:
+	threefour	3
+ha:
+	acheha	3
+	aha	3
+	boha	9
+	ebeha	3
+	eeboha	3
+	enwaha	6
+	erekelwaha	3
+	haba	1
+	hadi	3
+	hadisa	6
+	haho	11
+	haholetho	2
+	hahona	36
+	hao	14
+	haoa	2
+	haoalla	3
+	haoarobala	3
+	haoaya	4
+	haoetsang	3
+	haomotsosa	1
+	hara	3
+	hare	69
+	harebapale	2
+	harebapalegeim	4
+	harebine	3
+	harebineng	3
+	hareetsamako	1
+	hareetse	7
+	harelobapala	6
+	harelodi	1
+	harena	3
+	harerobale	1
+	haresang	2
+	hareye	22
+	hareyeka	2
+	hareyeng	4
+	heha	8
+	letliseha	3
+	modimoha	3
+	ntiha	1
+	tsaha	4
+	tsahamollo	3
+	ushapuwaha	3
+	uthetseha	2
+	uyaha	3
+	waha	15
+	yaha	2
+	yahahoausi	1
+haholo:
+	haholore	2
+hampe:
+	hampese	2
+hanyenyane:
+	nwahanyenyane	3
+	ultwehanyenyane	3
+hao:
+	haobasadi	3
+	wahao	3
+hape:
+	tsahape	3
+	yahape	3
+he:
+	betsehe	2
+	binehe	3
+	buahe	2
+	fatsehe	1
+	heba	3
+	hebala	2
+	hebana	3
+	hebasadipateriki	3
+	heha	6
+	hemphe	3
+	ikutletsehe	3
+	mahe	1
+	mehlolohe	3
+	mpinanehe	3
+	nchebehe	3
+	ntahe	2
+	phurahe	3
+	pletimanehe	3
+	rebinehe	3
+	sehe	2
+hela:
+	helabo	1
+	helaetlataboha	1
+	helapateriki	1
+hele:
+	enwahele	3
+	heleetswile	3
+	helele	3
+hey:
+	heyketla	2
+	heyketlause	1
+hlaha:
+	hlahaka	2
+hlobola:
+	rehlobola	3
+hlodia:
+	hlodiamoholwane	6
+hm:
+	tholahmngwana	3
+ho:
+	fotsekho	3
+	haho	8
+	haholetho	2
+	hoausi	5
+	hobe	6
+	hobethe	3
+	hobina	6
+	hobo	4
+	hodula	3
+	holefifibutle	3
+	holefifik	3
+	holetho	1
+	homonate	3
+	hosese	3
+	hoten	1
+	hoyena	5
+	qhomang	3
+	tlohaho	3
+	yahahoausi	1
+hoaraba:
+	hoarabamanchw	3
+hobane:
+	hobaneuaelahla	3
+	hobaneubona	3
+	hobaneukhadile	1
+	hobaneumotle	1
+hobua:
+	hobuaka	1
+hodima:
+	hahodimasetulo	2
+	hodimale	1
+	hodimalemati	1
+	hodimasetulo	10
+	hodimatafole	12
+hoitswe:
+	hoitswere	2
+	hoitsweuahlodiya	1
+hoitsweng:
+	hoitswengatlo	2
+hole:
+	holele	3
+hona:
+	hahona	36
+	mohona	3
+	tsohahona	3
+hore:
+	horena	33
+hosane:
+	hosaneneng	3
+	hosanere	3
+hostele:
+	nghostele	1
+i:
+	erei	3
+	kerei	3
+ich:
+	ichdintho	1
+	ichich	2
+ichu:
+	ichuwena	3
+ifo:
+	pitsaifo	2
+	robalaifo	3
+ikutletse:
+	ikutletsehe	3
+	tlooikutletse	3
+ingwaya:
+	skaingwaya	3
+ipate:
+	tlooipate	3
+iphehetse:
+	uiphehetseto	2
+ish:
+	isha	3
+itlotsa:
+	sekaitlotsa	6
+ja:
+	emja	3
+	mmmmjaule	3
+jaa:
+	jaale	3
+	jaalena	3
+	jaawena	3
+je:
+	tlooje	2
+jeng:
+	esajengsengwa	2
+	sajengsengwa	1
+jese:
+	ejese	3
+	jesele	3
+jesi:
+	kajesi	2
+jumping:
+	amjumping	6
+just:
+	justnow	21
+jwale:
+	unkhangjwale	3
+jwalo:
+	chojwalo	8
+ka:
+	aka	1
+	dikadikobong	3
+	ditlatsitseka	2
+	enwaotlansehaka	1
+	ephunyaka	3
+	eyaka	7
+	haka	13
+	hareyeka	2
+	hlahaka	2
+	hobuaka	1
+	kabana	3
+	kabasadi	9
+	kabeise	6
+	kadi	9
+	kadiko	1
+	kadikobo	2
+	kadimete	4
+	kadipapa	2
+	kaditen	1
+	kaditonong	3
+	kaje	1
+	kajesi	2
+	kalona	6
+	kamajwe	3
+	kamollo	3
+	kampa	3
+	kannete	48
+	kapa	15
+	kapela	3
+	kapere	3
+	kapolei	2
+	kapoleiti	2
+	katerankeng	2
+	katerata	1
+	kathao	2
+	kati	3
+	kavasko	3
+	keapeseka	2
+	kebuaka	1
+	kemotswaraka	3
+	kethotseka	13
+	kethotsekamollo	2
+	ketloabehaka	2
+	keutlotseka	3
+	koboka	2
+	kokobokaterata	2
+	koloika	3
+	lenkuka	2
+	leyeka	1
+	maka	6
+	mathaka	2
+	metseka	3
+	mopepisoka	1
+	moyaka	3
+	oaqhomakadieta	3
+	okwetseka	3
+	reyeka	1
+	seka	7
+	soka	1
+	tlaseka	6
+	tlohaka	6
+	tsaka	3
+	tsamayaka	9
+	tsetsweuka	1
+	tswangkamona	3
+	tsweuka	1
+	tukileleyeka	2
+	ubotswarakapo	3
+	uka	1
+	ulentsaka	1
+	umathaka	1
+	untlotsitseka	3
+	urahakaditen	1
+	uyeka	2
+	yakaterankeng	2
+kae:
+	akae	1
+	ayakae	3
+	diisekae	3
+	dikae	61
+	kaebolo	6
+	kaee	3
+	kaeena	3
+	kaekentse	3
+	kaena	9
+	kaepapa	3
+	kaeso	2
+	kaesoka	1
+	kaeyena	1
+	letsekae	3
+	makae	3
+	motsebelletsekae	3
+	sekae	6
+	tlasekae	6
+	tsakadikae	2
+	ubotsebelletsekae	2
+	uelahletsekae	3
+	ukae	3
+	ulentsitsekae	3
+	umotsebelletsekae	3
+	uneubotsebelletsekae	1
+	uneuyakae	2
+	utlayakae	3
+	uyakae	85
+	yakae	21
+kalo:
+	dikalo	3
+	kalose	3
+kana:
+	dikana	2
+kang:
+	tsakang	3
+kannete:
+	tlakannete	1
+kapa:
+	kapata	3
+	kefasekapa	1
+	sekapa	2
+kapele:
+	uaetsekapele	3
+katiba:
+	behakatiba	6
+	orwetsekatiba	3
+ke:
+	ake	5
+	keabuti	24
+	keana	15
+	keane	16
+	keapole	6
+	keausi	45
+	keba	1
+	kebana	1
+	kebe	3
+	kebo	16
+	kebohobe	9
+	kebone	3
+	keborikhwe	3
+	kebosi	2
+	kebu	3
+	kedika	1
+	kedikarete	3
+	kedikho	1
+	kedikhobe	3
+	kedikhobetsa	2
+	kedikuku	3
+	keengm	3
+	kekha	2
+	kekhaba	1
+	keknif	3
+	kekuskus	3
+	kela	18
+	kelane	12
+	kelapeng	3
+	keleng	1
+	kelinotsing	1
+	kemistr	3
+	kemohla	1
+	kemohlweng	3
+	kemonna	2
+	kemonwana	6
+	kemonyane	1
+	kemoqha	4
+	kemotheo	1
+	kemotho	3
+	kemothowa	3
+	kemotlenyaka	6
+	kemotswetse	3
+	kenamane	12
+	kenamune	3
+	keneng	2
+	kephe	1
+	kephetho	2
+	kephukhu	3
+	keplastik	1
+	keradi	3
+	kere	3
+	kerona	2
+	kesa	24
+	kesane	13
+	kesanepela	2
+	keske	6
+	keso	3
+	kesoka	3
+	kesono	6
+	keta	3
+	ketaba	3
+	ketapole	3
+	ketent	4
+	keterata	3
+	keteri	6
+	ketha	4
+	kethei	3
+	kethokolo	2
+	kethokolosi	2
+	ketholwana	2
+	ketich	1
+	ketla	4
+	ketlautlohela	2
+	ketsa	30
+	ketsane	2
+	ketse	15
+	keutsware	3
+	mathokoake	1
+	nkeke	1
+	nkekeane	2
+	ntake	6
+	ntheke	1
+	setukukere	3
+	tsweke	29
+keabona:
+	mkeabona	9
+keaja:
+	keajaausi	3
+keakholwa:
+	keakholwanamune	3
+keakula:
+	keakulafodisa	3
+keanke:
+	keankebolo	1
+keapese:
+	keapeseka	2
+keautima:
+	keautimale	2
+kebatla:
+	kebatlalane	9
+	mkebatla	3
+kebone:
+	tlakeboneufa	2
+	tlakeboneufahlu	1
+kebua:
+	kebuaka	1
+	kebuale	2
+kefase:
+	kefasekapa	1
+kefile:
+	kefilema	2
+kehlatswe:
+	kehlatswepele	1
+keilopheha:
+	keilophehapapa	3
+keitse:
+	keitseutlise	1
+	keitseutlisesesepa	1
+keitsehela:
+	keitsehelaskoch	1
+keje:
+	kejeleleng	3
+kemotswara:
+	kemotswaraka	3
+kenka:
+	eekenkapapa	3
+keqetile:
+	keqetilele	3
+kere:
+	kerena	20
+	kerenanamane	2
+kethotse:
+	kethotseka	13
+	kethotsekamollo	2
+ketlautima:
+	ketlautimale	1
+ketlile:
+	ketlilele	3
+ketloabeha:
+	ketloabehaka	2
+keuhlakole:
+	keuhlakolemamina	1
+keuhlobodise:
+	keuhlobodisekobo	3
+keujwetse:
+	keujwetsebaitse	3
+keutlotse:
+	keutlotseka	3
+keutlwile:
+	lekkeutlwile	3
+keutselle:
+	tlakeutselle	2
+	tlakeutsellenta	1
+khaba:
+	kekhaba	1
+khekhe:
+	khekheo	3
+khiba:
+	ekhiba	3
+khoaela:
+	khoaelauare	1
+khofu:
+	khofue	2
+kholo:
+	ekholo	6
+khora:
+	ekhora	6
+khubedu:
+	ekhubedu	6
+kobo:
+	keuhlobodisekobo	3
+	koboka	2
+	koboyahao	6
+	koboyaka	3
+	kokobo	1
+	kokobokaterata	2
+	lekobo	1
+	nelakobo	3
+	skanatswellakobo	2
+	tswellakobo	1
+kobong:
+	uatselakobong	3
+	ukobong	3
+koko:
+	uipatelakoko	3
+kokonyana:
+	letabolakokonyana	2
+	tabolakokonyana	1
+koloi:
+	aokoloi	1
+	bulakoloi	3
+	koloika	3
+	koloina	2
+	koloiyaske	3
+	senyakoloi	3
+	ufilekoloi	3
+	uitsekoloi	3
+	yakoloi	3
+konsertng:
+	wangkonsertng	3
+kotsi:
+	kotsiyaka	3
+kuskus:
+	kekuskus	3
+kwa:
+	kwao	2
+kwala:
+	kwalafotsek	3
+kwana:
+	kwanamatebeleng	3
+la:
+	ela	3
+	kela	3
+	lalesheleshele	1
+	lebitsola	3
+	lela	3
+	lemaola	2
+	maola	1
+	olola	3
+lahla:
+	elahla	3
+	lahladintho	3
+	skabalahla	3
+lamune:
+	aufelamune	2
+	eaufelamune	2
+	ufelamune	2
+lane:
+	kebatlalane	9
+	kelane	12
+	maolane	2
+lapeng:
+	alapeng	3
+	kelapeng	3
+	monolapeng	3
+le:
+	aale	3
+	achele	3
+	ajele	4
+	ashapale	3
+	betsale	1
+	buale	1
+	eele	6
+	eilele	2
+	ele	29
+	elemasilo	1
+	enyollele	3
+	helele	3
+	holele	3
+	jaale	3
+	jele	5
+	jesele	3
+	kebuale	2
+	keqetilele	3
+	ketlautimale	1
+	ketlilele	3
+	lefi	3
+	lejele	3
+	lekha	7
+	lekobo	1
+	lele	3
+	lelona	3
+	lelonaterata	3
+	lemamello	2
+	lemane	6
+	lemara	3
+	lemasilonyane	1
+	leme	2
+	lemese	4
+	lenamane	3
+	leng	3
+	letabale	4
+	lete	3
+	letsa	3
+	letsanti	3
+	letsoholeleleng	3
+	letsona	2
+	leveste	3
+	leyena	3
+	llelekha	3
+	nglemohw	3
+	nkadimele	2
+	nkole	3
+	ntale	2
+	ntleleleleleng	1
+	obuale	6
+	otsebale	3
+	papale	3
+	qoqale	2
+	reilele	2
+	renereilele	1
+	tabale	4
+	tlisale	2
+	tsehwale	1
+	tsele	4
+	uatsebale	3
+	ubuale	9
+	ufele	2
+	uilele	6
+	uqoqale	3
+	utimale	2
+lebapaleng:
+	nglebapaleng	3
+lebitso:
+	lebitsola	31
+	utsebelebitsola	3
+leetsang:
+	eeleetsang	3
+	mampeleetsang	3
+lefifi:
+	holefifibutle	3
+	holefifik	3
+leihlo:
+	utlotsaleihlo	3
+leje:
+	lejele	3
+lejwe:
+	lejwele	5
+	lejweleno	4
+	pelalejwe	1
+leleme:
+	aleleme	1
+leleng:
+	kejeleleng	3
+	letsoholeleleng	3
+	ntleleleleleng	1
+	setseleleng	3
+lelobapala:
+	empalelobapala	2
+lemao:
+	lemaola	2
+lemati:
+	hodimalemati	1
+lena:
+	dimalena	1
+	elena	3
+	jaalena	3
+	leshodulena	6
+	letombolena	3
+	letsoholena	3
+	selena	3
+	ukadimalena	2
+leng:
+	keleng	1
+leno:
+	lejweleno	4
+lerata:
+	belaetsalerata	1
+	etsalerata	2
+	leetsalerata	1
+	ulerata	2
+	uskabaetsalerata	1
+lesheleshele:
+	lalesheleshele	1
+leshodu:
+	leshodulena	6
+letabola:
+	letabolakokonyana	2
+lethetsi:
+	ulethetsi	12
+letho:
+	haholetho	2
+	holetho	1
+	yaletho	3
+letlise:
+	letliseutsebe	1
+letombo:
+	letombolena	3
+letsatsi:
+	letsatsilecha	3
+letsoho:
+	letsoholeleleng	3
+	letsoholena	3
+leye:
+	leyeka	1
+	tukileleyeka	2
+linotsing:
+	kelinotsing	1
+litlhare:
+	litlharebale	4
+	litlharebua	3
+	litlharedula	1
+	litlhareetsa	3
+	litlharenamane	2
+	litlhareq	3
+	litlharerona	3
+	litlharexxx	3
+	litlhareye	6
+	litlhareyena	9
+	mmlitlhare	3
+loma:
+	lomamona	2
+lona:
+	kalona	6
+	lelona	3
+	lelonaterata	3
+	walona	3
+lwane:
+	tloolwane	2
+m:
+	emja	3
+	keengm	3
+	ma	3
+	mbareng	3
+	mbutle	3
+	me	6
+	mela	3
+	mkeabona	9
+	mkebatla	3
+	mmojwetse	3
+	mnkhono	3
+	mqoqang	3
+	mtsamaya	3
+	muaetseba	3
+	muakhora	3
+	muse	3
+	mutla	3
+	mwena	3
+	ujangm	3
+mabiskuse:
+	uqetilemabiskuse	1
+machaka:
+	machakamollo	1
+	machakapoone	2
+madi:
+	bonamadi	2
+	utswilemadi	2
+madinyane:
+	bonamadinyane	1
+mafanya:
+	atimamafanya	3
+mafehloase:
+	monamafehloase	4
+mafing:
+	lemafing	2
+mahlo:
+	mahloa	3
+majwe:
+	kamajwe	3
+majweng:
+	hamajweng	3
+makapu:
+	makapuore	3
+makapukapu:
+	makapukapuore	4
+makotomane:
+	amakotomane	2
+	utimamakotomane	2
+mala:
+	enamala	2
+malapi:
+	malapia	1
+mamakhowa:
+	utlobonamamakhowaotlaushapa	1
+mamello:
+	amamello	3
+	lemamello	2
+	mamelloabu	2
+	mamellodikuskus	3
+	mamellofeela	1
+mamina:
+	keuhlakolemamina	1
+	kolemamina	2
+	lemamina	2
+mampe:
+	mampeleetsang	3
+mane:
+	akhelemane	2
+	eakhelemane	1
+	kebeamane	2
+	komane	1
+	lemane	6
+	mamane	1
+	mamanepela	2
+	manepele	2
+	monyakomane	2
+	onamane	3
+	phentimane	1
+	pletimanehe	3
+	tswaramane	3
+	tswaramaneukha	3
+	uankaphentimane	2
+mang:
+	mangyachong	3
+	qhomang	3
+maobane:
+	maobanereile	1
+	maobanereilera	2
+maoto:
+	maotoa	1
+	maotoana	1
+	tsamaoto	6
+masebina:
+	ngwanamasebina	3
+masela:
+	abutimasela	3
+masilo:
+	elemasilo	1
+masilonyane:
+	lemasilonyane	1
+matebeleng:
+	kwanamatebeleng	3
+mathe:
+	amathe	3
+	emathe	2
+mathokoa:
+	mathokoake	1
+matsoho:
+	matsohoa	1
+	matsohoahao	3
+	matsohoamabedi	2
+mehlolo:
+	mehlolohe	3
+meno:
+	balemeno	1
+mese:
+	lemese	4
+metsi:
+	emetsi	4
+	metsia	2
+	metsiana	2
+	metsiang	3
+migael:
+	migaela	2
+misstress:
+	misstresswanth	1
+	misstresswanthu	2
+mm:
+	mme	3
+	mmfeela	3
+	mmlitlhare	3
+	mmmmjaule	6
+	wenamm	3
+mme:
+	tlolamme	3
+mo:
+	mohona	3
+	mole	3
+	motlo	3
+	umotse	3
+mobe:
+	umobe	2
+mocha:
+	mochao	3
+modimo:
+	modimoha	3
+	modimoo	3
+	modimoodiqhalla	2
+	modimoodiqhallafatse	1
+mohlafotsa:
+	llemohlafotsa	2
+mohlweng:
+	kemohlweng	3
+moholo:
+	moholobasadi	2
+	moholobasadiya	1
+	umoholo	3
+moholwane:
+	hlodiamoholwane	6
+mojwetse:
+	mmojwetse	3
+mokhwa:
+	mokhwao	3
+	mokhwaoo	1
+mokwena:
+	umokwena	12
+mola:
+	mothoamola	3
+mollo:
+	behamollo	3
+	kamollo	4
+	kethotsekamollo	2
+	machakamollo	1
+	tsahamollo	3
+mona:
+	amona	3
+	esomona	1
+	lomamona	2
+	monamafehlo	2
+	monamafehloase	4
+	tswangkamona	3
+monate:
+	amonate	6
+	bomonate	3
+	dimonate	3
+	homonate	3
+	monatenamune	3
+mong:
+	emong	3
+mongata:
+	omongata	15
+monna:
+	kemonna	2
+mono:
+	monolapeng	3
+monwana:
+	kemonwana	6
+monyako:
+	monyakomane	2
+	moomonyako	2
+monyane:
+	kemonyane	1
+moo:
+	mooa	3
+	moofeela	3
+	moomonyako	2
+	moonamane	3
+	moooleng	3
+mootla:
+	skamootla	2
+moqhala:
+	skamoqhala	3
+mosadi:
+	mosadieo	3
+	mosaditowe	3
+motelele:
+	umotelele	3
+motho:
+	kemotho	3
+	kemothowa	3
+	khannwangmothoaefu	3
+	mothoamola	3
+	mothoasatsebe	3
+	mothooakhala	3
+	mothooooipa	3
+	umotho	15
+	wahaomotho	2
+motle:
+	hobaneumotle	1
+	omotle	1
+	umotle	17
+motso:
+	omotso	1
+motsoka:
+	motsokapere	2
+motswana:
+	umotswana	3
+motswetse:
+	kemotswetse	3
+	oomotswetse	1
+moya:
+	moyaka	3
+mpa:
+	empa	3
+mpe:
+	empe	18
+mpha:
+	bompha	3
+mphe:
+	hemphe	3
+mpinane:
+	mpinanehe	3
+	pampinane	3
+na:
+	achnaee	3
+	alena	3
+	barena	5
+	barenanamane	4
+	basadina	3
+	erena	4
+	fengnasekolo	1
+	horena	33
+	kaena	6
+	kerena	20
+	kerenanamane	2
+	naboksboks	3
+	orena	29
+	shebana	6
+	tsebana	2
+	tsena	3
+	uahlanyana	3
+	uatsebana	3
+	uautlwana	2
+	ubontsena	3
+	udutsena	3
+	ukabawatsebana	1
+	ukhotsena	3
+	urena	2
+nama:
+	elenama	2
+	lenama	1
+namane:
+	barenanamane	4
+	bonanamane	1
+	dikaretenamane	3
+	eenamane	3
+	efanamane	1
+	enamane	6
+	fanamane	3
+	hanamane	3
+	helenamane	3
+	kenamane	12
+	kerenanamane	2
+	lenamane	3
+	litlharenamane	2
+	moonamane	3
+	namanere	1
+	ufilenamane	3
+	wanamane	6
+	yanamane	6
+namune:
+	keakholwanamune	3
+	kenamune	3
+	monatenamune	3
+	urenamune	2
+	yakanamune	3
+ncha:
+	encha	6
+nchebe:
+	nchebehe	3
+neneng:
+	batlaneneng	3
+	dintsaneneng	6
+neng:
+	hosaneneng	3
+	kaneng	1
+	keneng	2
+	otseneng	3
+	setsaneng	2
+	utlayaneng	4
+	yaneng	3
+ng:
+	ang	3
+	leng	3
+	metsiang	3
+ngata:
+	lengata	2
+	tsengata	3
+ngola:
+	engola	3
+ngwana:
+	ngwanamasebina	3
+	tholahmngwana	3
+nhata:
+	kanhata	1
+	sekanhata	2
+nka:
+	khwebenka	1
+	nkadikarete	3
+	nkapoone	1
+	nkapooneunka	2
+	skankaee	3
+nkadime:
+	nkadimele	2
+	nkadimere	3
+nkapise:
+	nkapisepele	3
+nkhono:
+	mnkhono	3
+nko:
+	nkole	3
+nku:
+	banku	2
+	hanku	8
+	lenkuka	2
+	renku	2
+nna:
+	monna	3
+nneheletse:
+	nneheletsetsepe	1
+nnete:
+	kannete	48
+nokaneng:
+	yangnokaneng	1
+nonyana:
+	ubolayanonyana	1
+	yanonyana	2
+now:
+	justnow	21
+nqa:
+	onqa	3
+nshebe:
+	enshebe	3
+nta:
+	ntake	6
+	ntale	2
+	ntawena	3
+	ntaya	3
+	ntayahao	6
+	ntayahaoetswe	3
+	ntayane	3
+	tlakeutsellenta	1
+ntate:
+	ntatejes	3
+ntho:
+	dintho	3
+ntlamo:
+	ntlamore	3
+ntle:
+	entle	15
+ntlele:
+	ntleleleleleng	1
+ntlo:
+	nyantloena	2
+ntlohele:
+	untlohele	3
+ntsa:
+	antsa	6
+nwa:
+	nwahanyenyane	3
+nyenyane:
+	enyenyane	6
+o:
+	eeo	3
+	eo	9
+	hao	6
+	haoo	3
+	khekheo	3
+	moo	3
+	oa	3
+	omongata	15
+	omotle	1
+	omotso	1
+	onqa	3
+	oono	3
+	rao	3
+	tseo	3
+	wahaoo	15
+oadifuwa:
+	dijooadifuwa	3
+oakhala:
+	mothooakhala	3
+oalla:
+	haoalla	3
+oankha:
+	eoankha	2
+oanyanya:
+	oooanyanya	1
+oaqhoma:
+	eooaqhoma	3
+	oaqhomakadieta	3
+	wahaooaqhoma	3
+oarobala:
+	haoarobala	3
+oatla:
+	eoatla	3
+oatsaba:
+	bathooatsaba	3
+oaya:
+	haoaya	4
+obua:
+	obuabohata	3
+	obuale	6
+odiqhalla:
+	modimoodiqhalla	2
+	modimoodiqhallafatse	1
+odutse:
+	odutsesetulong	3
+oetsang:
+	haoetsang	3
+ofihlile:
+	empaofihlile	1
+oile:
+	eoile	6
+oisa:
+	aaoisa	3
+oitse:
+	eeoitse	3
+	eoitse	3
+oitsetlehile:
+	oitsetlehilebetheng	3
+okwetse:
+	okwetseka	3
+oleng:
+	moooleng	3
+ollela:
+	antheollela	1
+	eoantheollela	2
+omonyane:
+	wahaoomonyane	2
+omonyenyane:
+	raomonyenyane	2
+omotsosa:
+	haomotsosa	1
+ona:
+	onamane	3
+	tseeona	3
+onkha:
+	onkhamaka	6
+ono:
+	oono	3
+ontseare:
+	ontsearera	2
+oo:
+	mokhwaoo	1
+	mothooooipa	3
+	ooa	1
+	ooamore	3
+	ooane	3
+	ooatha	2
+	ooausi	6
+	ooi	3
+	ool	1
+	oomotswetse	1
+	ooo	1
+	oooanyany	1
+	oooanyanya	1
+	ooone	3
+	oore	1
+	ooreyang	2
+	puoo	2
+oolle:
+	cheeoolle	3
+opheha:
+	ophehaditapole	2
+ore:
+	aore	3
+	eore	3
+	makapukapuore	4
+	makapuore	3
+	orena	28
+	oreng	6
+	orexxx	3
+	oreyena	3
+orobaditswe:
+	eoorobaditswe	1
+orwetse:
+	orwetsekatiba	3
+otlahlanya:
+	otlahlanyabana	3
+otlanseha:
+	enwaotlansehaka	1
+otlare:
+	enwaotlare	3
+otlaushapa:
+	khowaotlaushapa	2
+	utlobonamamakhowaotlaushapa	1
+otsaba:
+	otsabasethuthuthu	2
+otseba:
+	enwaotseba	3
+	otsebale	3
+palo:
+	shebapaloausi	2
+pampiring:
+	llepampiring	1
+papa:
+	eekenkapapa	3
+	hapapa	3
+	helapapa	1
+	kaepapa	3
+	keilophehapapa	3
+	papale	3
+	sepapa	6
+	ufapapa	6
+past:
+	lfpast	14
+	lfpastthree	1
+pateriki:
+	abutipateriki	7
+	aobasadipateriki	1
+	basadipateriki	2
+	eepateriki	2
+	elahlapateriki	2
+	fapateriki	1
+	hebasadipateriki	3
+	helapateriki	1
+	paterikipateriki	4
+	paterikiseka	3
+	telapateriki	1
+	ulefapateriki	2
+pela:
+	kapela	3
+	kesanepela	2
+	mamanepela	2
+	pelalejwe	1
+pele:
+	hapele	3
+	hlatswepele	1
+	kehlatswepele	1
+	manepele	2
+	nkapisepele	3
+	peledalid	2
+	peledalidali	1
+penti:
+	sekatsolapenti	3
+pere:
+	kapere	4
+	motsokapere	2
+	pereetswe	6
+	tsepere	3
+phate:
+	aphate	1
+phenti:
+	kelaphenti	1
+	phentimane	1
+	uankaphentimane	2
+phetho:
+	kephetho	2
+pho:
+	repho	3
+phukhu:
+	kephukhu	3
+phura:
+	phurahe	3
+phuthulla:
+	phuthullare	1
+pina:
+	empepina	3
+pitsa:
+	pitsaifo	2
+pleti:
+	pletimanehe	3
+poleiti:
+	kapoleiti	2
+polokwe:
+	ajangpolokwe	3
+	yajangpolokwe	3
+ponto:
+	efumaneponto	3
+poone:
+	kapoone	1
+	machakapoone	2
+	nkapoone	1
+	nkapooneunka	2
+	ubatlapoone	3
+popodia:
+	utlonkapopodia	1
+pshatla:
+	sekabapshatla	6
+pupu:
+	pupushate	2
+q:
+	litlhareq	3
+	qhomang	3
+qeqe:
+	ureqeqe	3
+qhala:
+	eeboskaqhala	1
+	eskaqhala	2
+	sekaqhala	3
+qoqang:
+	mqoqang	3
+raha:
+	rahatse	2
+	sekaraha	6
+rakhadi:
+	rakhadie	3
+rand:
+	eitirand	2
+	tirand	1
+rang:
+	rangranta	3
+ranta:
+	rangranta	3
+	siksranta	3
+rebapale:
+	harebapale	2
+	harebapalegeim	4
+	rebapalegeim	2
+rebine:
+	harebine	3
+	rebinehe	3
+rebineng:
+	harebineng	3
+red:
+	betsared	3
+reetsa:
+	hareetsamako	1
+reetse:
+	hareetse	7
+	tlooreetse	1
+relobapala:
+	harelobapala	6
+rena:
+	harena	1
+renereile:
+	renereilele	1
+rerobale:
+	harerobale	1
+retena:
+	sekabaretena	3
+retlobina:
+	retlobinahos	1
+	retlobinahoste	2
+retsaba:
+	retsabadi	3
+reyang:
+	ooreyang	2
+reye:
+	hareye	22
+	hareyeka	2
+	reyeka	1
+reyeng:
+	hareyeng	4
+rona:
+	barona	1
+	kerona	2
+	litlharerona	3
+	sarona	3
+	yarona	3
+sa:
+	esajengsengwa	2
+	kalosa	2
+	kesa	12
+	sajengsengwa	1
+	sarona	3
+	sethuthuthusa	1
+sane:
+	kesane	13
+	kesanepela	2
+	sekolosane	3
+se:
+	seka	6
+	sekae	6
+	sekolose	3
+	sekotloloseseka	2
+	sekotlolosesekana	1
+	sela	3
+	sepapa	6
+	sesa	6
+	sesebe	3
+	sesesepa	3
+	setukukere	3
+sebe:
+	sesebe	3
+seka:
+	paterikiseka	3
+	sekaaqhala	1
+	sekabapala	9
+	sekabeha	3
+	sekabehabetheng	3
+	sekae	23
+	sekaelahla	3
+	sekai	2
+	sekaitlotsa	6
+	sekanhata	2
+	sekanjo	3
+	sekantlwa	3
+	sekaqhala	3
+	sekaraha	6
+	sekatena	6
+	sekatsela	1
+	sekatsola	6
+	sekatsolapenti	3
+	sekatswela	3
+sekaba:
+	sekabapshatla	6
+	sekabaretena	3
+sekana:
+	sekotlolosesekana	1
+sekolo:
+	fengnasekolo	1
+	sekolosane	3
+	sekolose	3
+sekotlo:
+	sekotlosa	3
+sekotlolo:
+	sekotlolosese	2
+	sekotloloseseka	2
+	sekotlolosesekana	1
+	sekotlolosesetle	1
+sele:
+	usele	18
+sena:
+	retsesena	3
+	setulosena	9
+	tlolosena	2
+serobehile:
+	setuloserobehile	1
+sesepa:
+	asesepa	3
+	keitseutlisesesepa	1
+	sesesepa	3
+	utlisesesepa	2
+sesetle:
+	sekotlolosesetle	1
+sethuthuthu:
+	otsabasethuthuthu	2
+	sethuthuthuausi	3
+	sethuthuthusa	1
+	sethuthuthuse	1
+	utsabasethuthuthu	2
+setulo:
+	hahodimasetulo	2
+	hodimasetulo	10
+	setulose	11
+	setulosena	9
+	setuloserobehile	1
+setulong:
+	odutsesetulong	3
+shafa:
+	shafare	1
+shate:
+	pupushate	2
+sheba:
+	shebana	6
+	shebapa	1
+	shebapaloausi	2
+	shebati	2
+si:
+	sisi	4
+siks:
+	fosiks	3
+	siksranta	3
+ska:
+	eeboskaqhala	1
+	eskamp	3
+	eskaqhala	2
+	skabapala	3
+	skadula	6
+	skae	2
+	skaeala	3
+	skaeja	3
+	skaelahla	1
+	skaetabola	2
+	skaethiba	1
+	skaetsa	8
+	skaetswara	2
+	skaingwaya	3
+	skamootla	2
+	skamoqhala	3
+	skankaee	3
+	skankoto	3
+	skare	3
+skaba:
+	skabalahla	3
+skana:
+	skanatswellakobo	2
+skoch:
+	helaskoch	5
+	keitsehelaskoch	1
+soka:
+	kaesoka	1
+	kesoka	3
+	ubonesoka	1
+sono:
+	kesono	6
+taba:
+	ketaba	3
+	letabale	2
+	tabale	4
+tafole:
+	hodimatafole	12
+	tafolebethe	2
+	tloelatafole	3
+tala:
+	etala	6
+	yakaetala	3
+tapole:
+	ketapole	3
+ten:
+	hoten	1
+	tene	3
+tena:
+	sekatena	6
+tenya:
+	ditenya	3
+teraka:
+	materaka	2
+	terakae	1
+terankeng:
+	katerankeng	2
+	yakaterankeng	2
+terata:
+	katerata	1
+	keterata	3
+	kokobokaterata	2
+	lelonaterata	3
+teri:
+	efeteri	3
+	keteri	6
+	nthuteri	1
+tharo:
+	tharodi	2
+thokolosi:
+	kethokolosi	2
+thola:
+	tholahmngwana	3
+tholwana:
+	etholwana	2
+	ketholwana	2
+	ulahletholwana	4
+three:
+	lfpastthree	1
+	threefour	3
+thu:
+	misstresswanthu	2
+	nthuteri	1
+tje:
+	etje	2
+tjee:
+	tjeeee	3
+tla:
+	ketla	1
+	ketlautlohela	2
+	tlakeboneufa	2
+	tlakeboneufahlu	1
+	tlakeutselle	2
+	tlakeutsellenta	1
+tlala:
+	tlalapi	3
+tlase:
+	tlaseka	6
+	tlasekae	6
+tlisa:
+	tlisale	2
+tloela:
+	tloelatafole	3
+	tloelatara	3
+tloha:
+	tlohabetheng	4
+	tlohaho	3
+	tlohaka	6
+	tlohang	3
+tlohela:
+	ketlautlohela	2
+	tlohelavasko	3
+	utlohela	1
+tlola:
+	tlolamme	3
+tloo:
+	tlooako	3
+	tlooapara	3
+	tloobapaleng	3
+	tloofe	2
+	tloofena	4
+	tlooikutletse	3
+	tlooipate	3
+	tlooit	3
+	tlooje	2
+	tloolwane	2
+	tloore	2
+	tlooreetse	1
+tlose:
+	kotlose	3
+towe:
+	mosaditowe	3
+tsa:
+	batsa	3
+	betsa	2
+	dikhobetsa	2
+	dikhobetsadierekise	3
+	kedikhobetsa	2
+	ketsa	30
+	letsa	3
+	letsanti	3
+	tsanti	3
+	tseetsa	3
+tsaka:
+	tsakadi	3
+	tsakadikae	2
+tsamaya:
+	eebotsamaya	3
+	mtsamaya	3
+	tsamayaka	6
+tsane:
+	ketsane	2
+tse:
+	botse	1
+	ketse	3
+	tsengata	3
+tsebabang:
+	otsebabang	3
+tsee:
+	tseeona	3
+	tseetsa	5
+tsehlo:
+	tsehloetla	2
+tsela:
+	sekatsela	1
+	tselabeise	3
+	tselautla	3
+	tselayane	3
+tsena:
+	nkadijuniformtsena	3
+tsepe:
+	nneheletsetsepe	1
+tsepo:
+	otsepo	1
+tsetletseng:
+	tlatsetletseng	1
+tsetsweu:
+	tsetsweuka	1
+tsipa:
+	kannatsipa	1
+tsola:
+	sekatsola	6
+	sekatsolapenti	3
+tsona:
+	letsona	2
+tswang:
+	tswangkamona	3
+tswara:
+	eetswara	3
+	tswaramane	3
+	tswaramaneukha	3
+tswela:
+	sekatswela	3
+tswella:
+	skanatswellakobo	2
+	tswellakobo	1
+tuku:
+	setukukere	3
+	urwetsetuku	3
+twelf:
+	leventwelf	3
+two:
+	twocards	3
+	twocentsk	3
+u:
+	hobaneumotle	1
+	ketlautlohela	2
+	laukhele	2
+	uausi	9
+	ubine	3
+	ubo	3
+	ubothetsi	6
+	ui	4
+	uiphehetseto	2
+	ukae	3
+	ukhele	2
+	ukobong	3
+	ule	8
+	ulerata	2
+	ulethetsi	12
+	uletlai	3
+	uma	2
+	umo	7
+	umobe	2
+	umoholo	3
+	umokwena	12
+	umoqha	4
+	umora	3
+	umose	3
+	umote	6
+	umotele	3
+	umotelele	3
+	umotho	15
+	umotle	17
+	umotse	3
+	umotswana	3
+	untlohele	3
+	usekhala	3
+	usele	18
+	usi	3
+	uswephetse	2
+	uten	2
+	utent	4
+	utlohela	1
+ua:
+	uaee	3
+uaditseba:
+	uaditsebadiapole	2
+uaelahla:
+	hobaneuaelahla	3
+uaerata:
+	uaeratabo	3
+uaetse:
+	uaetsekapele	3
+uaetseba:
+	muaetseba	3
+uahlanya:
+	uahlanyana	3
+uahlodiya:
+	hoitsweuahlodiya	1
+uakhora:
+	muakhora	3
+uamorata:
+	uamoratabo	3
+uamotabolela:
+	uamotabolelabe	2
+uanka:
+	uankaphentimane	2
+uatseba:
+	uatsebabo	1
+	uatsebale	3
+	uatsebana	3
+uatsela:
+	uatselakobong	3
+uautlwa:
+	tseuautlwa	1
+	uautlwana	2
+ubatla:
+	ubatlapoone	3
+ubine:
+	ubinehos	1
+	ubinehoste	2
+ubolaya:
+	ubolayanonyana	1
+ubona:
+	hobaneubona	3
+ubone:
+	uboneso	2
+	ubonesoka	1
+	uboneuhati	1
+ubotswara:
+	ubotswarakapo	3
+ubua:
+	ubuafeela	3
+	ubuale	9
+	ubuaule	3
+udutse:
+	udutsedula	1
+	udutsena	3
+	udutseushebile	3
+uelahletse:
+	uelahletsekae	3
+uenkile:
+	uenkilemao	2
+uentse:
+	uentseblack	3
+uetsa:
+	upshatlauetsa	2
+ufile:
+	ufilenamane	3
+uile:
+	uilele	6
+uipatela:
+	uipatelakoko	3
+uitse:
+	uitsekoloi	3
+ujang:
+	ujangm	3
+ukabawatseba:
+	ukabawatsebana	1
+ukhadile:
+	hobaneukhadile	1
+ukhotse:
+	aukhotse	1
+	ukhotsena	3
+ulahla:
+	ulahlatso	2
+ulahle:
+	ulahletho	2
+	ulahletholwana	4
+ulate:
+	ulatela	1
+ule:
+	mmmmjaule	3
+	ubuaule	3
+	ulemaphe	1
+	ulerushi	6
+ulefa:
+	ulefapateriki	2
+ulentsitse:
+	ulentsitsekae	3
+umatha:
+	umathaka	1
+	untseutlaumatha	2
+umokhelle:
+	umokhelleleng	3
+umotsebelletse:
+	umotsebelletsekae	3
+uneubotsebelletse:
+	uneubotsebelletsekae	1
+uneuya:
+	uneuyakae	2
+ungwathele:
+	akeungwathele	3
+unka:
+	unkae	2
+unkhang:
+	unkhangjwale	3
+unkhathatsa:
+	unkhathatsama	3
+untlotsitse:
+	untlotsitseka	3
+untseure:
+	untseureje	3
+upshatla:
+	upshatlauetsa	2
+uqetile:
+	uqetilemabiskuse	1
+uqoqa:
+	uqoqale	3
+ure:
+	urena	2
+	urenamune	2
+	ureqeqe	3
+urwetse:
+	urwetsese	3
+	urwetsetuku	3
+	urwetsewashe	6
+ushapuwa:
+	ushapuwaha	3
+ushebile:
+	udutseushebile	3
+uskabaetsa:
+	uskabaetsalerata	1
+uthetse:
+	uthetseha	2
+utlacha:
+	utlachaditono	3
+utlataboha:
+	dulautlataboha	3
+utlaya:
+	utlayakae	3
+	utlayaneng	4
+utlise:
+	keitseutlise	1
+	keitseutlisesesepa	1
+	utlisesesepa	2
+utlobona:
+	utlobonamama	2
+	utlobonamamakhowaotlaushapa	1
+utlonka:
+	utlonkadikarete	2
+	utlonkapo	1
+	utlonkapopo	1
+	utlonkapopodia	1
+utlotsa:
+	utlotsaleihlo	3
+utlwang:
+	enwautlwang	3
+utsaba:
+	utsabasethuthuthu	2
+utsebe:
+	etliseutsebe	2
+	letliseutsebe	1
+	utsebeausi	2
+	utsebele	2
+	utsebelebitsola	3
+utsware:
+	keutsware	3
+utswe:
+	akeutswe	3
+utswile:
+	utswilemadi	2
+uya:
+	uyakae	75
+uye:
+	uyeka	2
+veste:
+	leveste	3
+wa:
+	kemothowa	3
+	wabana	2
+	wabo	2
+	waha	15
+	wahao	3
+	walona	3
+	wan	4
+	wana	3
+	wanamane	6
+wahao:
+	wahaoale	3
+	wahaoaufilela	3
+	wahaomotho	2
+	wahaoo	19
+	wahaooaqhoma	3
+	wahaoomonyane	2
+waka:
+	wakaeo	3
+wan:
+	mbawan	9
+	misstresswanth	1
+	misstresswanthu	2
+wane:
+	ngwane	6
+washe:
+	urwetsewashe	6
+wena:
+	awena	18
+	ichuwena	3
+	jaawena	3
+	lekwena	3
+	mwena	3
+	ntawena	3
+	wenamm	3
+	wenaunngwa	2
+xxx:
+	litlharexxx	3
+	orexxx	3
+ya:
+	eeya	2
+	koloiyaske	3
+	ntaya	3
+	yabakingpowder	1
+	yakoloi	3
+	yaletho	3
+	yanamane	6
+	yarona	3
+yachong:
+	mangyachong	3
+yahao:
+	eyahao	1
+	koboyahao	6
+	ntayahao	6
+	ntayahaoetswe	3
+	tholayahao	6
+yajang:
+	yajangpolokwe	3
+yaka:
+	elayaka	4
+	elayakadi	1
+	koboyaka	3
+	kotsiyaka	3
+	moyaka	3
+	yakae	28
+	yakaee	3
+	yakaele	2
+	yakaena	6
+	yakaetala	3
+	yakaetelele	1
+	yakanamune	3
+yane:
+	diyane	3
+	kebatlayane	3
+	ntayane	3
+	tselayane	3
+	uyane	1
+ye:
+	ausiye	1
+	litlhareye	6
+yena:
+	hoyena	5
+	kaeyena	1
+	leyena	3
+	litlhareyena	9
+	oreyena	3
+yets:
+	areyets	3
+
+Oversegmented words
+------------------
+aahlama:
+	a ahla ma	3
+abaautlwa:
+	aba autlwa	3
+abeailomatha:
+	abe ailo matha	3
+abealla:
+	abe alla	3
+abule:
+	abu le	1
+aehlabe:
+	a ehlabe	3
+aekentse:
+	ae kentse	2
+aekete:
+	ae kete	3
+aekha:
+	a ekha	3
+aenka:
+	ae nka	6
+agenese:
+	a genes e	2
+ahe:
+	a he	3
+aileafihla:
+	aile afihla	3
+ailengauotla:
+	ai leng auotla	1
+	ai lengauotla	2
+ailoreka:
+	ailo re ka	1
+	ailore ka	1
+aiphumole:
+	ai phumole	3
+aje:
+	a je	1
+akakometsa:
+	a ka kometsa	3
+akhiba:
+	a khiba	1
+alebone:
+	ale bone	3
+alefe:
+	ale fe	3
+alenkile:
+	a lenkile	6
+aleshome:
+	a leshome	3
+amakae:
+	a makae	3
+amochalatse:
+	a mochala tse	3
+amorekela:
+	amore kela	3
+amorekele:
+	amore ke le	6
+ampha:
+	a mpha	1
+	am pha	2
+amphe:
+	a mphe	3
+anahohlweba:
+	ana hohlwe ba	3
+aneauruta:
+	ane auruta	3
+aneha:
+	ane ha	6
+angotse:
+	a ngo tse	2
+	ang otse	1
+anka:
+	a nka	3
+ano:
+	a no	3
+antsealla:
+	antse alla	3
+antseapitika:
+	antsea piti ka	3
+aoroke:
+	ao ro ke	2
+	aoro ke	1
+aotene:
+	ao tene	3
+apesa:
+	ape sa	3
+aphakise:
+	a phakise	3
+aqhala:
+	a qhala	2
+arwale:
+	a rwale	6
+asale:
+	asa le	3
+aseafana:
+	ase afa na	3
+asekaauqetela:
+	aseka auqe tela	2
+	aseka auqetela	1
+asekabaya:
+	asekaba ya	3
+askabaurekela:
+	a skaba ure kela	3
+athonakeng:
+	athona keng	3
+athotse:
+	atho tse	3
+atlafa:
+	atla fa	3
+atlafefoha:
+	atla fe fo ha	3
+atlafihla:
+	a tlafihla	1
+atlaufasa:
+	atla ufa sa	3
+atlaulata:
+	atla ulata	6
+atlaungwathela:
+	atla ungwathela	3
+atlilosesa:
+	atlilo sesa	2
+atlobua:
+	atlo bua	1
+atlohlakola:
+	atlo hlakola	3
+atseha:
+	atse ha	2
+atswela:
+	a tswela	3
+aukadime:
+	auka dime	1
+auqabola:
+	auqa bola	1
+aureketseng:
+	aure ke tseng	1
+	aure ketseng	2
+ausheshena:
+	aushe shena	3
+aye:
+	a ye	3
+baa:
+	ba a	3
+baausiya:
+	ba ausiya	3
+bababedi:
+	bababe di	3
+bachekang:
+	ba che kang	2
+	ba chekang	1
+baditabola:
+	ba ditabola	12
+badula:
+	ba dula	3
+baeentse:
+	ba e entse	3
+baefunyeditse:
+	ba efu nyeditse	6
+baere:
+	ba ere	3
+baerwala:
+	ba e rwala	3
+baetsa:
+	ba etsa	1
+baetsang:
+	ba etsang	3
+bafe:
+	ba fe	6
+bahao:
+	ba hao	3
+bailokapa:
+	ba ilo kapa	3
+baka:
+	ba ka	6
+bakalekale:
+	ba ka le ka le	3
+bakena:
+	ba kena	3
+bakhanna:
+	ba kha nna	3
+baleha:
+	bale ha	23
+balla:
+	ba lla	3
+bamoloyile:
+	ba moloyile	3
+banana:
+	bana na	12
+bao:
+	ba o	6
+barobala:
+	ba robala	3
+basetsana:
+	ba setsa na	1
+	ba setsana	2
+batlauqhomela:
+	batla uqhomela	3
+batsamayang:
+	ba tsamayang	3
+batswa:
+	ba tswa	1
+baubolelang:
+	ba ubolelang	3
+baukhelle:
+	ba ukhelle	2
+bautlwe:
+	ba utlwe	2
+bea:
+	be a	6
+beno:
+	be no	3
+beso:
+	be so	3
+beteng:
+	be teng	6
+boausi:
+	bo ausi	3
+bokae:
+	bo kae	3
+boko:
+	bo ko	3
+bolaya:
+	bola ya	3
+bolitlhare:
+	bo litlhare	3
+bomme:
+	bo mme	6
+bonolo:
+	bo nolo	2
+boo:
+	bo o	3
+borait:
+	bo ra it	4
+bosiu:
+	bo si u	2
+	bosi u	1
+botlauchekola:
+	bo tla uche kola	2
+	bo tlauche kola	1
+botswepela:
+	bo tswe pela	1
+dankie:
+	danki e	6
+dendenge:
+	dend eng e	3
+diamosokodisa:
+	diamo sokodisa	3
+dianonyetsa:
+	dia nonye tsa	2
+	dianonye tsa	4
+diantsuwa:
+	di antsuw a	3
+diaphureha:
+	dia phure ha	6
+diathulana:
+	dia thu la na	3
+diatswana:
+	dia tswa na	2
+dibehe:
+	di behe	7
+difeisi:
+	di feisi	3
+dihlahile:
+	di hlahile	3
+dikana:
+	dika na	2
+dikausi:
+	dika usi	8
+dikhaba:
+	di khaba	3
+dikhomo:
+	dikho mo	2
+dikhothotswe:
+	dikho tho tswe	3
+dikhubedu:
+	di khubedu	3
+dikhutle:
+	di khutle	3
+dikotlolo:
+	di kotlolo	3
+dimpana:
+	dimpa na	3
+dimpe:
+	di mpe	3
+dincha:
+	di ncha	4
+dingata:
+	di ngata	1
+	ding a ta	1
+	ding ata	1
+dinko:
+	di nko	1
+dinku:
+	di nku	1
+dinonyetsa:
+	di nonye tsa	1
+	dinonye tsa	2
+dintja:
+	di ntja	1
+dintsuwe:
+	dintsuw e	3
+dipalo:
+	dipa lo	1
+dipenti:
+	di penti	3
+dipere:
+	di pere	2
+diphahlo:
+	dipha hlo	1
+diphaka:
+	dipha ka	1
+diphakeng:
+	dipha keng	3
+diphate:
+	di phate	4
+diphenti:
+	di phenti	1
+diphoofolo:
+	diphoo fo lo	2
+diphororo:
+	dipho ro ro	2
+	diphoro ro	1
+dipidisi:
+	di pi di si	4
+	di pi disi	2
+dipotso:
+	di po tso	1
+diranta:
+	di ranta	3
+dirata:
+	di rata	3
+diretse:
+	di retse	6
+dirole:
+	di ro le	4
+dithata:
+	di thata	3
+ditheole:
+	di theo le	6
+dithutswana:
+	di thu tswa na	3
+ditlaemela:
+	ditla emela	3
+ditlakhutla:
+	ditla khutla	3
+ditlawela:
+	ditla wela	12
+ditlhabela:
+	ditlhab ela	3
+ditlisitswe:
+	di tlisitswe	3
+ditlose:
+	di tlose	3
+ditseho:
+	ditse ho	3
+ditsila:
+	di tsi la	6
+ditsintsi:
+	di tsintsi	3
+diutenne:
+	di utenne	3
+diwete:
+	di we te	6
+dulella:
+	dule lla	6
+ea:
+	e a	4
+eababa:
+	e ababa	12
+eabobola:
+	e abobola	4
+eabua:
+	e abua	2
+eachaba:
+	e acha ba	6
+	eacha ba	3
+eachaisa:
+	e achaisa	1
+eachesa:
+	e achesa	2
+eadula:
+	e adula	1
+eaehula:
+	e aehula	3
+eaeja:
+	e aeja	1
+eahlaha:
+	eahla ha	3
+eahula:
+	eah ula	3
+eakhaoha:
+	e akhao ha	2
+	eakhao ha	1
+eakhele:
+	e akhele	6
+ealla:
+	e alla	2
+eallela:
+	e allela	2
+eamosiya:
+	eamosi ya	2
+eanyeka:
+	eanye ka	6
+eaphethoha:
+	e aphe tho ha	4
+	eaphe tho ha	8
+eaphungwa:
+	e aphu ngwa	1
+	eaphu ngwa	1
+eare:
+	e are	3
+easesa:
+	e asesa	3
+eashesha:
+	e ashesha	3
+eatla:
+	e atla	1
+eatsamaya:
+	e a tsamaya	1
+eaulekana:
+	eaule kana	3
+eautswanela:
+	e autswanela	1
+eawa:
+	e awa	2
+eawela:
+	e awela	7
+ebata:
+	e bata	3
+echaba:
+	echa ba	10
+ediketseng:
+	e di ke tseng	1
+	e di ketseng	2
+edula:
+	e dula	3
+edule:
+	e dule	3
+edutse:
+	e du tse	3
+eentse:
+	e entse	3
+eentseng:
+	e entseng	3
+eetseditswe:
+	eetse di tswe	2
+efate:
+	efa te	3
+ehana:
+	e hana	3
+ehe:
+	e he	15
+ehete:
+	e he te	3
+ehlahileng:
+	e hlahileng	2
+ehlatsuwang:
+	e hlatsuwang	1
+ehlatsuwe:
+	e hlatsu we	2
+ehlile:
+	eh lile	3
+eileyasala:
+	eile ya sa la	4
+	eile ya sala	2
+eilouhlaba:
+	eilouhla ba	3
+eitse:
+	e itse	8
+	ei tse	4
+ejwang:
+	e jwang	3
+eka:
+	e ka	12
+ekae:
+	e kae	3
+ekale:
+	e ka le	3
+ekalokalo:
+	e kalo kalo	3
+ekang:
+	e kang	1
+ekape:
+	e kape	3
+ekare:
+	e kare	27
+eke:
+	e ke	158
+ekebeyaqhwaoleha:
+	e kebe ya qhwaol e ha	3
+ekena:
+	e kena	3
+ekene:
+	e kene	3
+ekhanna:
+	ekha nna	3
+ekhaola:
+	ekhao la	1
+ekhaowa:
+	ekhao wa	3
+ekholo:
+	e kholo	6
+ekhotse:
+	ekho tse	6
+ekhutlise:
+	e khutlise	2
+ekwahela:
+	e kwahela	3
+ekwahele:
+	e kwahele	5
+	ekwa hele	1
+ekwaolehe:
+	ekwa o le he	1
+ekwetswe:
+	ekwetsw e	3
+elahlele:
+	elahle le	1
+elate:
+	ela te	2
+ele:
+	e le	8
+elekane:
+	ele kane	6
+eleng:
+	e leng	3
+elisha:
+	el ish a	1
+elwa:
+	e lwa	1
+ema:
+	e ma	35
+ematha:
+	e matha	2
+emathang:
+	e mathang	3
+embapadisang:
+	embapa disang	2
+emella:
+	eme lla	15
+emengata:
+	eme ngata	6
+emetsi:
+	e metsi	9
+emule:
+	e mule	3
+enana:
+	ena na	6
+eneebatlwa:
+	ene ebatlwa	3
+eneeeme:
+	ene eeme	3
+eneeentse:
+	ene e entse	3
+eneele:
+	ene e le	4
+	ene ele	15
+engata:
+	eng a ta	1
+	eng ata	1
+enoa:
+	eno a	6
+entseele:
+	entsee le	2
+entseetsamaya:
+	entsee tsamaya	3
+enyenyane:
+	e nyenyane	8
+eotileng:
+	eo tileng	2
+eotle:
+	e otle	3
+epepe:
+	e pepe	3
+ephahame:
+	e pha ha me	1
+	epha ha me	2
+ephahamisitse:
+	e pha hamisitse	1
+	epha hamisi tse	1
+	epha hamisitse	1
+epheha:
+	e phe ha	1
+ephethohang:
+	e phethohang	2
+epshatlehe:
+	epshatle he	3
+eqoma:
+	e qo ma	1
+	e qoma	2
+eralotsang:
+	era lo tsang	1
+erobehile:
+	e robehile	3
+erwale:
+	e rwale	6
+esale:
+	e sa le	1
+	esa le	4
+esamolekana:
+	e sa mole kana	1
+	esa mole kana	2
+esana:
+	e sa na	1
+ese:
+	e se	5
+eseele:
+	e se e le	1
+	e se ele	5
+eseentseeja:
+	e se entseeja	3
+esenang:
+	e senang	2
+eshebe:
+	e shebe	6
+etelele:
+	e telele	1
+	ete le le	2
+etella:
+	ete lla	3
+etlaba:
+	etla ba	3
+etladikela:
+	etla di kela	3
+etlahlaha:
+	etla hlaha	3
+etlakena:
+	etla kena	3
+etlaphethoha:
+	etla phetho ha	1
+	etlaphe tho ha	1
+	etlaphetho ha	1
+etlapshatleha:
+	etlapshatle ha	6
+etlaqoma:
+	etla qo ma	1
+	etla qoma	2
+etlasinyeha:
+	etla sinye ha	6
+etlatla:
+	etla tla	3
+etlatswella:
+	etlatswe lla	3
+etlaubabela:
+	etla ubabela	3
+etlauhlaba:
+	etlauhla ba	1
+etlaukhama:
+	etla ukha ma	3
+etlaulokisa:
+	etla ulokisa	3
+etlauloma:
+	etla ulo ma	2
+	etla uloma	2
+etlauthula:
+	etla uthula	3
+etlawa:
+	etla wa	6
+etlaya:
+	etla ya	3
+etlilobua:
+	etlilo bua	3
+etlisa:
+	e tlisa	6
+etliseng:
+	etli seng	3
+etloele:
+	e tloe le	2
+	e tloele	3
+	etlo ele	1
+etloelle:
+	etlo el le	3
+etlohe:
+	e tlohe	3
+etlohele:
+	e tlohele	12
+etlosa:
+	e tlosa	3
+etsamayang:
+	e tsamayang	3
+etsesanyane:
+	etse sanyane	1
+etsole:
+	e tso le	3
+etsweu:
+	etswe u	2
+euhatile:
+	e uhatile	3
+euotla:
+	e uotla	3
+ewela:
+	e wela	3
+ewetse:
+	e we tse	3
+eya:
+	e ya	44
+eye:
+	e ye	6
+fanyafanya:
+	fa nyafanya	6
+fentenke:
+	fe ntenke	9
+	fente nke	5
+fepa:
+	fe pa	3
+feresa:
+	fe re sa	3
+folisa:
+	fo lisa	3
+garage:
+	garag e	3
+gauteng:
+	gau teng	6
+habo:
+	ha bo	6
+hae:
+	ha e	9
+haeba:
+	ha e ba	9
+haeka:
+	ha e ka	3
+haeno:
+	ha eno	9
+haeso:
+	ha eso	8
+hahae:
+	ha ha e	9
+haholo:
+	ha holo	13
+haka:
+	ha ka	5
+hakakang:
+	ha kakang	6
+hakalekale:
+	ha ka le ka le	6
+	haka le ka le	3
+hakalo:
+	ha kalo	2
+hakalokalo:
+	ha kalo kalo	1
+	hakalo kalo	2
+hakere:
+	ha kere	51
+hangata:
+	ha ngata	3
+hanyanenyane:
+	hanyane nyane	2
+hara:
+	ha ra	3
+hare:
+	ha re	4
+haufinyane:
+	ha ufinyane	6
+helele:
+	hele le	7
+hempe:
+	he mpe	4
+heno:
+	he no	3
+heso:
+	he so	8
+hetla:
+	he tla	3
+hlakole:
+	hlako le	1
+hoathella:
+	ho athe lla	3
+hobetsa:
+	ho betsa	1
+hobohobohobo:
+	ho boho boho bo	3
+hobona:
+	ho bona	1
+hodibeisa:
+	hodi beisa	1
+hoeboha:
+	ho eboha	3
+hoebola:
+	ho ebola	3
+hoebona:
+	ho ebona	3
+hoeisa:
+	ho eisa	6
+hoeja:
+	ho eja	3
+hoetsahetse:
+	hoetsa he tse	2
+	hoetsa hetse	1
+hoetswang:
+	ho e tswang	3
+hofodile:
+	ho fodile	6
+hofotsek:
+	ho fotsek	3
+hohlahileng:
+	ho hlahileng	3
+hoikama:
+	hoi ka ma	3
+hoinkela:
+	hoi nke la	3
+hoithoma:
+	hoit homa	1
+hoithomelang:
+	hoit homelang	1
+hoitlhwesa:
+	hoitlhwe sa	3
+hoja:
+	ho ja	6
+hokae:
+	ho kae	17
+hokapa:
+	ho kapa	3
+hoketa:
+	ho keta	3
+hokhothola:
+	ho kho thola	6
+holaela:
+	hola ela	3
+homobona:
+	ho mo bona	1
+	ho mobona	2
+homoneha:
+	ho mone ha	3
+homopepiso:
+	ho mo pepiso	1
+homphodisa:
+	ho mpho disa	3
+hontswepelela:
+	ho ntswepelela	6
+hopheha:
+	hophe ha	6
+hophehuwe:
+	hophehu we	3
+hoqoqa:
+	ho qoqa	1
+horeka:
+	hore ka	3
+horeshapa:
+	hore shapa	3
+horobala:
+	ho robala	2
+hosehona:
+	ho se hona	1
+	hose hona	2
+hosehotsehwa:
+	ho se hotse hwa	1
+	hose hotse hwa	1
+hosesa:
+	ho sesa	2
+hosetele:
+	hosete le	4
+hostele:
+	hos tele	1
+	hoste le	2
+hotheoha:
+	ho theo ha	1
+hothola:
+	ho thola	2
+hothuwa:
+	ho thu wa	3
+hotipa:
+	hoti pa	3
+hotlaketa:
+	ho tlaketa	3
+hotlautsosa:
+	ho tla utsosa	3
+hotle:
+	ho tle	6
+houbona:
+	ho ubona	3
+houkapisa:
+	ho uka pisa	3
+houotla:
+	ho uotla	3
+houshapa:
+	ho ushapa	3
+houwa:
+	ho u wa	2
+hoye:
+	ho ye	6
+hwane:
+	hwa ne	5
+ikame:
+	i ka me	1
+ikhurumetsa:
+	i khuru metsa	4
+ikutlule:
+	ikutlu le	3
+iminola:
+	i mino la	1
+	imi no la	2
+inama:
+	i nama	2
+itheole:
+	i theo le	3
+itlamisitse:
+	i tla misi tse	1
+jarata:
+	ja rata	6
+jerata:
+	je rata	3
+jere:
+	je re	3
+jethema:
+	je the ma	3
+joalane:
+	jo alane	3
+josefa:
+	jo sefa	3
+kabatsamaya:
+	kaba tsamaya	3
+kabomo:
+	ka bomo	3
+kahare:
+	ka ha re	2
+	ka hare	1
+kaitholla:
+	ka itholla	1
+kajeno:
+	ka je no	12
+kaka:
+	ka ka	2
+kamabomo:
+	ka ma bo mo	1
+	ka mabo mo	2
+kamojwetsa:
+	ka mojwetsa	3
+kamotabola:
+	ka mo tabola	1
+	ka motabola	2
+kana:
+	ka na	2
+kaofela:
+	ka ofela	51
+kapelenyane:
+	kape lenyane	3
+kapise:
+	ka pise	3
+kapo:
+	ka po	2
+kapota:
+	ka pota	1
+karabo:
+	kara bo	3
+kathola:
+	ka thola	19
+katse:
+	ka tse	2
+keababona:
+	keaba bona	6
+keabaleha:
+	keabale ha	3
+keabotsa:
+	kea botsa	2
+	keabo tsa	4
+keadiqhala:
+	keadi qhala	3
+keaebula:
+	keae bula	1
+keaedihele:
+	keae di hele	1
+	keae dihele	2
+keaenka:
+	keae nka	6
+keaeotla:
+	keae otla	3
+keaepata:
+	keae pata	4
+keaethula:
+	keae thula	3
+keahlafuna:
+	kea hlafu na	3
+keahlatswa:
+	kea hlatswa	3
+keahlwepha:
+	kea hlwepha	3
+keaje:
+	kea je	1
+keakapa:
+	kea kapa	3
+keakhanna:
+	keakha nna	3
+keakhochola:
+	keakho cho la	3
+keakhothola:
+	keakho thola	6
+keakwala:
+	kea kwala	1
+kealeboha:
+	keale boha	15
+kealeebola:
+	keale ebola	3
+kealethua:
+	kea lethua	3
+kealwana:
+	ke alwana	3
+keamenola:
+	kea me no la	2
+	kea meno la	1
+keammona:
+	ke am mona	2
+	ke ammona	1
+keamohlwesa:
+	ke am ohlwe sa	1
+	keam ohlwe sa	2
+keamokoba:
+	keamoko ba	3
+keamokobolla:
+	keamokobo lla	3
+keamonyolla:
+	keamonyo lla	3
+keamothetsa:
+	keamo the tsa	1
+	keamothe tsa	2
+keamotsaba:
+	keamo tsa ba	3
+keangola:
+	kea ngo la	1
+	kea ngola	2
+keanke:
+	kea nke	2
+keaohlweba:
+	keao hlweba	3
+keaoletseng:
+	keao letseng	3
+keaphela:
+	ke aphela	15
+keaseolla:
+	kease o lla	2
+	kease olla	1
+keatlohela:
+	kea tlohela	3
+keaukwaolela:
+	kea ukwa o lela	3
+keauloma:
+	keaulo ma	2
+keauntsa:
+	kea untsa	3
+keauthetsa:
+	keau the tsa	1
+keauthusa:
+	keauthu sa	3
+kebabone:
+	ke ba bone	3
+kebala:
+	ke bala	3
+kebale:
+	ke bale	3
+kebaleha:
+	ke bale ha	2
+kebalehe:
+	ke bale he	3
+kebalehela:
+	ke bale hela	3
+kebapala:
+	ke bapala	9
+kebapale:
+	ke bapale	1
+kebekesekeethibile:
+	kebe ke se ke e thibile	2
+	kebe ke se keethi bile	1
+kebekesekere:
+	kebe ke se kere	3
+kebidikise:
+	ke bidikise	3
+kebua:
+	ke bua	2
+kebutse:
+	kebu tse	3
+kechele:
+	ke chele	3
+kecholo:
+	ke cho lo	3
+kedianehile:
+	ke dianehile	6
+kedibehe:
+	ke di behe	2
+	ke dibehe	4
+kedibone:
+	ke di bone	3
+kedifapanye:
+	ke di fapany e	1
+	ke di fapanye	2
+kedikhothotse:
+	ke dikho tho tse	3
+kedileseletseng:
+	ke dile se letseng	3
+kedinkile:
+	ke dinkile	3
+kedipate:
+	ke dipate	6
+kedipatile:
+	ke dipatile	3
+kediratang:
+	ke di ratang	2
+	kedi ratang	1
+kedirole:
+	ke di ro le	2
+	ke dirole	1
+kedirotse:
+	ke di ro tse	2
+	ke diro tse	1
+kedisiyile:
+	kedi siyile	2
+kedutse:
+	ke du tse	9
+keebehile:
+	ke ebehile	3
+keebola:
+	ke ebola	3
+keebole:
+	ke ebole	6
+keebone:
+	ke ebone	3
+keebotse:
+	ke ebotse	3
+keecho:
+	ke e cho	3
+keehatile:
+	ke e hatile	15
+keeje:
+	ke eje	12
+keekete:
+	ke e kete	3
+keekuke:
+	ke e ku ke	1
+	ke e kuke	2
+keelahle:
+	ke elahle	3
+keelahlile:
+	ke elahlile	3
+keeme:
+	ke eme	3
+keentse:
+	ke entse	9
+keepalamise:
+	ke e palamise	2
+	ke epalamise	1
+keephahamise:
+	ke e pha hamise	1
+	ke epha hamise	2
+keeqhale:
+	ke e qhale	3
+keerahe:
+	ke erahe	6
+keerwala:
+	ke e rwala	3
+keesiyile:
+	ke e siyile	3
+kefete:
+	ke fete	3
+kehatile:
+	ke hatile	2
+kehlaha:
+	ke hlaha	3
+kehlakola:
+	ke hlakola	3
+kehlanye:
+	kehlany e	3
+kehlatswa:
+	ke hlatswa	2
+kehlatswang:
+	ke hlatswang	2
+	kehla tswang	1
+kehlatswe:
+	ke hlatswe	2
+	kehla tswe	3
+kehloboleng:
+	ke hlobo leng	3
+keichebele:
+	ke ich ebele	2
+	kei che bele	1
+keikamola:
+	kei ka mola	2
+	keika mola	1
+keikopeditse:
+	kei ko pe ditse	4
+	kei ko peditse	2
+keilekaere:
+	keile kaere	3
+keilekare:
+	keile kare	3
+keilobapala:
+	keilo bapala	1
+keilobesa:
+	keilo be sa	3
+keilodula:
+	keilo dula	3
+keiloeqhomisa:
+	keilo e qhomisa	3
+keilofa:
+	keilo fa	1
+keilopheha:
+	keilophe ha	3
+keiloubatlang:
+	keilo ubatlang	3
+keilouphehela:
+	keilouphe hela	2
+keipatele:
+	keipate le	2
+keiphehang:
+	ke iphehang	3
+keitlame:
+	keit lame	1
+keitlamme:
+	kei tla mme	6
+	keitla mme	12
+keja:
+	ke ja	6
+kejewa:
+	keje wa	3
+kekeabona:
+	ke keabona	3
+kekena:
+	ke kena	3
+kekene:
+	ke kene	3
+kekete:
+	ke kete	3
+kekhadile:
+	ke kha dile	9
+kekhotse:
+	ke kho tse	2
+	kekho tse	2
+kelaolle:
+	kela olle	6
+kele:
+	ke le	15
+kelebeha:
+	ke lebeha	3
+keleboha:
+	ke le boha	3
+kelehlahise:
+	ke le hlahi se	2
+	ke lehlahi se	1
+kelejele:
+	ke lejele	3
+kelekwaele:
+	ke lekwa ele	3
+kelenkile:
+	ke lenkile	3
+keletsware:
+	ke le tswa re	3
+kelodibeisa:
+	kelodi beisa	2
+keloefa:
+	kelo efa	2
+kelopheha:
+	kelo phe ha	2
+	kelophe ha	4
+keloulota:
+	kelo ulo ta	3
+kemaketse:
+	ke ma ketse	3
+kemobeha:
+	ke mo beha	1
+	ke mobeha	2
+kemobone:
+	ke mo bone	1
+	ke mobone	2
+kemofe:
+	ke mofe	3
+kemohlaba:
+	ke mohla ba	1
+	ke mohlaba	2
+kemokobe:
+	ke moko be	3
+kemokobolle:
+	ke mokobolle	3
+kemolahle:
+	ke mola hle	3
+kemonyantse:
+	ke monyants e	2
+	ke monyantse	4
+kemoqale:
+	ke moqa le	1
+	ke moqale	2
+kemorobaditse:
+	ke moroba ditse	2
+	ke morobaditse	1
+kemoshapa:
+	ke moshapa	6
+kemotheose:
+	ke mo theo se	1
+	kemotheo se	2
+kemotsebe:
+	ke motsebe	12
+kemotsuruwe:
+	ke motsuru we	1
+	kemotsur u we	1
+	kemotsuru we	1
+kenahohlola:
+	kena ho hlola	2
+	kena hohlola	1
+kenahoudiela:
+	kena ho udiela	3
+kenekedientse:
+	kene kedi entse	3
+kenekeenkile:
+	kene ke enkile	3
+kenekere:
+	kene kere	12
+kenekesatsebe:
+	kene kesatsebe	9
+kenekesatsire:
+	kene kesatsi re	3
+keneketlaerwala:
+	kene ketla e rwala	3
+keneketlaufa:
+	kene ketla ufa	4
+	kene ketlaufa	2
+keneketloiphumola:
+	kene ketloi phumola	3
+kenekeubitsa:
+	kene ke ubitsa	3
+kenekeubuisa:
+	kene ke ubu isa	1
+	kene ke ubuisa	2
+kengotse:
+	ke ngo tse	3
+kenka:
+	ke nka	9
+kenke:
+	ke nke	6
+kentsa:
+	ke ntsa	1
+kentsekeitholla:
+	kentse keitholla	1
+kentsekekhanna:
+	kentse ke khanna	1
+	kentse kekha nna	2
+kentsekerwala:
+	kentse ke rwala	2
+	kentseke rwala	1
+kentsekeshebile:
+	kentse keshebile	6
+kentseketsamaya:
+	kentse ke tsamaya	3
+kentsekeubolella:
+	kentse ke ubo lella	1
+	kentse ke ubole lla	2
+kentsekeungwathela:
+	kentse ke ungwathela	3
+kenyepela:
+	ke nyepela	3
+kenyorilwe:
+	ke nyorilwe	3
+keofumane:
+	ke ofumane	3
+keohlatswa:
+	ke o hlatswa	3
+keohlweba:
+	ke ohlwe ba	1
+	keohlwe ba	2
+kephetlwa:
+	ke phetlwa	3
+keqabolwa:
+	keqa bo lwa	1
+	keqabo lwa	2
+keqhale:
+	ke qhale	6
+kerata:
+	ke rata	1
+kerate:
+	ke rate	1
+kereke:
+	kere ke	6
+kerekeng:
+	kere keng	3
+keresemese:
+	kere se me se	2
+	kere se mese	4
+kerobetse:
+	ke robe tse	1
+	ke robetse	1
+kerole:
+	ke ro le	1
+	ke role	1
+	kero le	1
+kerwala:
+	ke rwala	3
+kerwale:
+	ke rwale	12
+kesabapala:
+	ke sabapala	1
+kesaeutlwisiseng:
+	ke sa e utlwisi seng	2
+	kesa e utlwisi seng	4
+kesailobeha:
+	kesa ilo beha	1
+	kesailo beha	2
+kesalapa:
+	ke salapa	1
+	kesala pa	2
+kesalerolela:
+	kesa le ro lela	2
+	kesa le rolela	1
+kesarata:
+	ke sa rata	1
+	kesa rata	2
+kesarongwe:
+	ke sarongwe	1
+	kesarong we	1
+kesatladija:
+	kesa tla dija	2
+	kesatla dija	1
+kesautlwe:
+	ke sa utlwe	1
+	kesa utlwe	2
+kesebetsang:
+	ke sebetsang	3
+keseebole:
+	ke se ebole	3
+keseha:
+	ke se ha	1
+	ke seha	2
+kesehele:
+	ke se hele	3
+kesekailomochesa:
+	ke seka ilo mo che sa	3
+kesekailosila:
+	ke seka ilo sila	1
+	ke seka ilosila	2
+kesekaketa:
+	ke seka keta	3
+kesekekausheba:
+	ke se ke ka u sheba	3
+kesekelebohile:
+	ke se ke le bohile	3
+kesekere:
+	ke se kere	3
+keseketsotse:
+	ke se ke tso tse	3
+kesekeya:
+	ke se ke ya	3
+keshafe:
+	ke shafe	3
+keshebe:
+	ke shebe	6
+kesobetse:
+	keso betse	3
+kesomobone:
+	keso mo bone	1
+	keso mobone	2
+ketatile:
+	keta tile	3
+kethamolla:
+	ke thamo lla	6
+kethelele:
+	kethele le	3
+kethelleng:
+	ke thelleng	3
+ketheohe:
+	ke theo he	9
+kethonaka:
+	ke thona ka	3
+kethonakang:
+	ke thonakang	1
+	kethona kang	1
+ketlabaleha:
+	ketla bale ha	2
+	ketlabale ha	1
+ketlabekesukudisa:
+	ketlabe ke sukudisa	3
+ketlabina:
+	ketla bina	6
+ketlabitsa:
+	ketla bitsa	2
+ketlabona:
+	ketla bona	6
+ketladihlatswa:
+	ketla dihlatswa	6
+ketladilaolla:
+	ketla dila o lla	2
+	ketla dila olla	1
+ketladula:
+	ketla dula	3
+ketlaelefa:
+	ketla ele fa	1
+	ketla elefa	1
+ketlaenka:
+	ketla e nka	3
+ketlafihla:
+	ke tlafihla	1
+ketlahlakola:
+	ketla hlakola	3
+ketlainkela:
+	ketlai nke la	3
+ketlajelella:
+	ketla jele lla	2
+	ketla jelella	1
+ketlalefuwa:
+	ketla lefuwa	3
+ketlaleja:
+	ketla le ja	3
+ketlalepshatla:
+	ketla lepshatla	3
+ketlalepshatle:
+	ketla lepshatle	3
+ketlaleshapa:
+	ketla le shapa	2
+	ketla leshapa	1
+ketlamo:
+	ketla mo	3
+ketlamomula:
+	ketla momula	6
+ketlamootla:
+	ketla mootla	3
+ketlamoraha:
+	ketla moraha	3
+ketlamotheola:
+	ketla mo theola	1
+	ketla mothe ola	1
+	ketla motheola	1
+ketlaofa:
+	ketla ofa	9
+ketlaohlatswe:
+	ketla o hlatswe	1
+	ketla oh la tswe	1
+	ketla ohlatswe	1
+ketlaotla:
+	ketla otla	3
+ketlareka:
+	ketlare ka	3
+ketlaseqhala:
+	ketla se qhala	3
+ketlasetabola:
+	ketla setabola	3
+ketlaubetsa:
+	ketla ubetsa	6
+ketlaubolaya:
+	ketla ubola ya	15
+ketlaudiela:
+	ketla udiela	5
+ketlaufa:
+	ketla ufa	13
+ketlaukwalla:
+	ketla ukwa lla	3
+ketlauloma:
+	ketla ulo ma	2
+ketlaumula:
+	ketla umula	65
+ketlauotla:
+	ketla uotla	3
+ketlaupepisa:
+	ketla upepisa	2
+ketlauqetella:
+	ketla uqete lla	1
+	ketla uqetella	2
+ketlauraha:
+	ketla uraha	11
+ketlaure:
+	ketla ure	3
+ketlaurekela:
+	ketla ure kela	4
+	ketlaure kela	2
+ketlausiya:
+	ketla usiya	2
+ketlautlosa:
+	ketla utlosa	3
+ketlautsela:
+	ketla utsela	3
+ketlautsella:
+	ketla utse lla	3
+ketleebone:
+	ketle ebone	3
+ketleupshatlela:
+	ketle upshatlela	3
+ketleupshatlele:
+	ketle upshatle le	3
+ketlilofa:
+	ketlilo fa	1
+ketliloushapa:
+	ketlilo ushapa	2
+ketloebatla:
+	ketlo ebatla	3
+ketloinkela:
+	ketloi nke la	3
+ketlolebetsetsa:
+	ketlo le betsetsa	3
+ketlolepheha:
+	ketlo lephe ha	1
+	ketlo lepheha	2
+ketlommona:
+	ke tlommona	1
+ketlonka:
+	ketlo nka	3
+ketloohlweba:
+	ke tloo hlweba	3
+ketloqhwaela:
+	ketloqhw aela	1
+ketlosefase:
+	ketlo sefa se	1
+	ketlosefa se	1
+ketlosila:
+	ketlo sila	1
+ketloubatla:
+	ketlo ubatla	3
+ketloubona:
+	ketlo ubona	9
+ketloubontsa:
+	ketlo ubontsa	6
+ketloubotsa:
+	ketlo ubotsa	3
+ketloufa:
+	ketlo ufa	3
+ketlouhlakola:
+	ketlouhla kola	2
+ketloujesa:
+	ketlo uje sa	2
+	ketlouje sa	1
+ketloujwetsa:
+	ketlo ujwetsa	4
+ketloukhella:
+	ketlo ukhella	1
+ketloukhellang:
+	ketlo ukhellang	1
+ketlouotla:
+	ketlo uotla	3
+ketlouphophotha:
+	ketlouphoph otha	1
+	ketlouphophoth a	2
+ketlourekela:
+	ketlo ure kela	3
+ketlourwesa:
+	ketlo urwe sa	3
+ketloushapa:
+	ke tloushapa	1
+	ketlo ushapa	3
+ketloutentsa:
+	ketlo uten tsa	3
+ketloutlwa:
+	ketlo utlwa	3
+ketsamaile:
+	ke tsamaile	3
+ketsamaye:
+	ke tsamaye	6
+keuapese:
+	ke uape se	1
+	ke uapese	2
+keubatlele:
+	ke ubatle le	1
+	ke ubatlele	2
+keubona:
+	ke ubona	3
+keubuisa:
+	ke ubu isa	1
+	ke ubuisa	2
+keuebolele:
+	ke uebole le	5
+	ke uebolele	1
+keuetseng:
+	ke uetseng	3
+keuetsetse:
+	ke uetsetse	6
+keufaseditse:
+	ke ufa seditse	2
+	ke ufaseditse	1
+keufasolle:
+	ke ufasolle	12
+keufe:
+	ke ufe	10
+keufelehetse:
+	ke ufe le he tse	2
+	ke ufe le hetse	1
+keufepetse:
+	ke ufe pe tse	3
+keukadime:
+	ke uka dime	4
+	ke ukadime	2
+keukapise:
+	ke uka pise	6
+keukorile:
+	ke ukori le	3
+keukuke:
+	ke u ku ke	3
+keuneheletse:
+	ke une heletse	1
+	ke uneheletse	2
+keungwathela:
+	ke ungwathela	3
+keungwathele:
+	ke ungwathele	2
+keunkile:
+	ke unkile	3
+keunyolle:
+	ke unyolle	3
+keunyollotse:
+	ke unyollotse	3
+keupate:
+	ke u pate	3
+keupepe:
+	ke upepe	3
+keupepisa:
+	ke upepisa	3
+keupepise:
+	ke upepise	15
+keupshatlela:
+	ke upshatlela	3
+keuqetetse:
+	ke uqete tse	3
+keurute:
+	ke ur ute	1
+	ke uru te	2
+keurutile:
+	ke ur utile	6
+keusehele:
+	ke use hele	9
+keuseheleng:
+	ke use heleng	3
+keushebile:
+	ke ushebile	18
+keutentsitse:
+	ke utentsitse	3
+keuthuse:
+	keuthu se	4
+keutima:
+	ke utima	1
+keya:
+	ke ya	9
+keyoefa:
+	ke yo efa	6
+khait:
+	kha it	2
+khanna:
+	kha nna	6
+khaohane:
+	kha o hane	3
+kharafu:
+	kha rafu	1
+	kharaf u	1
+kheleke:
+	khele ke	2
+khoalla:
+	khoa lla	3
+khomo:
+	kho mo	2
+khothola:
+	kho thola	9
+khotholela:
+	kho tho lela	6
+koba:
+	ko ba	3
+kobonyana:
+	ko bonyana	3
+kolefane:
+	ko le fane	1
+koma:
+	ko ma	4
+konopo:
+	ko no po	3
+koro:
+	ko ro	6
+kotolana:
+	kotola na	9
+kotsia:
+	kotsi a	12
+kotsie:
+	kotsi e	3
+koulu:
+	ko ul u	6
+kuma:
+	ku ma	12
+kwadisa:
+	kwa disa	3
+kwahela:
+	kwa hela	1
+kwane:
+	kwa ne	3
+labone:
+	la bone	6
+laete:
+	la e te	2
+	la ete	1
+lahae:
+	la ha e	9
+lahao:
+	la hao	15
+laka:
+	la ka	15
+laphorang:
+	la pho rang	2
+	la phorang	1
+leabolela:
+	le abolela	3
+leaboqhala:
+	le abo qhala	3
+leaesokodisa:
+	le aesokodisa	3
+leaikutlwa:
+	le aikutlwa	3
+leakwala:
+	le a kwala	2
+leaphela:
+	le aphela	3
+leathonake:
+	le athona ke	3
+lebaleng:
+	le ba leng	3
+	le baleng	6
+lebapala:
+	le bapala	4
+lebapale:
+	le bapale	3
+lebekere:
+	lebe kere	3
+lebekereng:
+	lebe kereng	3
+lebelentenne:
+	lebe lentenne	3
+leboteng:
+	le bo teng	4
+	le boteng	2
+lebuisane:
+	lebu isane	1
+ledinyane:
+	le dinyane	3
+lee:
+	le e	3
+leentse:
+	le entse	6
+lefetileng:
+	le fetileng	3
+lehanong:
+	le hanong	9
+lehlahileng:
+	le hlahileng	2
+lehlohonolo:
+	le hlohonolo	11
+leilelaotlwa:
+	leilela otlwa	3
+lejang:
+	le jang	2
+lekae:
+	le kae	3
+lekapakapeng:
+	le kapa kapeng	1
+lekapang:
+	le kapang	6
+lekebeledutse:
+	le kebele du tse	3
+lekhabe:
+	lekha be	3
+lekhale:
+	lekha le	6
+lekhaleng:
+	lekha leng	3
+lekhaohile:
+	lekha oh ile	3
+lekhowa:
+	le kho wa	3
+lekotomane:
+	le koto mane	7
+	le kotomane	14
+lele:
+	le le	3
+leleholo:
+	le le holo	6
+lelenyane:
+	le lenyane	3
+lemao:
+	le mao	24
+lemati:
+	le mati	5
+lemating:
+	le mating	1
+lembipeditse:
+	le mbipe ditse	2
+	le mbipeditse	1
+lemina:
+	le mina	6
+lenelebapalang:
+	lene le bapalang	3
+lenelemmona:
+	lene lemmona	2
+lengolanang:
+	leng olanang	1
+lengolo:
+	leng olo	3
+lengwapile:
+	leng wa pile	3
+leno:
+	le no	13
+lentseleetsang:
+	lentse leetsang	2
+lentswe:
+	le ntswe	3
+leo:
+	le o	12
+leore:
+	le ore	2
+leoto:
+	le oto	9
+leotong:
+	le otong	9
+lepepile:
+	le pepile	3
+leqoqe:
+	le qoqe	3
+lerako:
+	le ra ko	1
+	lera ko	2
+lerakong:
+	le rakong	1
+lerata:
+	le rata	6
+lesale:
+	lesa le	1
+lesekabalallesana:
+	le sekabala llesa na	1
+	le sekabala llesana	2
+lesekabelaetsa:
+	le seka belaetsa	1
+	le sekabelaetsa	1
+leselentselena:
+	le se lentse lena	4
+	le se lentselena	2
+leshano:
+	le shano	2
+lesheleshele:
+	le shelesh ele	4
+lesika:
+	le si ka	2
+leskabalahla:
+	le skaba lahla	3
+leskalaethiba:
+	le ska la e thiba	2
+	le ska laethiba	1
+leskaleetsa:
+	le ska leetsa	2
+leskebelatswa:
+	le skebela tswa	3
+letabola:
+	le tabola	6
+letheka:
+	le the ka	3
+letlabapala:
+	letla bapala	3
+letlakeleetse:
+	letla ke leetse	3
+letlaya:
+	letla ya	3
+letloqoqa:
+	letlo qoqa	3
+letsetse:
+	letse tse	1
+letsie:
+	le tsi e	3
+leuentseng:
+	le uentseng	3
+leusheile:
+	le usheile	3
+leutlwang:
+	le utlwang	3
+levenkeleng:
+	leven ke leng	6
+leya:
+	le ya	3
+libuseng:
+	li bu seng	10
+likhapa:
+	li kha pa	38
+lwana:
+	lwa na	3
+mabese:
+	ma be se	1
+	mabe se	1
+mabodi:
+	ma bodi	1
+mabomo:
+	ma bo mo	1
+	mabo mo	2
+mabopela:
+	ma bo pela	2
+	mabo pela	4
+mabota:
+	ma bo ta	1
+	mabo ta	2
+machaka:
+	macha ka	31
+madi:
+	ma di	3
+madinyane:
+	ma dinyane	2
+mafehloase:
+	mafehlo ase	8
+mahe:
+	ma he	6
+makoma:
+	mako ma	2
+makotomane:
+	makoto mane	15
+makweba:
+	makwe ba	6
+mala:
+	ma la	1
+maleloko:
+	ma leloko	17
+maloti:
+	ma lo ti	3
+mamajoro:
+	ma majoro	6
+mamakhowa:
+	mama khowa	6
+mamela:
+	ma mela	3
+mamolalana:
+	ma molala na	3
+mamosili:
+	ma mosi li	3
+manase:
+	mana se	21
+mangwane:
+	mang wane	3
+mangwele:
+	mang wele	5
+mankokwane:
+	mankokwan e	2
+mantantaka:
+	manta ntaka	6
+manthabiseng:
+	ma nthabis eng	1
+	ma nthabiseng	2
+mantilatilane:
+	ma ntila ti lane	3
+mantlwantlwane:
+	ma ntlwantlwane	15
+mantsane:
+	ma ntsa ne	4
+mantsiboya:
+	mantsi bo ya	6
+	mantsibo ya	2
+mantsuoe:
+	mantsuo e	3
+maobane:
+	mao bane	22
+maotoana:
+	maoto ana	1
+mapeding:
+	mape ding	9
+mapeleng:
+	mape leng	6
+maphemphe:
+	ma phe mphe	2
+marallaneng:
+	mara lla neng	3
+marama:
+	mara ma	3
+mariha:
+	mari ha	3
+maseru:
+	maser u	6
+mashano:
+	ma shano	2
+mashupushopu:
+	ma shupusho pu	2
+	mashupusho pu	1
+masilo:
+	masi lo	4
+masilonyane:
+	masi lo nyane	2
+matantaka:
+	ma ta ntaka	2
+	mata ntaka	4
+matata:
+	ma ta ta	3
+mathakoa:
+	matha ko a	2
+	matha koa	1
+mathokoa:
+	ma thoko a	4
+	ma thokoa	2
+matitae:
+	mati ta e	3
+matlokoa:
+	matloko a	2
+matsila:
+	ma tsi la	3
+matsofane:
+	matso fane	6
+mehala:
+	me hala	3
+menwana:
+	me nwa na	3
+migaele:
+	migael e	12
+mikael:
+	mi ka el	2
+	mika el	4
+mikele:
+	mike le	3
+minela:
+	mi nela	6
+mmete:
+	mme te	15
+mobotse:
+	mo botse	1
+	mobo tse	2
+mobutlanyana:
+	mo butlanyana	3
+modikwadikwane:
+	mo dikwa dikwane	4
+	modi kwadi kwane	2
+mofepe:
+	mofe pe	3
+mohatella:
+	moha te lla	2
+	mohate lla	1
+mohlafatse:
+	mohla fatse	3
+mohlafotsa:
+	mohla fo tsa	3
+mojahi:
+	mo jahi	3
+mokalekale:
+	mo ka le ka le	1
+	moka le ka le	2
+moketeng:
+	mo ke teng	3
+mokhalemele:
+	mo khaleme le	2
+	mo khalemele	1
+mokhotsi:
+	mokho tsi	16
+mokhwebe:
+	mo khwebe	2
+mokopu:
+	moko pu	22
+mokoti:
+	moko ti	1
+mokotlana:
+	mo kotla na	1
+	mokotla na	2
+mokotsolane:
+	moko tsolane	9
+molato:
+	mola to	3
+molelekisa:
+	mole lek isa	2
+molomo:
+	molo mo	6
+molonyana:
+	molo nyana	2
+monana:
+	mona na	3
+monase:
+	mona se	12
+monehe:
+	mone he	5
+moneheletse:
+	mone heletse	1
+monna:
+	mo nna	8
+monyako:
+	monya ko	1
+monyantse:
+	monyants e	6
+mopepe:
+	mo pepe	2
+moqoqo:
+	moqoq o	3
+moraite:
+	mora ite	2
+	morait e	1
+moraka:
+	mora ka	1
+morara:
+	mora ra	3
+morena:
+	more na	13
+morojele:
+	moro jele	3
+mosebetsi:
+	mosebe tsi	2
+mosetsana:
+	mosetsa na	4
+moshebe:
+	mo shebe	6
+mosidi:
+	mosi di	3
+mosweu:
+	mo swe u	1
+	mo sweu	2
+mothamo:
+	motha mo	3
+motheole:
+	mo theo le	1
+	mothe o le	1
+motlenyakatse:
+	motlenyaka tse	24
+motokara:
+	moto kara	3
+motsehare:
+	motse ha re	6
+	motse hare	1
+mpalamise:
+	mpa lamise	6
+mpana:
+	mpa na	3
+mpela:
+	mpe la	1
+mpene:
+	mpe ne	3
+mpese:
+	mpe se	3
+mpetsetse:
+	mpe tse tse	6
+mphodise:
+	mpho dise	6
+naha:
+	na ha	3
+naina:
+	na i na	2
+naledi:
+	na le di	4
+nchape:
+	ncha pe	2
+neha:
+	ne ha	6
+ngola:
+	ngo la	2
+ngwanaka:
+	ngwana ka	27
+ngwanana:
+	ngwana na	16
+nkabakadisa:
+	nka ba kadisa	1
+	nkaba kadisa	2
+nkabakafa:
+	nka ba kafa	1
+	nkaba kafa	2
+nkabe:
+	nka be	3
+nkadibona:
+	nkadi bona	3
+nkadimele:
+	nkadime le	1
+nkahloleha:
+	nka hlo le ha	1
+	nka hlole ha	2
+nkahonyela:
+	nka honye la	3
+nkakhele:
+	nka khele	3
+nkaokopa:
+	nka o kopa	6
+nkapoqa:
+	nka poqa	3
+nkaseqeta:
+	nka se qeta	3
+nkasokola:
+	nka sokola	3
+nkatseha:
+	nka tse ha	3
+nkaubolayisa:
+	nka ubolayisa	3
+nkaushapa:
+	nka ushapa	3
+nkebekaya:
+	nke be ka ya	3
+nkebenkaya:
+	nke be nka ya	6
+nkekeebone:
+	nkeke ebone	3
+nkekerwale:
+	nke ke rwale	3
+nkekeutlwe:
+	nke keutlwe	3
+nkele:
+	nke le	3
+nkotle:
+	nko tle	1
+nnake:
+	nna ke	12
+noi:
+	no i	3
+nokaneng:
+	no ka neng	4
+	no kaneng	1
+nokeng:
+	no keng	3
+nonopi:
+	nono pi	3
+ntheole:
+	ntheo le	3
+ntswepelele:
+	ntswepele le	22
+ntumedise:
+	ntume dise	6
+oaakhela:
+	oa akhela	3
+oabaleha:
+	oabale ha	2
+oadidietsa:
+	oadi dietsa	3
+oaepata:
+	oae pata	2
+oaereka:
+	oaere ka	3
+oaerwala:
+	oae rwala	3
+oafiela:
+	oa fiela	3
+oakhiba:
+	oa khiba	1
+oakhohlela:
+	oakho hle la	1
+oamobona:
+	oamo bona	1
+oampha:
+	o am pha	2
+	oa mpha	1
+oanwele:
+	o anwele	1
+oapetsoha:
+	oape tsoha	3
+oasale:
+	oasa le	3
+oashobela:
+	o ashobela	3
+oasokodisa:
+	oa sokodisa	3
+oasukudisa:
+	oa sukudisa	3
+oathaba:
+	oatha ba	4
+oatlisa:
+	oa tlisa	1
+oatsoha:
+	oa tsoha	3
+oatswa:
+	oa tswa	2
+oauhlodiya:
+	oau hlodi ya	2
+	oau hlodiya	1
+oauqabola:
+	oauqa bola	1
+oauqaphatsa:
+	oauqa pha tsa	3
+oausheba:
+	oau sheba	3
+obalehile:
+	o balehile	3
+obatla:
+	o batla	3
+obolela:
+	o bolela	3
+obona:
+	o bona	3
+ocho:
+	o cho	1
+odisa:
+	o disa	2
+odisang:
+	o disang	3
+oe:
+	o e	3
+oebetsa:
+	o e betsa	2
+oebotswe:
+	o ebotswe	3
+oediha:
+	o e di ha	2
+oejellang:
+	o ejellang	3
+oeme:
+	o eme	3
+oenkile:
+	o enkile	3
+oentse:
+	o entse	6
+oentseng:
+	o entseng	6
+oeotla:
+	o e otla	3
+oeqhalelang:
+	o e qhalelang	3
+oerekile:
+	o erekile	6
+oerwetse:
+	o erwetse	1
+oetsa:
+	o etsa	3
+oetsang:
+	o etsang	13
+oetsetsang:
+	o etsetsang	1
+ohana:
+	o hana	3
+ohlobolang:
+	o hlobolang	3
+ohodisa:
+	o hodisa	3
+oilealenka:
+	oile ale nka	3
+oileware:
+	oile wa re	2
+	oile ware	1
+oilohadika:
+	oilo hadika	3
+oilonka:
+	oilo nka	3
+oilosebetsa:
+	oilo sebetsa	2
+oiloufa:
+	oilo ufa	2
+oirodisitse:
+	oi ro di si tse	1
+	oi ro disi tse	2
+ojang:
+	o jang	3
+ojele:
+	o jele	1
+okena:
+	o kena	6
+okopa:
+	o kopa	2
+olahlile:
+	o lahlile	6
+ole:
+	o le	6
+olebata:
+	o le bata	3
+olekana:
+	o le ka na	2
+	o le kana	4
+ololelata:
+	o lo lelata	3
+omatha:
+	o matha	4
+omongata:
+	o mongata	2
+omphile:
+	o mphile	3
+oneaekhile:
+	one a ekhile	3
+oneaile:
+	one aile	3
+oneailoqhala:
+	one ail oqhala	1
+	one ailo qhala	2
+oneaobona:
+	one ao bona	3
+onearata:
+	one arata	2
+oneasampone:
+	one asampone	3
+oneatsipa:
+	one a tsi pa	1
+	one a tsipa	2
+oneole:
+	one o le	3
+oneotswa:
+	one otswa	6
+ongotse:
+	o ngo tse	4
+onhatile:
+	o nhatile	3
+onokuwe:
+	ono kuwe	3
+onshapile:
+	o nshapile	3
+ontsealla:
+	ontse alla	3
+ontseashapuwa:
+	ontse ashapuwa	3
+ontseatseba:
+	ontse atseba	3
+ontseofefotse:
+	ontseofe fo tse	1
+	ontseofefo tse	2
+onyantse:
+	onyants e	1
+ooh:
+	o oh	3
+ooreketswe:
+	oore ketswe	2
+ootla:
+	o otla	9
+oqetile:
+	o qetile	3
+oqhome:
+	o qhome	3
+oqoqe:
+	o qoqe	3
+orata:
+	o rata	3
+oreshebile:
+	ore shebile	3
+orobaditse:
+	o roba ditse	2
+orobetse:
+	o robe tse	2
+	o robetse	2
+orotse:
+	oro tse	3
+osatlatseba:
+	o sa tla tse ba	1
+	o sa tla tseba	2
+osatseba:
+	o sa tse ba	1
+	o sa tseba	2
+oseabileare:
+	o se abile are	3
+oseakhathetse:
+	o se akhathetse	9
+oseale:
+	o se ale	3
+oseantsare:
+	o se a ntsa re	3
+oseantseaetseba:
+	o se antseaetseba	1
+	o seantseaetseba	2
+osebetsang:
+	o sebetsang	3
+osheba:
+	o sheba	6
+oshebang:
+	o shebang	3
+oshobetse:
+	o shobetse	4
+othabile:
+	o thabile	3
+othotse:
+	o tho tse	3
+otlaelata:
+	otla elata	3
+otlaenka:
+	otla e nka	3
+otlafihla:
+	o tlafihla	1
+otlahatsela:
+	otla ha tsela	1
+otlahlaha:
+	otlahla ha	2
+otlakena:
+	otla kena	3
+otlakhutla:
+	otla khutla	3
+otlamorekela:
+	otla more kela	3
+otlanseha:
+	o tlanse ha	1
+otlanshapa:
+	o tlanshapa	1
+otlarethunya:
+	otla rethunya	3
+otlaskatsoha:
+	otla ska tsoha	3
+otlatla:
+	otla tla	3
+otlau:
+	otla u	3
+otlauamoha:
+	otla uamoha	1
+otlaubona:
+	otla ubona	2
+otlauchekola:
+	otlauche kola	3
+otlauja:
+	otla uja	1
+otlaumula:
+	otla umula	3
+otlaunka:
+	otla unka	3
+otlauqeta:
+	otla uqeta	1
+otlaurekela:
+	otla ure kela	2
+	otlaure kela	1
+otlauthola:
+	otla uthola	3
+otlautlela:
+	otla u tlela	2
+	otla utlela	1
+otlawa:
+	otla wa	3
+otliloushapa:
+	otlilo ushapa	2
+otlomorekela:
+	otlo more kela	2
+otloushapa:
+	o tloushapa	2
+otsamaile:
+	o tsamaile	3
+otsela:
+	o tsela	3
+otukile:
+	o tukile	1
+oufile:
+	o ufile	6
+oulahlela:
+	o ulahlela	3
+oushapile:
+	o ushapile	3
+oushebile:
+	o ushebile	3
+outlwa:
+	o utlwa	3
+outlwang:
+	o utlwang	3
+owele:
+	o we le	1
+	o wele	2
+oya:
+	o ya	6
+palesa:
+	pale sa	12
+palo:
+	pa lo	2
+pelaka:
+	pela ka	6
+peli:
+	pe li	3
+pene:
+	pe ne	9
+pentihos:
+	penti hos	12
+perekisi:
+	pereki si	9
+phate:
+	pha te	2
+phofo:
+	pho fo	2
+phomola:
+	pho mola	3
+phuthulla:
+	phuthu lla	1
+pitsana:
+	pitsa na	1
+pitsaneng:
+	pitsa neng	3
+polata:
+	po lata	3
+polopoqo:
+	po lopoq o	6
+popopo:
+	po po po	1
+potso:
+	po tso	3
+potsotso:
+	potso tso	9
+pula:
+	pu la	4
+puo:
+	pu o	3
+pupu:
+	pu pu	1
+qopu:
+	qo pu	3
+radio:
+	radi o	6
+ratlabarahatsela:
+	ra tla ba raha tsela	1
+reabapala:
+	re abapala	3
+reahlophodise:
+	re ahlo phodise	2
+realwana:
+	re alwana	3
+reaphela:
+	re aphela	3
+rebaleha:
+	re bale ha	1
+rebalehele:
+	re bale hele	6
+rebapala:
+	re bapala	6
+rebapalang:
+	re bapalang	8
+rebapale:
+	re bapale	1
+rebetse:
+	re betse	2
+rebone:
+	re bone	1
+redule:
+	re dule	5
+reebeha:
+	re ebeha	3
+reebone:
+	re ebone	3
+reeqhale:
+	re e qhale	3
+reesenya:
+	re esenya	3
+reetsang:
+	re etsang	6
+reetse:
+	re etse	7
+reikutlule:
+	reikutlu le	3
+reja:
+	re ja	3
+rejang:
+	re jang	3
+rejele:
+	re jele	3
+rekere:
+	re kere	8
+rekore:
+	re ko re	3
+rele:
+	re le	2
+relobapala:
+	relo bapala	3
+relopheha:
+	relo phe ha	1
+	relophe ha	2
+remosiye:
+	re mosi ye	3
+rena:
+	re na	1
+renerebina:
+	rene rebina	2
+renereebone:
+	rene re ebone	2
+	renere ebone	1
+renereetiisa:
+	rene re etiisa	2
+	renere etiisa	1
+rentserebua:
+	rentse rebua	3
+rentserephutolla:
+	rentsere phutolla	3
+rephahamisa:
+	re pha hamisa	2
+	repha hamisa	1
+rephomole:
+	re phomole	2
+reqale:
+	reqa le	1
+reqetile:
+	re qetile	3
+rere:
+	re re	3
+rerobetse:
+	re robetse	1
+	rerobe tse	1
+rese:
+	re se	3
+resereleetsa:
+	re se re leetsa	1
+	re sere leetsa	2
+reseretlatsamaya:
+	re se retla tsamaya	6
+resiye:
+	re si ye	3
+rethole:
+	re tho le	3
+retlaaja:
+	retla aja	3
+retlabolaya:
+	retla bola ya	2
+	retla bolaya	1
+retladibona:
+	retla di bona	3
+retladirekelwa:
+	retla direkelwa	3
+retlahlatswa:
+	retla hlatswa	3
+retlalaolla:
+	re tlala o lla	2
+	re tlala olla	1
+retlatsoha:
+	retla tsoha	3
+retlobadansa:
+	retloba dansa	3
+retlobapala:
+	retlo bapala	3
+retloketa:
+	retlo keta	6
+retlokete:
+	retlo kete	6
+retloqhomisa:
+	retlo qhomisa	3
+retloukwalla:
+	retlo ukwa lla	1
+	retloukwa lla	2
+retsamaye:
+	re tsamaye	11
+retsekang:
+	re tsekang	1
+	retse kang	2
+reya:
+	re ya	12
+robedi:
+	robe di	3
+rolelang:
+	ro lelang	2
+rosari:
+	ro sari	6
+saese:
+	sa e se	3
+safare:
+	sa fa re	3
+sahao:
+	sa hao	3
+saka:
+	sa ka	21
+sala:
+	sa la	6
+seaeja:
+	se aeja	2
+seaja:
+	se aja	3
+sediketse:
+	se di ketse	3
+sedumang:
+	se du mang	3
+sedutse:
+	se du tse	3
+see:
+	se e	16
+seefuwe:
+	se efuwe	3
+seenkile:
+	se enkile	3
+seeta:
+	se eta	21
+seetsa:
+	se etsa	3
+seetse:
+	se etse	3
+sefaneng:
+	sefa neng	3
+sefapano:
+	sefapa no	6
+sefasolohile:
+	sefa so lohile	3
+sefe:
+	se fe	2
+sefena:
+	se fe na	4
+	sefe na	3
+sehela:
+	se hela	3
+sehlatswang:
+	se hlatswang	3
+sehole:
+	se hole	6
+seitse:
+	se itse	6
+seja:
+	se ja	3
+sejwalo:
+	se jwalo	3
+sejwang:
+	se jwang	3
+sekaediha:
+	sekae di ha	3
+sekaeemisa:
+	sekaee misa	3
+sekahlwa:
+	sek ah lwa	1
+	seka hlwa	2
+sekamochofa:
+	seka mochofa	3
+sekana:
+	seka na	4
+sekanghata:
+	se kang hata	2
+	sekang hata	1
+sekanna:
+	seka nna	5
+sekanshapa:
+	se kanshapa	3
+sekansokodisa:
+	se kansokodisa	2
+sekaqala:
+	sek aqala	3
+sekathetsa:
+	sek athetsa	3
+seke:
+	se ke	3
+sekhamapeta:
+	sekha mape ta	9
+sekhaohile:
+	sekha oh ile	3
+sekhintlane:
+	sekhintl ane	6
+sekhota:
+	sek ho ta	6
+	sekho ta	3
+sekhowa:
+	se khowa	1
+	sek howa	1
+sekipa:
+	sek ipa	6
+sekupo:
+	sek upo	3
+sekupu:
+	sek u pu	3
+sekwaelwana:
+	sek wa elwana	3
+selekane:
+	sele kane	1
+sello:
+	sell o	1
+seloto:
+	selo to	3
+senesejang:
+	sene se jang	1
+	sene sejang	2
+senotlolo:
+	se no tlolo	3
+seo:
+	se o	9
+sephaka:
+	se pha ka	3
+serata:
+	se rata	3
+serole:
+	se ro le	1
+	sero le	1
+serope:
+	se ro pe	1
+	sero pe	2
+sesecha:
+	sese cha	3
+seseholo:
+	sese holo	2
+sesekhubedu:
+	sese khubedu	3
+seseng:
+	se seng	5
+sesenyenyane:
+	se senyenyane	1
+	sese nyenyane	2
+sesesweu:
+	sese swe u	6
+sethole:
+	se tho le	3
+setlauthula:
+	se tla uthula	6
+	setla uthula	3
+setletse:
+	setle tse	3
+setlolo:
+	se tlolo	1
+setono:
+	se tono	3
+setswa:
+	se tswa	3
+setswantso:
+	setswants o	1
+shekoe:
+	sheko e	6
+siyo:
+	si yo	1
+skabaetsa:
+	skaba etsa	1
+skadula:
+	ska dula	3
+skaeberella:
+	ska ebe re lla	3
+skaeemisa:
+	ska ee misa	6
+skaepalama:
+	ska epala ma	3
+skaepoqa:
+	ska e poqa	2
+	skae poqa	1
+skaesenya:
+	ska esenya	3
+skaetsa:
+	ska etsa	3
+skamootla:
+	ska mootla	3
+skamoqhadisa:
+	ska moqhadisa	3
+skanka:
+	ska nka	3
+soka:
+	so ka	2
+sona:
+	so na	3
+soso:
+	so so	3
+sosososo:
+	so so so so	3
+stentekwana:
+	stente kwana	3
+supa:
+	su pa	3
+swephetsenta:
+	swe phetsent a	1
+tentenki:
+	ten tenki	5
+	tent enki	6
+teraka:
+	tera ka	1
+teretara:
+	tere ta ra	3
+thamolla:
+	thamo lla	3
+thella:
+	the lla	9
+theoha:
+	theo ha	45
+theola:
+	theo la	3
+thokolosi:
+	tho kolosi	2
+tholwana:
+	tho lwa na	1
+thonaka:
+	thona ka	21
+thonake:
+	thona ke	6
+thula:
+	thu la	6
+thuso:
+	thu so	3
+thutswana:
+	thu tswa na	3
+tibisa:
+	ti bisa	1
+	tib isa	2
+tichere:
+	ti che re	2
+tipatipanyane:
+	ti patipanyane	2
+tjale:
+	tja le	6
+tlake:
+	tla ke	3
+tlaku:
+	tla ku	2
+tlelapa:
+	tlela pa	4
+tloella:
+	tloe lla	2
+toti:
+	to ti	1
+tsahae:
+	tsaha e	9
+tseeiti:
+	tseei ti	1
+tseha:
+	tse ha	3
+tsehlo:
+	tse hlo	3
+tsehodimo:
+	tse hodimo	1
+tsenana:
+	tsena na	3
+tsene:
+	tse ne	3
+tsepo:
+	tse po	8
+tsesatlalang:
+	tse sa tlalang	3
+tsetenya:
+	tse tenya	2
+tsiba:
+	tsi ba	11
+tsipa:
+	tsi pa	2
+tsoha:
+	tso ha	3
+tsohle:
+	tso hle	1
+tsomo:
+	tso mo	18
+tswele:
+	tswe le	1
+uababone:
+	uaba bone	3
+uabaleha:
+	uabale ha	3
+uabolaya:
+	uabola ya	3
+uadiphoqa:
+	ua diphoqa	1
+	uadi phoqa	2
+uaeemisa:
+	uaee misa	3
+uaefothola:
+	uae fo thola	3
+uaeheletsa:
+	uae heletsa	3
+uaepata:
+	uae pata	2
+uaeqhwaolla:
+	uae qhwaolla	3
+uaerola:
+	uae rola	3
+uaerwala:
+	uae rwala	3
+uaeseha:
+	uae se ha	3
+uaethua:
+	uae thu a	3
+uafasolla:
+	uafa so lla	1
+uaferesa:
+	uafe re sa	3
+uahauha:
+	uaha uha	3
+uaheletsa:
+	ua heletsa	3
+uahlaha:
+	uahla ha	3
+uahlahela:
+	uahla hela	3
+uaidihela:
+	uai di hela	2
+	uai dihela	1
+uaikama:
+	uai ka ma	3
+uaingwaya:
+	ua ingwaya	3
+uaithoma:
+	uai tho ma	1
+uaithua:
+	uai thu a	3
+uaitlama:
+	uai tla ma	1
+	uaitla ma	2
+uajampa:
+	uaja mpa	2
+uakapa:
+	ua kapa	3
+uakhohlela:
+	uakho hle la	1
+uakhothola:
+	uakho thola	6
+uakumbakumba:
+	ua kumbakumba	3
+uakutlula:
+	uakutlu la	3
+uakwadisa:
+	ua kwa disa	1
+	uakwa disa	2
+uakwala:
+	ua kwala	6
+ualla:
+	ua lla	2
+ualle:
+	u alle	2
+ualwana:
+	u alwana	4
+uamenola:
+	ua me no la	2
+	ua meno la	1
+uammona:
+	uam mona	2
+uamobona:
+	uamo bona	3
+uamodihela:
+	uamodi hela	1
+uamokupetsa:
+	uamo ku pe tsa	3
+uamonyantsa:
+	uamonya ntsa	2
+	uamonyants a	1
+uamoutlwa:
+	uamo utlwa	2
+uampalamisa:
+	uam palamisa	6
+uampepisa:
+	ua mpe pisa	2
+	uam pepisa	1
+uampone:
+	uam pone	3
+uankhama:
+	uankha ma	3
+uankotla:
+	uanko tla	2
+uankototsa:
+	uankoto tsa	3
+uanngwapa:
+	ua nngwapa	3
+uanqabola:
+	uanqa bola	2
+uanthetsa:
+	uanthe tsa	3
+uantihela:
+	uanti hela	3
+uantlwaela:
+	ua ntlwaela	3
+uantonosetsa:
+	uantono setsa	3
+uanyantsa:
+	uanya ntsa	2
+uapalama:
+	uapala ma	3
+uapese:
+	uape se	1
+uaphaka:
+	uapha ka	8
+uapheha:
+	uaphe ha	3
+uaphoqa:
+	ua phoqa	1
+uaqabola:
+	uaqa bola	1
+uaqhale:
+	uaqha le	3
+uaqhobotsa:
+	uaqho botsa	3
+uaqhwaela:
+	uaqhwa ela	1
+uareqabola:
+	uareqa bola	1
+uarethetsa:
+	uare the tsa	2
+uarwakana:
+	u arwakana	3
+uatabola:
+	ua tabola	3
+uatheoha:
+	ua theo ha	3
+uatseha:
+	uatse ha	5
+uawa:
+	ua wa	4
+uaya:
+	ua ya	1
+ubaleha:
+	ubale ha	9
+ubapalla:
+	ubapa lla	3
+ubatime:
+	uba time	1
+	ubati me	2
+ubeuhore:
+	ube u hore	3
+ubeumphe:
+	ube umphe	1
+ubeuutlwe:
+	ube u utlwe	3
+ubobehile:
+	ubo behile	6
+ubophehela:
+	u bophe hela	2
+	ubo phe hela	1
+ubopile:
+	ubo pile	2
+uboqetile:
+	ubo qetile	3
+uchaisa:
+	u cha isa	2
+ucho:
+	u cho	3
+udibapala:
+	udi bapala	3
+udibeha:
+	udi beha	1
+udibehe:
+	udi behe	1
+udije:
+	udi je	3
+udikwahetse:
+	u dikwahetse	3
+udiqete:
+	udi qe te	1
+	udiqe te	1
+udiqetile:
+	udi qetile	1
+uebapalang:
+	ue bapalang	3
+uebutsuwe:
+	ue butsu we	1
+	ue butsuwe	2
+uediha:
+	ue di ha	2
+uehatile:
+	ue hatile	3
+ueheletsetsang:
+	ue hele tsetsang	1
+	ue heletsetsang	2
+uenenesa:
+	uene ne sa	3
+uentsetsang:
+	uentse tsang	2
+uepateleditse:
+	uepatele ditse	3
+uepatile:
+	ue patile	4
+ueqete:
+	ueqe te	2
+uereketswe:
+	uere ketswe	2
+uetene:
+	uet ene	1
+uetsole:
+	ue tso le	3
+uetswetse:
+	uetswe tse	3
+ufodile:
+	u fodile	3
+ufutswela:
+	ufu tswela	3
+uhanne:
+	u hanne	6
+uhatisa:
+	uhati sa	2
+uhlaba:
+	uhla ba	2
+uhlomphe:
+	uhlo mphe	3
+uhlopha:
+	uhlo pha	3
+uhlwa:
+	u hlwa	2
+uikametse:
+	ui ka metse	3
+uikopeditse:
+	ui ko pe ditse	6
+	ui ko peditse	3
+uileuabauatheoha:
+	uile uaba ua theo ha	2
+	uile uaba uatheo ha	1
+uileuareng:
+	uile uareng	6
+uilewabawatheoha:
+	uile wa ba wa theo ha	2
+	uile wa bawathe o ha	2
+uilewaebeha:
+	uile wa ebeha	3
+uilewalla:
+	uile wa lla	3
+uilewantima:
+	uile wan tima	2
+	uile wantima	1
+uilewaotlwa:
+	uile wa otlwa	1
+	uile waotlwa	2
+uileware:
+	uile wa re	1
+	uile ware	2
+uilewatheolwa:
+	uile wa theo lwa	3
+uilobapala:
+	uilo bapala	1
+uilomohlatswa:
+	uilo mo hlatswa	3
+uiminola:
+	ui mino la	1
+	uimi no la	2
+uiterekile:
+	uit erekile	3
+uitholetse:
+	ui tho letse	1
+	uitho letse	2
+uithomela:
+	uit homela	3
+uithomme:
+	ui tho mme	1
+	uitho mme	2
+uitswere:
+	uitswe re	3
+ujelelle:
+	uje lelle	2
+ukabauamopenya:
+	ukaba uamo penya	3
+ukabewafihla:
+	uka be wafihla	2
+	ukabe wafihla	1
+ukalahla:
+	uka lahla	3
+ukamonka:
+	uka monka	6
+ukanka:
+	uka nka	1
+ukankuka:
+	uka nku ka	3
+ukatenang:
+	uka tenang	3
+ukebeuaefihlela:
+	u kebe uaefi hle la	3
+ukekewankuka:
+	u ke ke wa nku ka	3
+ukete:
+	u kete	6
+ukhanna:
+	ukha nna	3
+ukhanne:
+	ukha nne	9
+ukhaue:
+	ukha ue	3
+ukhotholang:
+	u kho tholang	2
+ukhotholela:
+	u kho tho lela	2
+ukhutlile:
+	u khutlile	2
+ukopetsa:
+	uko pe tsa	2
+	ukope tsa	1
+ulefeta:
+	ule feta	3
+ulepatile:
+	ule patile	6
+uleqhadile:
+	ule qhadile	2
+ulla:
+	u lla	3
+ulojwetsa:
+	ulo jwetsa	2
+umametse:
+	u ma metse	3
+ummete:
+	u mme te	3
+umohlomphe:
+	u mohlo mphe	3
+umokadima:
+	umo ka dima	1
+	umo kadima	2
+umokadime:
+	umo ka dime	1
+	umo kadime	2
+umolahletse:
+	umo lahletse	2
+	umola hle tse	1
+umolomelang:
+	umolo melang	2
+umometa:
+	umo meta	3
+umomete:
+	umo mete	3
+umonehe:
+	umone he	1
+umonyantse:
+	u monyants e	2
+	u monyantse	4
+umopepe:
+	umo pepe	1
+umophuthile:
+	umo phuth ile	1
+	umo phuthile	2
+umoshape:
+	u moshape	6
+umosiya:
+	umosi ya	1
+umotheoletseng:
+	umo theo letseng	4
+	umotheo letseng	2
+umpaudianehe:
+	u mpa udiane he	1
+	u mpa udianehe	2
+umpepisang:
+	u mpe pisang	3
+umpetsola:
+	u mpe tsola	1
+	umpe tsola	2
+unchebileng:
+	u nchebileng	12
+uneabone:
+	une abone	3
+unengudibua:
+	u neng udi bua	3
+unepile:
+	une pile	3
+uneubinne:
+	une ubinne	2
+uneubue:
+	une ubue	2
+uneuebona:
+	une uebona	1
+uneuedihellang:
+	une ue dihellang	2
+	uneue dihellang	1
+uneuefuwe:
+	une uefuwe	3
+uneueme:
+	une ueme	3
+uneueqetelang:
+	une ueqe telang	1
+	une ueqetelang	1
+	uneueqe telang	1
+uneuetsa:
+	une uetsa	3
+uneuetsang:
+	une uetsang	2
+uneuetswa:
+	une uetswa	2
+uneufuwa:
+	une ufuwa	3
+uneuile:
+	une uile	7
+uneuje:
+	une uje	2
+uneukangwa:
+	une u kang wa	2
+	uneu kang wa	1
+uneukareka:
+	une ukare ka	2
+	uneukare ka	1
+uneukonkola:
+	une uko nko la	2
+	uneuko nkola	1
+uneukwatile:
+	une ukwa tile	4
+	uneu kwatile	2
+uneulebetse:
+	une ule betse	2
+	uneule betse	1
+uneummona:
+	une ummona	3
+uneumofileng:
+	une umofileng	3
+uneunkotla:
+	une unkotla	3
+uneuntseulla:
+	une untse ulla	2
+	une untseu lla	1
+uneure:
+	une ure	3
+uneurekelwa:
+	une urekelwa	3
+uneusaenke:
+	une usa enke	1
+	uneusa enke	2
+uneusamoapese:
+	une usa mo ape se	1
+	une usa mo apese	1
+	uneusa mo apese	1
+uneusautlwe:
+	une usa utlwe	2
+	uneusa utlwe	1
+uneusefuwe:
+	une usefuwe	2
+uneusereka:
+	une use re ka	8
+	uneuse re ka	4
+uneuseuilolata:
+	une use uilolata	2
+	uneuse uilolata	1
+uneutlathola:
+	une utla thola	3
+uneutsela:
+	une utsela	3
+uneutswara:
+	une utswara	3
+unfoka:
+	unfo ka	3
+unhatile:
+	u nhatile	3
+unkadime:
+	u nkadime	2
+unkapisa:
+	u nkapisa	3
+unneubetse:
+	u nne ubetse	3
+unngwapile:
+	u nngwapile	1
+unthulelang:
+	unthu lelang	3
+untlohele:
+	u ntlohele	6
+untome:
+	unto me	3
+untsare:
+	untsa re	3
+untseuhlahisa:
+	untseu hlahisa	3
+untseunketsang:
+	untse unketsang	3
+untseuqhoma:
+	untseu qhoma	3
+untseurobetse:
+	untseurobe tse	1
+untseusatsebe:
+	untseusa tse be	2
+untseusautlwe:
+	untseusa utlwe	3
+untseushebile:
+	untse ushebile	3
+untseutseba:
+	untse utseba	1
+untsewalla:
+	untse wa lla	1
+untsipelang:
+	untsi pelang	3
+untsitisa:
+	untsi ti sa	3
+untsiyelang:
+	untsi yelang	3
+untsoetsang:
+	untso etsang	3
+untswetseng:
+	u ntswetseng	3
+unuetswa:
+	un uetswa	3
+unutswa:
+	un utswa	3
+unuya:
+	un uya	3
+unyolohile:
+	unyo lohile	6
+unyorilwe:
+	u nyorilwe	6
+uobatle:
+	u o batle	3
+uojele:
+	u o jele	1
+	u ojele	2
+upenya:
+	u penya	3
+uphahamisitse:
+	u pha hamisi tse	1
+	u pha hamisitse	2
+uphethotse:
+	uphe tho tse	3
+upodise:
+	u po dise	1
+	u podise	2
+uqhala:
+	u qhala	1
+ureka:
+	ure ka	3
+urwale:
+	u rwale	7
+usabua:
+	usa bua	3
+usaisa:
+	usa isa	1
+usakentse:
+	usa kentse	2
+usale:
+	usa le	1
+usamapese:
+	usamape se	1
+usare:
+	usa re	3
+usarobale:
+	usa robale	6
+usatsebe:
+	usa tse be	2
+usaya:
+	usa ya	3
+usehatile:
+	use hatile	3
+usekabeuathetsa:
+	usekabe uathetsa	3
+usekafasolla:
+	usekafa so lla	1
+usekamollisa:
+	useka mollisa	3
+usekatswela:
+	useka tswela	3
+uselahlile:
+	use lahlile	3
+usepepetseng:
+	usepepe tseng	3
+userekile:
+	use rekile	6
+useuabolokela:
+	use uabolo kela	3
+useubileulentsa:
+	use ubile ule ntsa	2
+useueentse:
+	use ue entse	3
+useukhotse:
+	use ukhotse	3
+useulapile:
+	use ulapile	6
+useuntseutla:
+	use untse utla	1
+useuqadile:
+	use uqa dile	3
+useuqetile:
+	use uqetile	3
+useure:
+	use ure	3
+useusarolla:
+	use usaro lla	2
+	use usarolla	1
+useusentsa:
+	use u sentsa	2
+	use use ntsa	1
+useusheba:
+	use u sheba	3
+useutlaitse:
+	use utla itse	1
+	use utlaitse	2
+useutlamobona:
+	use utla mobona	2
+	useutla mo bona	1
+useutlatseba:
+	use utlatseba	3
+useutseba:
+	use utseba	5
+useutsohile:
+	use utsohile	2
+useutsotse:
+	use utso tse	6
+ushwele:
+	ushwe le	3
+uskaba:
+	u skaba	1
+uskabaebatla:
+	u skaba ebatla	1
+	uskaba ebatla	2
+uskabaeja:
+	u skaba eja	1
+	uskaba eja	2
+uskabaelahla:
+	uskaba elahla	1
+uskabaetsa:
+	u skabaetsa	1
+uskabahula:
+	u skabahula	1
+uskabaja:
+	u skabaja	1
+uskaballela:
+	uska ballela	3
+uskabamofa:
+	u skaba mofa	1
+	uskaba mofa	1
+uskabanwa:
+	u skaba nwa	2
+	uskaba nwa	4
+uskabatswara:
+	uskaba tswara	3
+uskabawatswara:
+	uskaba wa tswara	3
+uskaeakhela:
+	uskae akhela	2
+uskaesarolla:
+	uskaesaro lla	2
+uskaetlisa:
+	uskae tlisa	3
+uskaitswareletsa:
+	uskai tswa re letsa	3
+uskalla:
+	uska lla	6
+uskamoisa:
+	uska moisa	3
+uskamootla:
+	uska mootla	3
+uskamoqetela:
+	uska moqe tela	1
+	uska moqetela	1
+uskampawaotsela:
+	uska mpa wa o tsela	3
+uskantoma:
+	u skantoma	2
+	uskanto ma	1
+uskaqhala:
+	uska qhala	2
+uskareotla:
+	uskare otla	3
+uskasisinya:
+	uska si sinya	1
+uswabe:
+	uswa be	6
+utella:
+	ute lla	2
+utene:
+	uten e	5
+uteneng:
+	uten eng	3
+utenneng:
+	uten neng	4
+uthetse:
+	u the tse	1
+uthonakang:
+	uthona kang	4
+uthotse:
+	utho tse	3
+utime:
+	uti me	2
+utlaaebola:
+	utla aebola	3
+utlaapara:
+	utla apara	3
+utlaaparang:
+	utla apa rang	3
+utlaapesa:
+	utla ape sa	6
+utlaathonaka:
+	utla athona ka	2
+utlaba:
+	utla ba	1
+utlababa:
+	utla baba	3
+utlababelwa:
+	utla babe lwa	3
+utlabaulome:
+	utla ba ulome	1
+	utlaba ulo me	2
+utlabeuchesa:
+	utlabe uchesa	3
+utlabeuelahle:
+	utlabe uelahle	3
+utlabeuenke:
+	utlabe uenke	3
+utlabeufiela:
+	utlabe ufiela	6
+utlabeumphiella:
+	utlabe umphiel la	1
+utlabina:
+	utla bina	2
+utlabona:
+	utla bona	6
+utlabua:
+	utla bua	3
+utlachesa:
+	utla che sa	3
+utlacho:
+	utla cho	3
+utladiha:
+	utla di ha	3
+utladija:
+	utla dija	3
+utladijwentsa:
+	utla di jwentsa	3
+utladintsa:
+	utla dintsa	3
+utladirwala:
+	utla di rwala	3
+utladula:
+	utla dula	3
+utlaebola:
+	utla ebola	3
+utlaebona:
+	utla ebona	3
+utlaebusetsa:
+	utla e bu setsa	1
+utlaeetsa:
+	utla eetsa	3
+utlaefa:
+	utla efa	3
+utlaehlatswa:
+	utla e hlatswa	1
+	utla ehlatswa	2
+utlaekenya:
+	utla e kenya	3
+utlaelata:
+	utla elata	6
+utlaeqeta:
+	utla eqeta	3
+utlaetabola:
+	utla etabola	3
+utlaetsang:
+	utla etsang	11
+utlafola:
+	utla fo la	3
+utlahatsela:
+	utla ha tsela	10
+utlahlatsa:
+	utla hlatsa	2
+utlahlatswa:
+	utla hlatswa	2
+utlaitlhaba:
+	utla itlhaba	1
+utlaja:
+	utla ja	4
+utlakhangwa:
+	utlakhang wa	6
+utlakhaoha:
+	utlakhao ha	3
+utlakhaola:
+	utlakhao la	1
+utlalebatla:
+	utla le batla	3
+utlalelahla:
+	utla lelahla	3
+utlalenka:
+	utla le nka	3
+utlalla:
+	utla lla	3
+utlamatha:
+	utla matha	3
+utlammontsa:
+	utla mmontsa	3
+utlamofa:
+	utla mofa	3
+utlamokadima:
+	utla mo ka dima	1
+	utla mo kadima	2
+utlamonka:
+	utla monka	3
+utlamootla:
+	utla mootla	3
+utlamphehela:
+	utla mphe hela	3
+utlanseha:
+	u tlanse ha	1
+	utlanse ha	1
+utlantseba:
+	utlantse ba	2
+utlaoisa:
+	utla oisa	9
+utlapenya:
+	utla penya	6
+utlapolopoqo:
+	utla po lopoq o	6
+utlasefa:
+	utla sefa	3
+utlashapuwa:
+	utla shapuwa	3
+utlatenang:
+	utla tenang	3
+utlathulwa:
+	utla thu lwa	9
+utlatloha:
+	utla tloha	3
+utlatsolla:
+	utlatso lla	3
+utlautlwa:
+	utla utlwa	12
+utlawa:
+	utla wa	3
+utlawela:
+	utla wela	12
+utlaya:
+	utla ya	5
+utlebone:
+	u tle bone	2
+	utle bone	1
+utleelahle:
+	u tle elahle	2
+	utle elahle	1
+utlilompha:
+	utlilo mpha	1
+	utlilomph a	2
+utliloretima:
+	utlilo re tima	2
+	utlilore tima	1
+utloanehe:
+	utlo anehe	1
+utlodietsise:
+	utlodie tsi se	3
+utlodula:
+	utlo dula	3
+utlofete:
+	utlo fete	3
+utlojwentsa:
+	utlo jwentsa	3
+utloketa:
+	utlo keta	3
+utlole:
+	utlo le	3
+utlomokhella:
+	utlo mokhella	3
+utlooise:
+	u tlooise	3
+utlore:
+	utlo re	3
+utlorwala:
+	utlo rwala	3
+utloseebola:
+	utlo se ebola	2
+	utlose ebola	4
+utlosesa:
+	utlo sesa	2
+utlotena:
+	utlo tena	3
+utloutlwe:
+	utlo utlwe	3
+utsamaya:
+	u tsamaya	1
+utsielehile:
+	u tsi elehile	1
+utsitsinya:
+	u tsi tsinya	2
+	utsi tsinya	1
+utswele:
+	utswe le	3
+ututule:
+	u tutule	3
+utututse:
+	utut utse	6
+uutlwile:
+	u utlwile	2
+uyaudihlatswa:
+	uya u dihlatswa	3
+uyauepheha:
+	uya ue phe ha	1
+	uya uephe ha	2
+wabeuseunqala:
+	wa be use unqala	2
+	wa beuse unqala	1
+wabona:
+	wa bona	6
+wache:
+	wa che	12
+wadibeha:
+	wa di beha	1
+	wa dibeha	2
+waekwenya:
+	wa ekwenya	3
+wafa:
+	wa fa	3
+wahae:
+	waha e	15
+wahatsela:
+	waha tsela	3
+wahlakola:
+	wa hlakola	3
+waja:
+	wa ja	3
+wajethema:
+	wa jethe ma	3
+wakhora:
+	wa khora	6
+wamojwetsa:
+	wa mojwetsa	3
+wanka:
+	wa nka	3
+waphoqa:
+	wa phoqa	3
+wapota:
+	wa pota	3
+ware:
+	wa re	4
+wasediha:
+	wa se di ha	3
+wataboha:
+	wa taboha	6
+watseba:
+	wa tseba	6
+wautlwa:
+	wa utlwa	10
+weno:
+	we no	3
+weso:
+	we so	6
+yaba:
+	ya ba	10
+yabinang:
+	ya binang	3
+yabutseng:
+	ya butseng	3
+yadinkang:
+	ya dinkang	3
+yadiqhadileng:
+	ya di qhadil eng	6
+yaechesang:
+	ya echesang	3
+yaefileng:
+	ya efileng	3
+yaentseng:
+	ya entseng	8
+yaesesetseng:
+	ya e sesetseng	3
+yaetsebang:
+	ya e tsebang	2
+	ya etsebang	1
+yaetsetseng:
+	ya etsetseng	2
+yahae:
+	yaha e	15
+yahlaha:
+	ya hlaha	3
+yakabanguneheletsa:
+	yakabang une heletsa	1
+	yakabang uneheletsa	2
+yakhannang:
+	ya khannang	3
+yalethutseng:
+	ya lethu tseng	3
+yamofileng:
+	ya mofileng	3
+yamotswelang:
+	ya mo tswelang	3
+yaneng:
+	ya neng	6
+yanenganjwetsa:
+	yanenganjw etsa	3
+yanengaqhala:
+	yaneng a qhala	12
+yantsenganngopa:
+	ya ntsenganng o pa	2
+	ya ntsenganngo pa	1
+yaotsosang:
+	ya o tsosang	6
+yaphakang:
+	ya phakang	3
+yaqhalang:
+	ya qhalang	3
+yarobeha:
+	ya robeha	2
+yarobileng:
+	ya ro bileng	2
+	yaro bileng	4
+yasahlompheng:
+	yasahlomph eng	6
+yasala:
+	ya sa la	6
+	ya sala	3
+yasatsabeng:
+	ya sa tsabeng	1
+	yasa tsabeng	2
+yasenkileng:
+	ya senkileng	3
+yatlamorekela:
+	yatla more kela	3
+yatlayang:
+	ya tlayang	3
+yatlolang:
+	ya tlolang	3
+yatsebang:
+	ya tsebang	2
+yatswelang:
+	ya tswelang	3
+yaufileng:
+	ya ufileng	21
+yaulelekisang:
+	ya ule lekisang	1
+	ya ulelekisang	2
+yaungoletseng:
+	ya ungoletseng	3
+yaurwesitseng:
+	ya urwesitseng	3
+yaushapileng:
+	ya ushapi leng	3
+yausheshenang:
+	ya ushe shenang	3
+yautlwang:
+	ya utlwang	3
+
+Words with both types of errors
+------------------
+abule:
+	mamelloabu le	2
+ache:
+	isha cheee	3
+aefuraletswe:
+	khannwangmothoaefu ra le tswe	1
+	khannwangmothoaefu ra letswe	2
+aemeng:
+	mooa em eng	3
+agenese:
+	ausia genes e	1
+ailoreka:
+	ailore kamollo	1
+aje:
+	a jele	2
+aka:
+	oa ka	3
+akabangaetiisetsa:
+	eoa kabangaetii setsa	2
+	eoa kabangaetiise tsa	1
+ake:
+	ma ke	3
+ako:
+	a koncha	1
+	a kotlose	3
+amabedi:
+	matsohoa ma be di	1
+amaholo:
+	mahloa ma holo	3
+amorekela:
+	ooamore kela	3
+aneanka:
+	ane a nkadieta	2
+aneha:
+	ane hamajweng	3
+	ooane ha	3
+anke:
+	a nkekeane	2
+askababaeleka:
+	a skababa ele kapapa	3
+askarehlodia:
+	easkare hlodia	3
+athabileng:
+	ooa thabileng	1
+	ooatha bileng	2
+athonakeng:
+	eathona keng	3
+atlobua:
+	hoitswengatlo bua	2
+atlontsa:
+	atlonts aleleme	1
+aufe:
+	migaela ufelamune	2
+aukadime:
+	akeauka dime	1
+baa:
+	ba aba	3
+	bathoba aba	3
+bababedi:
+	haobababe di	6
+babaholo:
+	bathobaba holo	6
+babangata:
+	baba ngatabana	1
+	babang a tabana	1
+	babang atabana	1
+baere:
+	bareba ere	3
+bahao:
+	ba haobababe	6
+baleha:
+	litlharebale ha	4
+bamophoqa:
+	heba mo phoqa	3
+banana:
+	bolobana na	3
+banka:
+	ba nkadi	3
+banna:
+	auba nna	3
+	elaetseba nna	2
+	etseba nna	1
+bapalama:
+	bapala matera	1
+	bapala materaka	2
+bapota:
+	ba potabana	3
+basadi:
+	basa dintho	3
+basenya:
+	ba senyakoloi	3
+batsamaya:
+	ba tsamayaka	3
+baukhelle:
+	ereba ukhelle	1
+bautlwe:
+	haba utlwe	1
+bebebe:
+	tabolelabe be be	1
+	uamotabolelabe be be	2
+beiseneng:
+	kabeise neng	6
+	tselabeise neng	3
+betere:
+	hobe te re	4
+	hobe tere	2
+binetse:
+	ubine tse	3
+boabuti:
+	bo abutiba	6
+bohlale:
+	ubo hlale	3
+bokae:
+	kebo kae	6
+bolek:
+	ebo lekwena	3
+bomang:
+	kebo mang	6
+boneng:
+	akobo neng	3
+bonolo:
+	hobo nolo	4
+bophoqong:
+	bo phoqongf	3
+bosiu:
+	bathobo si u	2
+	bathobosi u	1
+	kebo si u	4
+	kebosi u	2
+bubububu:
+	entseerebubub ubu	3
+buka:
+	kebu ka	3
+casteroleng:
+	welacaster oleng	3
+chee:
+	eche e	3
+dali:
+	peledalid a li	2
+dichelete:
+	rodi chelete	1
+	tharodi chelete	2
+dihlokehang:
+	lodihlo kehang	3
+dikausi:
+	kedika usi	1
+dikhobe:
+	dikho betsa	1
+	kedikho betsa	1
+dikhomo:
+	disadi khomo	1
+dikobo:
+	kadiko botse	1
+dile:
+	di lengata	2
+dinawa:
+	kadi na wa	3
+	nkadi na wa	3
+dinko:
+	kadi nko	2
+dinonyetsa:
+	di nonye tsamaoto	2
+	dinonye tsamaoto	4
+dintja:
+	elayakadi ntja	1
+dipalama:
+	dipala madikoloi	3
+dipalo:
+	dipa lodi	1
+dipereng:
+	lodi pereng	1
+diphoofolo:
+	diphoo fo lodi	3
+	diphoo fo lodihlo	3
+	ngdiphoo fo lo	1
+dipotso:
+	arabadi po tso	1
+	arabadi potso	1
+disakhutla:
+	hadisa khutla	3
+disakhutle:
+	hadisa khutle	3
+ditaba:
+	dita batsa	3
+ditenta:
+	kadi tent a	1
+	kaditen ta	1
+	urahakaditen ta	1
+dithutswana:
+	tsakadi thu tswa na	3
+ditlelapa:
+	kadi tlela pa	3
+ditsela:
+	elokisadi tsela	3
+ditulo:
+	retsabadi tulo	3
+eababa:
+	mme ababa	3
+eakhele:
+	e akhelemane	2
+eamosiya:
+	eamosi yadonki	1
+eatlala:
+	ea tlalaetlare	3
+eaudihela:
+	eeaudi hela	1
+	eeaudi helafatse	1
+ebe:
+	me be	3
+ebeilwe:
+	eebeil we	3
+ebetsehile:
+	yakae betsehile	3
+echaba:
+	echa bafesetereng	2
+	echa bakhwe	9
+echele:
+	e chelele	1
+echesitswe:
+	eche si tsweke	3
+ee:
+	e ekhiba	3
+	e ekhwa	3
+	e emja	3
+	e empa	3
+	e enshebe	3
+	e eskamp	3
+	e eskaqhala	2
+	he e	3
+eetsa:
+	ee tsaha	1
+efokuwe:
+	efee fo kuwe	3
+efuraletswe:
+	khannwangef ura le tswe	1
+	khannwangef ura letswe	2
+eiloheletsa:
+	eilohele tsaha	3
+eiti:
+	diei ti	1
+	ei tirand	1
+eke:
+	e kebea	1
+	e kebeamane	2
+	e keutse	3
+	ee ke	9
+ekhannwang:
+	e khannwangef	3
+	e khannwangmothoaefu	3
+ekhaola:
+	sekae khao la	2
+ekholo:
+	yakae kholo	6
+ekwahele:
+	ee kwahele	3
+ekwaolehe:
+	ekwa o le heha	2
+elaetse:
+	ela etseba	1
+elahle:
+	mela hle	3
+ele:
+	e lenama	1
+elekana:
+	yakae le kana	1
+	yakaele kana	2
+eleven:
+	tene leventwelf	3
+elisha:
+	e li shaatle	2
+ema:
+	e mahe	1
+	e maka	3
+	e maketlo	3
+ematha:
+	khofue matha	1
+emong:
+	e mongaeja	3
+enang:
+	ena nglemohw	3
+eneefe:
+	ene efee	3
+eneele:
+	eene ele	3
+	ene elefa	3
+	ene elesi	2
+engata:
+	yakae ngata	1
+entsitswe:
+	entsi tsweke	3
+enyenyane:
+	ee nyenyane	2
+	unkae nyenyane	2
+eo:
+	hose o	2
+	se o	1
+eotla:
+	sekae otla	3
+epate:
+	cheee pate	2
+ephahamisa:
+	sekae pha hamisa	3
+ephuthele:
+	ee phuth ele	1
+	ee phuthele	2
+eqhala:
+	sekae qhala	3
+ere:
+	e rehlobola	3
+ese:
+	e sere	1
+esenang:
+	e sena ngdiphoo	1
+eseng:
+	me seng	3
+etelele:
+	yakae telele	2
+ethiba:
+	skae thiba	2
+etlakhaoha:
+	etla kha o haka	1
+	etla khao haka	2
+etlaulokisa:
+	tsehloetla ulokisa	2
+etlaya:
+	feelaetla ya	3
+etsa:
+	e tsahape	3
+	e tsare	3
+	sekae tsa	6
+	sekae tsaka	3
+etsamaya:
+	yakae tsamaya	3
+etsela:
+	sekae tsela	3
+etsesanyane:
+	ntenkeetse sanyane	2
+etseu:
+	e tseue	3
+etsweu:
+	ntayahaoetswe u	3
+	pereetswe u	6
+	terakae tsweu	1
+eya:
+	e yabutle	2
+	e yakae	3
+	e yakaterankeng	2
+fanyafanya:
+	elefa nyafanya	3
+feela:
+	phoqongf eela	3
+fentenke:
+	fe ntenkeetse	2
+	fente nkeke	1
+	hlohonolofe ntenke	1
+fishoil:
+	lefi shoil	3
+geimi:
+	bapalegeim i	3
+	harebapalegeim i	4
+	rebapalegeim i	2
+habo:
+	ha boha	3
+	ha bole	3
+hae:
+	ha eo	3
+haeso:
+	ha esomona	1
+hahabo:
+	ha ha boha	3
+haholo:
+	balaha holo	1
+	ha holore	1
+hakalo:
+	ha kalosa	2
+half:
+	ha lfcard	3
+	ha lfpast	14
+	ha lfpastthree	1
+he:
+	aah e	1
+helek:
+	he lekkeutlwile	3
+hofuthumetse:
+	hofu thu metseka	1
+	hofuthu metseka	2
+homopepiso:
+	ho mopepi soka	1
+	ho mopepisoka	1
+honka:
+	ho nkadijuniformtsena	3
+hoqoqa:
+	ho qoqale	2
+hosehotsehwa:
+	hose ho tsehwale	1
+hosetse:
+	ho setseleleng	3
+hostele:
+	nghoste le	2
+	retlobinahos tele	1
+	retlobinahoste le	2
+	ubinehos tele	1
+	ubinehoste le	2
+hotheoha:
+	ho theo habetheng	2
+hothuwe:
+	haho thu we	3
+hothweng:
+	hothwe nghoste	2
+	hothwe nghostele	1
+hotsamaya:
+	haho tsamaya	3
+houwa:
+	ho u wabolong	1
+houwang:
+	ho u wangkonsertng	3
+ikame:
+	ooi ka me	1
+	ooi kame	2
+ikhurumetsa:
+	sekai khuru metsa	2
+ikwahetse:
+	ui kwahe tse	3
+iphehetse:
+	ui phehe tse	1
+itentse:
+	tlooit entse	3
+itlhakole:
+	itlhako lek	1
+jene:
+	untseureje ne	3
+jesi:
+	kaje si	1
+jesu:
+	ntatejes ueo	3
+joo:
+	jo obasadi	3
+ka:
+	holefifik amona	3
+	lek athao	1
+kachesa:
+	ka che sadieta	3
+kaka:
+	atsehaka ka	1
+kana:
+	dika na	4
+kanthe:
+	ka ntheke	1
+kausi:
+	seka usi	3
+ke:
+	twocentsk eena	3
+keaethua:
+	keae thu amamello	3
+keapese:
+	keape seka	1
+kebale:
+	ke baleme	2
+	ke balemeno	1
+kebaleha:
+	ke bale hanku	4
+kebophehetswe:
+	ke bophe he tsweke	1
+	kebo phehe tsweke	1
+	kebophe he tsweke	1
+kebua:
+	ke buale	1
+kediise:
+	ke diisekae	3
+keditlatsitse:
+	ke ditlatsitseka	2
+	tlake ditla tsi tse	1
+kefase:
+	kefa sekapa	2
+kehatile:
+	ke hatilesent	1
+kehlatswe:
+	ke hlatswepele	1
+keilopheha:
+	keilophe hapapa	3
+keilouphehela:
+	keilouphe helapapa	1
+keipatele:
+	keipate lenkuka	2
+keitsehela:
+	keitse helaskoch	2
+keloefa:
+	kelo efanamane	1
+kenekebatla:
+	kene kebatlayane	3
+kenekere:
+	kene kerei	3
+kentsekeobatla:
+	kaekentse ke o batla	1
+	kaekentse ke obatla	2
+kertene:
+	kerten eeno	3
+kesehele:
+	ke se helenamane	3
+kesekefumane:
+	ke sek efumaneponto	3
+ketlaelefa:
+	ketla elefasent	1
+ketlalejwetsa:
+	ketla lejwe tsahamollo	3
+ketlamoshapa:
+	ketla mosha pampinane	3
+ketlatla:
+	ketla tlake	1
+ketlaufa:
+	ketla ufapapa	3
+ketlauraha:
+	ketla urahakaditen	1
+ketlauseha:
+	heyketla use haka	2
+	heyketlause haka	1
+ketlautima:
+	ketla utimale	2
+	ketla utimamakoto	1
+	ketla utimamakotomane	2
+ketlaya:
+	ketla yana	3
+ketliloitsehela:
+	ketliloi tse helaskoch	3
+ketloukapisa:
+	maketlo uka pisa	3
+ketloumenela:
+	ketlo ume nelakobo	3
+keubontse:
+	ke ubontsena	3
+keufe:
+	ke ufele	2
+keufile:
+	ke ufilekoloi	3
+keuhlakole:
+	keuhla kolemamina	1
+	keuhlako lemamina	1
+keujwentse:
+	keujwents eausi	3
+keukadima:
+	ke uka dimalena	1
+	ke ukadimalena	2
+keultwe:
+	ke ultwehanyenyane	3
+keure:
+	ke u repho	3
+keutima:
+	ke utimale	2
+keya:
+	ke yahape	3
+khaba:
+	kekha ba	2
+khaitsedi:
+	kha itse diena	2
+	khaitse diena	1
+khale:
+	kha lekha	1
+	lekha le	5
+	lekha lemaoto	2
+	llelekha le	3
+kharafu:
+	kharaf uyane	1
+	lekha rafu	1
+kheleke:
+	laukhele ke	2
+	ukhele ke	2
+khothola:
+	kho tholayahao	6
+khwata:
+	ekhwa ta	3
+khwedi:
+	bakhwe di	9
+knife:
+	keknif e	3
+kotsia:
+	kotsi asesepa	3
+la:
+	otongl aphate	1
+labohlano:
+	kela bo hlano	3
+labone:
+	kela bone	3
+lahae:
+	la ha eene	1
+	lebitsola ha e	18
+	lebitsola ha eene	2
+	lebitsola ha ela	3
+	otola ha ele	3
+lahao:
+	kela hao	6
+	lebitsola haoo	3
+	maola hao	3
+	otola hao	3
+	sela hao	3
+	tela hao	2
+	ulatela hao	1
+	wahaoaufilela hao	3
+laka:
+	kela ka	3
+	lebitsola ka	2
+	maola ka	1
+	sela ka	3
+	utsebelebitsola ka	3
+leakwala:
+	le a kwalamonya	1
+lebapala:
+	lele bapala	2
+lebese:
+	lebe seka	3
+	lebe sela	3
+	lebe selena	3
+lechabile:
+	letsatsilecha bile	3
+lehata:
+	ule hata	6
+lehlahileng:
+	mole hlahileng	3
+lehlohonolo:
+	bole hlohonolo	3
+	le hlohonolofe	1
+lekapakapeng:
+	ele kapa kapeng	2
+lekelefihle:
+	ale ke lefi hle	2
+	ale ke lefihle	1
+lekhale:
+	lekha lela	3
+leletle:
+	ele letle	3
+lelobapala:
+	empalelo bapala	1
+lemao:
+	le maola	5
+	le maolane	2
+lemati:
+	hodimale mati	1
+lena:
+	otongl ena	2
+lenelebapalang:
+	elene le bapalang	3
+lengana:
+	umokhelleleng ana	3
+lengolo:
+	leng olola	3
+leno:
+	lejwele no	2
+lentswe:
+	chelele ntswe	1
+	echelele ntswe	2
+leo:
+	lejwele o	3
+leore:
+	le orena	1
+leoto:
+	le otola	6
+leotong:
+	le otongl	3
+lerata:
+	ule rata	1
+lesale:
+	le sa lele	1
+	lesa lele	1
+lesekabelaetsa:
+	le seka belaetsalerata	1
+leshano:
+	ule shano	1
+lesheleshele:
+	keautimale shelesh ele	2
+	utimale shelesh ele	2
+lesika:
+	ool esi ka	1
+leskaleetsa:
+	le ska leetsalerata	1
+letabola:
+	le tabolakokonyana	1
+letho:
+	utsebele tho	2
+letlaila:
+	uletlai la	3
+letlise:
+	el etliseutsebe	2
+leya:
+	le yakae	6
+mabopela:
+	sama bo pela	1
+	samabo pela	2
+machaka:
+	macha kapoone	1
+madi:
+	bonama di	1
+madidipane:
+	aneantseaetsama di dipane	1
+	aneantseaetsamadi dipane	2
+madinyane:
+	bonama dinyane	2
+mafehloase:
+	monamafehlo ase	2
+mafi:
+	ma fiahao	3
+makaka:
+	onkhamaka ka	6
+makalokalo:
+	makalo kaloabohobe	3
+makopokopo:
+	hareetsamako poko po	1
+	tsamako poko po	2
+makotomane:
+	utimamakoto mane	1
+mala:
+	enama la	1
+malapi:
+	ma lapia	1
+mamakhowa:
+	utlobonamama khowaotlaushapa	2
+manchwati:
+	hoarabamanchw ati	3
+maobane:
+	uenkilemao bane	2
+maotoana:
+	lemaoto ana	2
+maphemphe:
+	ulemaphe mphe	1
+marapo:
+	lemara po	3
+mashano:
+	uma shano	2
+mathokoa:
+	ma thoko ake	2
+matla:
+	unkhathatsama tla	2
+	unkhathatsama tlakannete	1
+matsatsi:
+	kefilema tsa tsi	2
+meno:
+	baleme no	2
+mese:
+	leme se	2
+migaele:
+	migael eaufelamune	2
+	migael ele	2
+	migael eoitse	3
+mistrese:
+	kemistr e se	3
+mobe:
+	umo be	1
+mobotse:
+	mobo tsena	3
+modimo:
+	modi monna	3
+mohlafotsa:
+	llemohla fo tsa	1
+mohlang:
+	kemohla ngo	1
+	mohla ngwane	6
+mohwele:
+	nglemohw e le	1
+	nglemohw ele	2
+mokhutswanyane:
+	umo khutswanyane	6
+mokhwebe:
+	mo khwebenka	1
+mokopu:
+	moko puoo	2
+monyako:
+	kwalamonya ko	1
+	monya komane	1
+moqeneheleng:
+	basadimoqe neheleng	3
+moqhaka:
+	kemoqha ka	4
+	umoqha ka	4
+morara:
+	mora rao	4
+	mora raomonyenyane	2
+	umora ra	3
+mosamo:
+	mosa moo	3
+mosehlana:
+	umose hlana	3
+motelele:
+	umote le le	6
+	umotele le	3
+motheole:
+	kemotheo le	1
+motlenyakatse:
+	kemotlenyaka tse	5
+	kemotlenyaka tsele	1
+	motlenyaka tsele	3
+	motlenyaka tseo	6
+motsoka:
+	motso kapere	1
+mpama:
+	kampa ma	3
+mpela:
+	mpe laukhele	2
+mpha:
+	eskamp ha	3
+mpuisa:
+	kampu isa	3
+naina:
+	tloofena i na	2
+	tloofena ina	2
+naledi:
+	kaena le di	3
+	koloina le di	2
+namba:
+	na mbawan	9
+natala:
+	wana tala	3
+	yana tala	3
+nchape:
+	koncha pe	1
+neha:
+	ne hanamane	3
+ngaka:
+	eng a ka	3
+ngata:
+	ding a ta	1
+	ding ata	1
+ngo:
+	oreng o	6
+ngwaneng:
+	tlohang waneng	3
+njokoletsa:
+	sekanjo ko letsa	3
+nkakaetsa:
+	nka ka etsadikuku	3
+nkhata:
+	ankha ta	3
+nkototsa:
+	skankoto tsa	3
+none:
+	wan one	4
+ntiea:
+	letsanti e a	1
+	letsanti ea	2
+	tsanti e aditswana	1
+	tsanti eaditswana	2
+ntlwaela:
+	sekantlwa ela	3
+ntswepelele:
+	ekentswepele le	1
+oankha:
+	eo ankha	1
+oanyanya:
+	ooo anyany afeela	1
+	oooanyany afeela	1
+oarokwa:
+	mochaoaro kwa	3
+oaya:
+	haoa ya	2
+obotsa:
+	eo botsa	3
+ocho:
+	o chojwalo	2
+odisa:
+	o disadi	1
+oebetsa:
+	o e betsale	1
+oebotswe:
+	o ebo tsweke	6
+oediha:
+	o e di haka	1
+oelahlile:
+	ebathoo elahlile	3
+oephunya:
+	o ephunyaka	3
+oh:
+	o he	3
+oipapise:
+	mothooooipa pise	3
+okene:
+	hao kene	3
+okhabetswe:
+	o kha be tsweke	9
+okhutla:
+	modimoo khutla	3
+okopanye:
+	tseo kopany ele	1
+	tseo kopanye	2
+olekanang:
+	mokhwao le kanang	3
+olelahlile:
+	eo lelahlile	3
+omatha:
+	o mathaka	2
+omocha:
+	o mochaoaro	3
+omonyane:
+	wahaoo monyane	1
+omonyenyane:
+	rao mo nyenyane	1
+omotle:
+	wahaoo motle	3
+omotsebelletse:
+	kwao motsebelletsekae	2
+	o motsebelletsekae	1
+omotsosa:
+	hao motsosa	2
+omotswanele:
+	mochao motswane le	3
+oneaafuwe:
+	ooone aafuwe	3
+oneaebontswa:
+	eeone aebontswa	3
+oneatla:
+	one a tlatsetletseng	1
+ontsabina:
+	eo ntsa bina	3
+ontsalla:
+	eoo ntsa lla	3
+oo:
+	ngo o	1
+ooreketswe:
+	oore ke tsweke	1
+opata:
+	o patabolo	3
+opheha:
+	ophe haditapole	1
+oqetile:
+	eo qetile	3
+orobaditswe:
+	eoo roba di tswe	1
+	eoo roba ditswe	1
+oseha:
+	o se haka	3
+osele:
+	eeo sele	3
+oshobetse:
+	oshobe tseuautlwa	1
+osofele:
+	hao so fe le	3
+otlahlaha:
+	otlahla haka	1
+otlakhangwa:
+	enwaotlakhang wa	3
+otlanseha:
+	enwaotlanse ha	1
+otlareka:
+	otlare kadieta	3
+otlautima:
+	otla utimadipompong	3
+otlochesa:
+	otlo che sadieta	3
+otlomorekela:
+	otlo more kelaphenti	1
+otseba:
+	eoo tseba	3
+otswara:
+	eoo tswara	3
+otukile:
+	o tukileleyeka	2
+oya:
+	o yaha	2
+	o yahahoausi	1
+oyaufa:
+	o ya ufapapa	3
+palo:
+	shebapa loausi	1
+paoleng:
+	kapa oleng	15
+papadi:
+	empepapa dieo	3
+	kapapa dieno	3
+	papa diena	3
+pentihos:
+	penti ho se	1
+	penti hose	2
+phenti:
+	phe ntie	2
+	phe ntiha	1
+phetho:
+	kephe tho	1
+phuthulla:
+	phuth ullare	1
+pikane:
+	tlalapi kane	3
+plastiki:
+	kentseplastik i	1
+	keplastik i	1
+polata:
+	ubotswarakapo lata	3
+poleiti:
+	kapolei ti	2
+popodia:
+	utlonkapo podia	1
+	utlonkapopo dia	1
+potso:
+	arabapo tso	1
+radio:
+	ereradi o	3
+	keradi o	3
+raliotlo:
+	hara li otlo	3
+ratlabarahatsela:
+	ontsearera tla ba raha tsela	1
+	ontsearera tlaba raha tsela	1
+reahlophodise:
+	sere ahlo phodise	1
+reaphela:
+	ere aphela	3
+rebaleha:
+	re bale hanku	2
+rebapale:
+	hare bapalegeim	2
+	re bapalegeim	1
+rebatle:
+	hare batle	3
+rebetse:
+	hare betse	1
+	re betsehe	2
+	shafare betse	1
+rebone:
+	phuthullare bone	1
+	tsare bone	3
+	ullare bone	1
+recho:
+	re chojwalo	3
+redule:
+	hare dule	1
+redumediseng:
+	hare dume di seng	3
+reebatle:
+	hare ebatle	6
+reemelle:
+	hare emelle	3
+reetsa:
+	hare e tsamako	2
+reetse:
+	hare etse	4
+	tloore etse	2
+refetise:
+	hare feti se	1
+	re feti sehe	2
+rehlodiya:
+	skare hlodi ya	2
+	skare hlodiya	1
+reileraja:
+	maobanereile ra ja	1
+	maobanereilera ja	2
+reje:
+	re jele	3
+rekeneng:
+	hare ke neng	6
+rekere:
+	kere kere	3
+	mofare kere	1
+	nkadimere kere	3
+	setukukere kere	3
+rekore:
+	hare ko re	3
+rele:
+	hare le	1
+relebone:
+	hare le bone	3
+reletsebe:
+	hare letsebe	3
+relodibeisa:
+	harelodi beisa	1
+rena:
+	hare na	1
+renahotseba:
+	hare na hotseba	1
+	harena hotseba	2
+renereile:
+	rene reilele	2
+rentserebua:
+	rentse rebuaenke	3
+rephomole:
+	hare pho mole	2
+	hare phomole	2
+rerahe:
+	hare rahe	3
+rere:
+	ntlamore re	3
+rerobale:
+	hare robale	1
+resangole:
+	hare sa ngo le	1
+	haresang o le	2
+resebana:
+	hare sebana	6
+resekeraetsa:
+	hoitswere se ke ra etsa	1
+	hoitswere se kera etsalerata	1
+	re se kera etsalerata	1
+retlaya:
+	retla yaneng	3
+retle:
+	hare tle	3
+retsamaye:
+	hare tsamaye	1
+	hosanere tsamaye	3
+	namanere tsamaye	1
+reulome:
+	hare ulo me	2
+	hare ulome	1
+reutlwe:
+	haholore utlwe	2
+	hare utlwe	3
+	holore utlwe	1
+reya:
+	re yakae	9
+reyang:
+	oore yangnokaneng	1
+rushiya:
+	ulerushi ya	6
+sahao:
+	esa hao	3
+	kesa hao	6
+	sekotlosa hao	3
+	sesa hao	3
+saka:
+	kesa ka	6
+	sesa ka	3
+sandle:
+	sandl eeaudi	2
+	sandl eeaudihela	1
+seaeja:
+	sethuthuthuse aeja	1
+see:
+	se esa	1
+	setulose e	8
+	setulose esa	2
+seeta:
+	urwetsese eta	3
+sefena:
+	hampese fe na	2
+sefeng:
+	se fengnasekolo	1
+seka:
+	se kampu	3
+	se kanhata	1
+	sek abua	3
+	sek ankha	3
+	sek antsa	6
+sekana:
+	sekotloloseseka na	2
+sekanna:
+	se kannatsipa	1
+sekhalakhalane:
+	usekhala kha lane	3
+selekane:
+	holosele kane	2
+sello:
+	abutisell o	2
+senepe:
+	sene pese	3
+sengwato:
+	ajangsengwa to	3
+	esajengsengwa to	2
+	sajengsengwa to	1
+sente:
+	elefasent e	1
+	fivesent e	1
+	hatilesent e	1
+seo:
+	pese o	3
+seretse:
+	kalose retsesena	3
+serobehile:
+	setulose robehile	1
+seseholo:
+	hosese holo	3
+	sekotlolosese holo	2
+	sese holosele	2
+setlolo:
+	se tlolosena	2
+sindo:
+	ndosind o	3
+	usi ndosind	3
+siyo:
+	elesi yo	2
+skababula:
+	skaba bulakoloi	3
+skekete:
+	keske kete	6
+	koloiyaske kete	3
+soka:
+	kaeso ka	2
+	keso ka	3
+	uboneso ka	2
+sweet:
+	swe etaid	9
+swephetsenta:
+	uswephetse ntahe	2
+tadi:
+	ta diyane	3
+tamati:
+	kapata mati	3
+	keta mati	3
+taranke:
+	tloelatara nke	3
+tee:
+	lete e	3
+tentenki:
+	ketent enki	4
+	uten tenki	2
+	utent enki	4
+teraka:
+	matera ka	1
+teranka:
+	bonatera nka	3
+thaka:
+	ketha ka	4
+thaole:
+	athao le	1
+	kathao le	2
+tharo:
+	ditha rodi	1
+theipe:
+	kethei pe	3
+thimola:
+	eethi mola	1
+thokolosi:
+	kethokolo si	2
+tholwana:
+	et holwana	1
+	ulahletho lwa na	2
+thonaka:
+	thona kaena	3
+thu:
+	misstresswanth u	1
+thusa:
+	thu sama	1
+	thu samabo	2
+tichere:
+	ketich ere	1
+tipatipanyane:
+	aetsati patipanyane	2
+	shebati patipanyane	2
+titonong:
+	kati tonong	3
+tje:
+	et je	1
+tlake:
+	ketla ke	3
+tloele:
+	motlo ele	3
+tloella:
+	eetlo e lla	1
+tloong:
+	tloo nglebapaleng	3
+toti:
+	uiphehetseto ti	2
+tsahao:
+	tseetsa hao	2
+tsee:
+	khelatse e	3
+tsehlo:
+	ketse hlo	2
+tsehodimo:
+	rahatse hodimo	2
+tselle:
+	umotse llemohla	1
+	umotse llemohlafotsa	2
+tseo:
+	ketse o	10
+	tse otsebabang	3
+tsetsweu:
+	tse tsweuka	1
+	tsetswe uka	1
+tsiba:
+	aretsi ba	1
+tsohle:
+	ulahlatso hle	2
+uaditlatsanya:
+	uaditla tsa nyantloena	1
+	uaditlatsa nyantloena	1
+uaetsaba:
+	uaetsa banku	2
+uajethema:
+	ua jethe makae	3
+uamotabolela:
+	uamo tabolelabe	1
+uaqhaletse:
+	uaqha letsekae	3
+uarethetsa:
+	khoaelauare the tsa	1
+uasehata:
+	aaauase hatabasadi	3
+uatsoha:
+	ua tsohahona	3
+ubaleha:
+	ubale haka	1
+	ubale hanku	2
+ubolaya:
+	ubola yanonyana	2
+ubopile:
+	ebeubo pile	1
+udieha:
+	udie haho	3
+udireketswe:
+	udire ke tsweke	3
+uediha:
+	ue di haka	1
+uereketswe:
+	uere ke tsweke	1
+ufahluwe:
+	tlakeboneufa hluwe	2
+	tlakeboneufahlu we	1
+uhatisa:
+	uboneuhati sa	1
+uhlakole:
+	akeuhla kole	1
+	akeuhla kolemamina	1
+	akeuhlako lemamina	1
+uilewabawatheoha:
+	uile wa ba wa theo hahodimasetulo	2
+uiloema:
+	uilo e mamane	1
+	uilo e mamanepela	2
+uitlama:
+	ui tla maka	1
+	uitla maka	2
+ukabawatseba:
+	ukaba wa tsebana	2
+ukabawawela:
+	ukaba wa welacaster	3
+ukanka:
+	uka nkaba	2
+ukarobala:
+	uka robalaifo	3
+ukhanne:
+	tswaramaneukha nne	3
+ulate:
+	ula tela	2
+ulefa:
+	ule fapateriki	1
+uneubotsebelletse:
+	une ubotsebelletsekae	2
+uneuya:
+	une uyakae	10
+unkadime:
+	nkapooneunka dime	2
+unngwapile:
+	wenaunngwa pile	2
+untlotsa:
+	u ntlo tsakang	3
+untseure:
+	untseu renku	2
+unuoqhadile:
+	unuo qhadil ele	2
+unuya:
+	un uyaha	3
+ure:
+	ur ekhora	6
+uroko:
+	uro kokobo	1
+	uro kokobokaterata	2
+urwale:
+	feelau rwale	1
+usakentse:
+	usa kentseplastik	1
+usale:
+	usa lele	3
+	usa lemafing	2
+usaya:
+	usa yakae	3
+usekeuambata:
+	muse ke uam bata	2
+	muse ke uambata	1
+usekhaotse:
+	u sekha otseneng	2
+	use kha otseneng	1
+useubileulentsa:
+	use ubile ulentsaka	1
+useuntseutla:
+	use untseutlaumatha	2
+uskabaelahla:
+	u skaba elahlapateriki	1
+	uskaba elahlapateriki	1
+uskabamofa:
+	uskaba mofare	1
+uskamoqetela:
+	uska moqe telapateriki	1
+uskankakhela:
+	uska nka khelatse	3
+uskasisinya:
+	uska si si nyabethe	2
+utebetse:
+	utebe tsepere	3
+utella:
+	ebeute lla	1
+utelle:
+	ute llelekha	3
+utene:
+	uten ejese	3
+utlaathonaka:
+	utla athona kaneng	1
+utladintsa:
+	tselautla dintsaneneng	3
+	utla dintsaneneng	3
+utlaebusetsa:
+	utla ebu setsaneng	2
+utlaerekelwa:
+	utla erekelwaha	3
+utlalebatla:
+	utla le batlaneneng	3
+utlawela:
+	mutla wela	3
+utloletlise:
+	utlo letliseha	3
+utlonka:
+	utlo nkadikarete	1
+utlopheha:
+	utlo phe hapele	1
+	utlophe hapele	2
+utselle:
+	utse llepampiring	1
+utsetse:
+	keutse tse	3
+utsielehile:
+	ebeu tsi elehile	2
+vaskomo:
+	tlohelavasko moyaka	3
+vaskomong:
+	kavasko mong	3
+wahao:
+	waha otsepo	1
+wan:
+	wa nthuteri	1
+yahae:
+	yaha ee	3
+yatsebang:
+	moholobasadiya tsebang	1

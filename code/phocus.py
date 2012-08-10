@@ -197,7 +197,7 @@ class NgramCue(Cue):
                                                                                                                      NgramCue._base_ngram_count(n,
                                                                                                                                                 curr_n,
                                                                                                                                                 num_unigrams) * initial_count,
-                                                                                                                     bins ** n))
+                                                                                                                     num_unigrams))
         self._word_delimiter = kwargs.pop('word_delimiter', ' ')
         super(NgramCue, self).__init__(initial_count, **kwargs)
         self._n = n
