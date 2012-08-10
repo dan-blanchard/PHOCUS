@@ -98,6 +98,7 @@ class NgramModel(ModelI):
         if (context + (word,) in self._ngrams) or (self._n == 1):
             return self[context].prob(word)
         else:
+            # print "Alpha: {}\tBackoff prob: {}".format(self._alpha(context), self._backoff.prob(word, context[1:]))
             return self._alpha(context) * self._backoff.prob(word, context[1:])
 
     def _alpha(self, tokens):

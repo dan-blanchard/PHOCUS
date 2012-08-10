@@ -20,16 +20,17 @@
     along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
+
 import argparse
 import copy
 import cmd
 import os
-import readline
 import sys
 from abc import ABCMeta, abstractmethod
 from fractions import Fraction
 from functools import partial
-from itertools import chain, product, imap, ifilter
+from itertools import chain, imap, ifilter
 from operator import mul
 
 import regex as re
@@ -40,7 +41,11 @@ from featurechart import PhonologicalFeatureChartReader
 
 
 class PartialCountNgramModel(NgramModel):
-    def __init__(self, n, train, estimator, freqtype, *estimator_args, **estimator_kw_args):
+    '''
+    NgramModel that supports storing counts as types other than int.
+    '''
+
+    def __init__(self, n, train, estimator, freqtype, padding, *estimator_args, **estimator_kw_args):
         """
         Creates an ngram language model to capture patterns in n consecutive
         words of training text.  An estimator smooths the probabilities derived
@@ -52,8 +57,7 @@ class PartialCountNgramModel(NgramModel):
         @param train: the training text
         @type train: L{list} of L{str} (or L{list} of L{str} L{list}s)
         @param estimator: a function for generating a probability distribution (must take FreqDist as first argument, and n as second)
-        @type estimator: a function that takes a L{ConditionalFreqDist} and
-              returns a L{ConditionalProbDist}
+        @type estimator: a function that takes a L{ConditionalFreqDist} and returns a L{ConditionalProbDist}
         @param freqtype: the type to use to store the counts in the underlying frequency distribution
         @type freqtype: any numeric type
         @param estimator_args: Extra arguments for L{estimator}.
@@ -69,7 +73,7 @@ class PartialCountNgramModel(NgramModel):
 
         cfd = ConditionalFreqDist(counttype=freqtype)
         self._ngrams = set()
-        self._padding = ('',) * (n - 1)
+        self._padding = (padding,) * (n - 1)
         self._estimator = estimator
         self._freqtype = freqtype
         self._estimator_args = estimator_args
@@ -87,9 +91,12 @@ class PartialCountNgramModel(NgramModel):
 
         # recursively construct the lower-order models
         if n > 1:
-            self._backoff = PartialCountNgramModel(n - 1, train, estimator, freqtype, *estimator_args, **estimator_kw_args)
+            self._backoff = PartialCountNgramModel(n - 1, train, estimator, freqtype, padding, *estimator_args, **estimator_kw_args)
 
     def update(self, samples, increase_amount=1):
+        '''
+        Update the underlying frequency distributions given the current list of samples.
+        '''
         cond_samples = []
         for utterance in samples:
             for ngram in ingrams(chain(self._padding, utterance, self._padding), self._n):
@@ -130,12 +137,15 @@ class Cue(object):
 
     @property
     def subseq_counts(self):
+        '''
+        The frequency distribution for storing subsequence counts.
+        '''
         return self._subseq_counts
 
     @abstractmethod
     def eval_word(self, word):
         '''
-            Returns probability that proposed word is a word.
+            @return: probability that proposed word is a word.
         '''
         pass
 
@@ -160,77 +170,12 @@ class Cue(object):
         return self._initial_count
 
 
-class FamiliarWordCue(Cue):
-    '''
-        Feature that scores words based on their lexical frequency.
-    '''
-
-    def __init__(self, mbdp=False, subseq_counts=None, type_denom=False, bad_score=0):
-        '''
-            Initializes any counts to their default values, if necessary
-            @param mbdp: Use MBDP-1 score adjustments when calculating word scores.
-            @type mbdp: L{bool}
-            @param subseq_counts: A frequency distribution for storing subsequence counts. Should use the same one for all L{Cues}
-                                  of the current L{Segmenter}.
-            @type subseq_counts: L{FreqDist}
-            @param type_denom: When evaluating familiar words, divide word count by total number of word tokens + total number of word types.
-                               Should only be on for Venkataraman.
-            @type type_denom: L{bool}
-        '''
-        super(FamiliarWordCue, self).__init__(Fraction(0), subseq_counts=subseq_counts)
-        self._phonotactic = False
-        self._lexicon = FreqDist(counttype=Fraction)
-        self._mbdp = mbdp
-        self._type_denom = type_denom
-        self._bad_score = bad_score
-
-    def in_lexicon(self, word):
-        return word in self._lexicon
-
-    @property
-    def total_words(self):
-        return self._lexicon.N()
-
-    def eval_word(self, word):
-        '''
-            Returns probability that proposed word is a word.
-            @todo: Implement lexical decay.
-        '''
-        if word in self._lexicon:
-            word_count = Fraction(self._lexicon[word])
-            if not self._mbdp:
-                word_types = Fraction(self._lexicon.B() - 1)  # Subtract one for initial utterance delimiter addition
-                raw_score = word_count / (Fraction(self.subseq_counts[word]) if self.subseq_counts
-                                                                        else (Fraction(self.total_words + word_types) if self._type_denom
-                                                                                                                      else Fraction(self.total_words)))
-            else:
-                raw_score = ((word_count + Fraction(1)) / (self.total_words + Fraction(1))) * (((word_count / (word_count + Fraction(1))) ** Fraction(2)))
-        else:
-            raw_score = self._bad_score
-        return raw_score  # lexical decay stuff would need to be added here
-
-    def dump(self, dump_file):
-        for word in self._lexicon.iterkeys():
-            dump_file.write(word + str(self._lexicon[word]) + '\n')
-        if self._subseq_counts:
-            for seq in self.subseq_counts.iterkeys():
-                dump_file.write(word + str(self.subseq_counts[seq]) + '\n')
-        dump_file.close()
-
-    def use_score(self, word):
-        return (not args.noLexicon) and (self.in_lexicon(word))
-
-    def update_evidence(self, word, increase_amount):
-        self._lexicon.inc(word, increase_amount)
-
-
 class NgramCue(Cue):
     '''
         Feature that scores words based on their constituent n-grams.
     '''
 
-    def __init__(self, n, initial_count, num_unigrams, hypothetical_phonotactics=False, score_combiner=lambda scores: reduce(mul, scores),
-                 subseq_counts=None):
+    def __init__(self, n, initial_count, num_unigrams, **kwargs):
         '''
             @param n: the order of the language model (ngram size)
             @type n: L{int}
@@ -246,20 +191,39 @@ class NgramCue(Cue):
                                   of the current L{Segmenter}.
             @type subseq_counts: L{FreqDist}
         '''
-        super(NgramCue, self).__init__(initial_count, score_combiner)
-
+        self._hypothetical_phonotactics = kwargs.pop('hypothetical_phonotactics', False)
+        prob_estimator = kwargs.pop('prob_estimator', lambda freqdist, curr_n, initial_count, bins: LidstoneProbDist(freqdist,
+                                                                                                                     # initial_count,
+                                                                                                                     NgramCue._base_ngram_count(n,
+                                                                                                                                                curr_n,
+                                                                                                                                                num_unigrams) * initial_count,
+                                                                                                                     bins ** n))
+        self._word_delimiter = kwargs.pop('word_delimiter', ' ')
+        super(NgramCue, self).__init__(initial_count, **kwargs)
         self._n = n
-        self._ngram_model = PartialCountNgramModel(n, None, lambda freqdist, n, initial_count, bins:
-                                                            LidstoneProbDist(freqdist, initial_count, bins ** n),
-                                                   Fraction, initial_count, num_unigrams)
-        self._hypothetical_phonotactics = hypothetical_phonotactics
+        self._ngram_model = PartialCountNgramModel(n, None, prob_estimator, Fraction, self._word_delimiter, initial_count, num_unigrams)
+
+    @staticmethod
+    def _base_ngram_count(max_n, curr_n, num_unigrams):
+        '''
+        The number of times n-grams of the current size must have occurred if each n-gram of the maximum size occurred once.
+
+        @param max_n: Maximum n-gram size
+        @type max_n: L{int}
+        @param curr_n: Current n-gram size
+        @type curr_n: L{int}
+        @param num_unigrams: Number of possible unigrams
+        @type num_unigrams: L{int}
+
+        @return: The number of times n-grams of the current size must have occurred if each n-gram of the maximum size occurred once.
+        @rtype: L{int}
+        '''
+        return num_unigrams ** (max_n - curr_n) * (max_n + 1 - curr_n)
 
     def eval_word(self, word):
         '''
-            Returns probability that proposed word is a word.
+            @return: probability that proposed word is a word.
         '''
-        global subseq_counts
-
         if self._hypothetical_phonotactics:
             # Make a deep copy of the ngram model so that we can update it without modifying the original
             word_ngram_model = copy.deepcopy(self._ngram_model)
@@ -269,13 +233,31 @@ class NgramCue(Cue):
 
         # If I want to duplicate functionality of OCaml code, should probably make a ProbDist that inherits from Lidstone,
         # otherwise this won't do the denominator adjustments and other stuff.
-        return self._score_combiner([self._ngram_model.prob(tuple(ngram[:-1]), ngram[-1]) for ngram in
-                                     ingrams(chain(self._ngram_model._padding, word, self._ngram_model._padding), self._n)])
+        for ngram in ingrams(chain(self._ngram_model._padding, word, self._ngram_model._padding), self._n):
+            print("Ngram: {}\tProb for {} given {}: {}".format(ngram, ngram[-1], tuple(ngram[:-1]), self._ngram_model.prob(tuple(ngram[:-1]), ngram[-1])), file=sys.stderr)
+
+        if self._n > 1:
+            adjustment = Fraction(1)
+        else:
+            # Need to compensate for the lack of an empty word by getting rel freq of word_delimiter somehow
+            # print("word delimiter prob: {}".format(self._ngram_model.prob(self._word_delimiter, self._ngram_model._padding)), file=sys.stderr)
+            adjustment = Fraction(1) / (Fraction(1) - self._ngram_model.prob(self._word_delimiter, self._ngram_model._padding))
+
+        print([self._ngram_model.prob(ngram[-1], tuple(ngram[:-1])) for ngram in
+                                            ingrams(chain(*([self._word_delimiter, word, self._word_delimiter] if self._n > 1 else [word, self._word_delimiter])),
+                                                          self._n)], file=sys.stderr)
+
+        raw_score = self._score_combiner([self._ngram_model.prob(ngram[-1], tuple(ngram[:-1])) for ngram in
+                                            ingrams(chain(*([self._word_delimiter, word, self._word_delimiter] if self._n > 1 else [word, self._word_delimiter])),
+                                                          self._n)])
+        print("adjustment: {:.10e}\traw score: {:.10e}".format(float(adjustment), float(raw_score)), file=sys.stderr)
+
+        return adjustment * raw_score
 
     def update_evidence(self, word, increase_amount):
         # Used to have token phonotactics check here in OCaml code, but that really breaks the separation of the different cues.
         # I'll take care of checking that the word isn't in the lexicon (or token phonotactics has been specified) outside of this class.
-        self._ngram_model.update([word])
+        self._ngram_model.update([word] if self._n > 1 else [word, self._word_delimiter])
         # print self._ngram_model
 
     def dump(self, dump_file):
@@ -289,17 +271,91 @@ class NgramCue(Cue):
         pass
 
 
+class FamiliarWordCue(Cue):
+    '''
+        Feature that scores words based on their lexical frequency.
+    '''
+
+    def __init__(self, mbdp=False, subseq_counts=None, witten_bell=False, bad_score=0):
+        '''
+            Initializes any counts to their default values, if necessary
+            @param mbdp: Use MBDP-1 score adjustments when calculating word scores.
+            @type mbdp: L{bool}
+            @param subseq_counts: A frequency distribution for storing subsequence counts. Should use the same one for all L{Cues}
+                                  of the current L{Segmenter}.
+            @type subseq_counts: L{FreqDist}
+            @param witten_bell: Use Witten-Bell smoothing (like Venkataraman's model) for familiar word scores. This also multiplies
+                                sub-word scores by Witten-Bell normalizing factor. This is ignored in no lexicon mode.
+            @type witten_bell: L{bool}
+        '''
+        super(FamiliarWordCue, self).__init__(Fraction(0), subseq_counts=subseq_counts)
+        self._phonotactic = False
+        self._lexicon = FreqDist(counttype=Fraction)
+        self._mbdp = mbdp
+        self._witten_bell = witten_bell
+        self._bad_score = bad_score
+
+    def in_lexicon(self, word):
+        '''
+            @return: whether or not the given word is in the lexicon.
+        '''
+        return word in self._lexicon
+
+    @property
+    def total_words(self):
+        ''' Total number of word tokens in lexicon. '''
+        return self._lexicon.N()
+
+    def eval_word(self, word):
+        '''
+            @return: probability that proposed word is a word.
+            @todo: Implement lexical decay.
+        '''
+        if word in self._lexicon:
+            word_count = Fraction(self._lexicon[word])
+            if not self._mbdp:
+                word_types = self._lexicon.B()  # Unlike OCaml version we're not adding utterance delimiter to lexicon, so no subtraction.
+                raw_score = word_count / (Fraction(self.subseq_counts[word]) if self.subseq_counts
+                                                                        else (Fraction(self.total_words + word_types) if self._witten_bell
+                                                                                                                      else Fraction(self.total_words)))
+            else:
+                raw_score = ((word_count + Fraction(1)) / (self.total_words + Fraction(1))) * (((word_count / (word_count + Fraction(1))) ** Fraction(2)))
+        elif self._witten_bell:
+            word_types = Fraction(self._lexicon.B() - 1)  # Subtract one for initial utterance delimiter addition
+            raw_score = word_types / Fraction(self.total_words + word_types)
+        else:
+            raw_score = self._bad_score
+        return raw_score  # lexical decay stuff would need to be added here
+
+    def dump(self, dump_file):
+        for word in self._lexicon.iterkeys():
+            dump_file.write(word + str(self._lexicon[word]) + '\n')
+        if self._subseq_counts:
+            for seq in self.subseq_counts.iterkeys():
+                dump_file.write(seq + str(self.subseq_counts[seq]) + '\n')
+        dump_file.close()
+
+    def use_score(self, word):
+        return self.in_lexicon(word)
+
+    def update_evidence(self, word, increase_amount):
+        self._lexicon.inc(word, increase_amount)
+
+
 class SyllableNgramCue(NgramCue):
     """ NgramCue that calculates probabilities for sequences of syllables."""
     def __init__(self, n, initial_count, true_words, feature_chart, hypothetical_phonotactics=False,
-                 score_combiner=lambda scores: reduce(mul, scores), subseq_counts=None):
+                 score_combiner=lambda scores: reduce(mul, scores), subseq_counts=None, diphthongs=None):
         self._vowels = feature_chart.phones_for_features("+syllabic")
         self._vowel_re = re.compile("[" + ''.join([re.escape(vowel) for vowel in self._vowels if len(vowel) == 1]) + "]")
-        self._diphthongs = set([vowel for vowel in self._vowels if len(vowel) > 1])
+        self._diphthongs = set(diphthongs)
         super(SyllableNgramCue, self).__init__(n, initial_count, len(set(chain(*[self.syllabify(word) for word in true_words]))),
               hypothetical_phonotactics, score_combiner, subseq_counts)
 
     def syllabify(self, word):
+        '''
+        Return a list of syllables in a word.
+        '''
         syllables = None
         if self._vowel_re.search(word):
             syllables = list(word)
@@ -419,7 +475,7 @@ class Segmenter(cmd.Cmd, object):
                 word_score = self.eval_word(sentence[first_char:last_char + 1])
                 # print "Score for {1}: {0}".format(word_score, sentence[first_char:last_char + 1])
                 new_score_product = word_score * best_products[first_char - 1]
-                # print >> sys.stderr, "scoreProduct: {}\tlastCharBestProduct: {}".format(float(new_score_product), float(best_products[last_char]))
+                # print("scoreProduct: {}\tlastCharBestProduct: {}".format(float(new_score_product), float(best_products[last_char])), file=sys.stderr)
                 if new_score_product > best_products[last_char]:
                     best_products[last_char] = new_score_product
                     best_starts[last_char] = first_char
@@ -436,7 +492,7 @@ class Segmenter(cmd.Cmd, object):
 
         return [(Fraction(1), segmentation)]
 
-    def evidence_updater(self, increment_amount, segmentation, sentence, cue_selector=lambda cue: True):
+    def evidence_updater(self, increment_amount, segmentation, sentence, cue_selector=lambda cue: True, print_only=False):
         '''
             Calls update_evidence functions for all Cues in self.cues that evalute True for cue_selector,
             and prints out words to self.output_channel if the increment_amount for this segmentation is 1.
@@ -447,15 +503,21 @@ class Segmenter(cmd.Cmd, object):
             if segmentation[i]:
                 word = sentence[last:i + 1]
                 last = i + 1
-                for cue in ifilter(cue_selector, self.cues):
-                    cue.update_evidence(word, increment_amount)
+                if not print_only:
+                    for cue in ifilter(cue_selector, self.cues):
+                        cue.update_evidence(word, increment_amount)
                 if increment_amount == 1 and sentence != self.utterance_delimiter:
                     self.output_channel.write(word)
                     if last < len(segmentation):
                         self.output_channel.write(self.word_delimiter)
         # Commit subsequence counts here...
+        if not print_only:
+            pass
 
     def incremental_processor(self, utterance_list):
+        '''
+        Processes the corpus once, outputting segmentations for a given unsegmented utterance list.
+        '''
         for i, segmented_sentence in enumerate(utterance_list):
             # Get scored segmentations
             if not self.utterance_limit or i < self.utterance_limit:
@@ -463,7 +525,7 @@ class Segmenter(cmd.Cmd, object):
                 if self.supervised <= i and i + 1 > self.wait_until_utterance:  # and (not self.wait_for_stable_phoneme_dist or PhonemeNgramCue.use_score(sentence)):
                     scored_segmentations = self.search_func(sentence)
                 else:
-                    scored_segmentations = [(Fraction(1), segmentation_list_for_segmented_sentence(segmented_sentence))]
+                    scored_segmentations = [(Fraction(1), seg_list_for_segmented_sentence(segmented_sentence))]
                 if self.display_line_numbers:
                     self.output_channel.write("{}: ".format(i + 1))
                 # Update evidence
@@ -475,7 +537,7 @@ class Segmenter(cmd.Cmd, object):
                             self.evidence_updater(score, segmentation, sentence)
                 else:
                     for score, segmentation in scored_segmentations:
-                        self.print_segmented_utterance(score, segmentation, sentence)
+                        self.evidence_updater(score, segmentation, sentence, print_only=True)
                 # Print line-final stuff
                 if self.print_utterance_delimiter:
                     self.output_channel.write(self.utterance_delimiter)
@@ -488,7 +550,7 @@ class Segmenter(cmd.Cmd, object):
 
     ### Interactive mode functions ####
     def do_score(self, words):
-        ''' Returns the score for the given words given the current cues. '''
+        ''' @return: the score for the given words given the current cues. '''
         for word in words.split():
             backoff_combiner(self.cues, word, verbose=True)
 
@@ -497,12 +559,12 @@ class Segmenter(cmd.Cmd, object):
         arg_list = arg_string.split()
         increase_amount = arg_list.pop(0)
         sentence = ' '.join(arg_list)
-        self.evidence_updater(Fraction(increase_amount), segmentation_list_for_segmented_sentence(sentence), sentence)
+        self.evidence_updater(Fraction(increase_amount), seg_list_for_segmented_sentence(sentence), sentence)
 
     def do_syllabify(self, words):
         ''' Breaks up the given words into syllables. '''
         for word in words.split():
-            print SyllableNgramCue(1, 0, 10, self.feature_chart).syllabify(word)
+            print(SyllableNgramCue(1, 0, 10, self.feature_chart).syllabify(word))
 
     def do_exit(self, s):
         ''' Exit the program. '''
@@ -511,25 +573,34 @@ class Segmenter(cmd.Cmd, object):
     do_EOF = do_exit
 
 
-def backoff_combiner(cues, word, bad_score=Fraction(0), verbose=False):
+def backoff_combiner(cues, word, bad_score=Fraction(0), witten_bell=False, verbose=False):
     '''
     Calculates the scores for all the cues in the given list and then chooses the first one where cue.use_score(word) is True.
     '''
     scores = [cue.eval_word(word) for cue in cues]
+    familiar_score = Fraction(1)
     if verbose:
-        print >> sys.stderr, '\n'.join(["{} score for {} = {}".format(type(cue).__name__, word, scores[i]) for i, cue in enumerate(cues)])
+        print('\n'.join(["{} score for {} = {:.10e}".format(type(cue).__name__, word, float(scores[i])) for i, cue in enumerate(cues)]), file=sys.stderr)
         sys.stderr.flush()
     for i, cue in enumerate(cues):
-        if cue.use_score(word):
-            return scores[i]
+        if isinstance(cue, FamiliarWordCue):
+            familiar_score = scores[i]
+            if cue.use_score(word):
+                return familiar_score
+        else:
+            if cue.use_score(word):
+                return scores[i] * (familiar_score if witten_bell else Fraction(1))
     else:
         return bad_score
 
 
 def weighted_sum_combiner(cues, word, weights=None, verbose=False):
+    '''
+    Combines given cues via weighted sum.
+    '''
     scores = [cue.eval_word(word) for cue in cues]
     if verbose:
-        print >> sys.stderr, '\n'.join(["{} score for {} = {}".format(type(cue).__name__, word, scores[i]) for i, cue in enumerate(cues)])
+        print('\n'.join(["{} score for {} = {:.10e}".format(type(cue).__name__, word, float(scores[i])) for i, cue in enumerate(cues)]), file=sys.stderr)
         sys.stderr.flush()
     if not weights:
         num_cues = len(cues)
@@ -537,12 +608,26 @@ def weighted_sum_combiner(cues, word, weights=None, verbose=False):
     return sum(imap(mul, weights, scores))
 
 
-def segmentation_list_for_segmented_sentence(segmented_sentence, word_delimiter=' '):
-    word_count = 0
+def multiplicative_combiner(cues, word, verbose=False):
+    '''
+    Multiples cue scores together for a given word.
+    '''
+    scores = [cue.eval_word(word) for cue in cues]
+    if verbose:
+        print('\n'.join(["{} score for {} = {:.10e}".format(type(cue).__name__, word, float(scores[i])) for i, cue in enumerate(cues)]), file=sys.stderr)
+        sys.stderr.flush()
+    return imap(mul, scores)
+
+
+def seg_list_for_segmented_sentence(segmented_sentence, word_delimiter=' '):
+    '''
+    @return: a segmentation list for a given segmented sentence.
+    '''
+    # word_count = 0
     segmentation = []
     for char in segmented_sentence:
         if char == word_delimiter:
-            word_count += 1
+            # word_count += 1
             segmentation[-1] = True
         else:
             segmentation.append(False)
@@ -550,14 +635,24 @@ def segmentation_list_for_segmented_sentence(segmented_sentence, word_delimiter=
     return segmentation
 
 
-# Main Program
-if __name__ == '__main__':
+def csv_list(arg_list):
+    '''
+    Helper function for parsing command-line arguments that are comma-delimited lists.
+    '''
+    return arg_list.split(',')
+
+
+def main():
+    '''
+    Main Program
+    '''
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='PHOCUS is a word segmentation system.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("corpus", help="File to segment (any existing occurrences of word delimiter will be removed before segmenting).",
                         type=argparse.FileType('r'), default='-')
     parser.add_argument("-bs", "--badScore", help="Score assigned when word length is less than window size.",
                         type=Fraction, default="0.0")
+    parser.add_argument("-d", "--diphthongs", help="Comma-delimited list of possible diphthongs.", type=csv_list, default='9I,OI,9U')
     parser.add_argument("-df", "--decayFactor", help="Exponent used to calculate memory decay (0 = no decay).",
                         type=Fraction, default="0.0")
     parser.add_argument("-fc", "--featureChart", help="Feature chart file", default=os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'corpora', 'br.tab'))
@@ -636,10 +731,6 @@ if __name__ == '__main__':
     parser.add_argument("-tp", "--tokenPhonotactics",
                         help="Update phoneme n-gram counts once per word occurrence, instead of per word type.",
                         action="store_true")
-    parser.add_argument("-td", "--typeDenominator",
-                        help="When evaluating familiar words, divide word count by total number of word tokens + total number of " +
-                             "word types.  Should only be on for Venkataraman.",
-                        action="store_true")
     parser.add_argument("-up", "--uniformPhonotactics",
                         help="Never update phonotactic n-gram counts.  Just use initial uniform distribution throughout.",
                         action="store_true")
@@ -661,6 +752,10 @@ if __name__ == '__main__':
                         help="Instead of using back-off model for score combination, use weighted sum with all cues " +
                              "weighted equally.",
                         action="store_true")
+    parser.add_argument("-wb", "--wittenBell",
+                        help="Use Witten-Bell smoothing (like Venkataraman's model) for familiar word scores. This also multiplies sub-word scores "
+                             "by Witten-Bell normalizing factor. This is ignored in no lexicon mode.",
+                        action="store_true")
     parser.add_argument("-wd", "--wordDelimiter", help="Word delimiter (default: '%(default)s')", default=" ")
     args = parser.parse_args()
 
@@ -671,28 +766,38 @@ if __name__ == '__main__':
     subseq_counts = FreqDist(counttype=Fraction) if args.subseqDenominator else None
 
     # Put cue list together
-    cues = [FamiliarWordCue(args.initialCount, subseq_counts=subseq_counts)] if not args.noLexicon else []
+    cues = [FamiliarWordCue(subseq_counts=subseq_counts)] if not args.noLexicon else []
     # Syllables
     if args.syllableWindow:
         corpus_name = args.corpus.name
-        true_words = args.corpus.read().replace('\n', args.wordDelimiter).split(args.wordDelimiter)
+        true_words = set(args.corpus.read().replace('\n', args.wordDelimiter).split(args.wordDelimiter))
+        true_words.remove('')
         args.corpus.close()
         args.corpus = open(corpus_name)
-        cues.append(SyllableNgramCue(args.syllableWindow, args.initialCount, true_words, feature_chart, hypothetical_phonotactics=args.hypotheticalPhonotactics, subseq_counts=subseq_counts))
+        cues.append(SyllableNgramCue(args.syllableWindow, args.initialCount, true_words, feature_chart, hypothetical_phonotactics=args.hypotheticalPhonotactics,
+                                     subseq_counts=subseq_counts, diphthongs=args.diphthongs))
     # Phonemes
     if args.phonemeWindow:
-        cues.append(PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart._phones_to_features.viewkeys() if len(phone) == 1]), hypothetical_phonotactics=args.hypotheticalPhonotactics))
+        cues.append(PhonemeNgramCue(args.phonemeWindow, args.initialCount, len([phone for phone in feature_chart.phones_to_features.viewkeys() if len(phone) == 1]),
+                    hypothetical_phonotactics=args.hypotheticalPhonotactics))
 
     if args.interactive:
         utterance_limit = int(raw_input("Utterance number to process to: "))
         args.utteranceLimit = -1 if utterance_limit == 0 else utterance_limit
 
-    segmenter = Segmenter(cues, partial(backoff_combiner, verbose=args.verbose), feature_chart, word_delimiter=args.wordDelimiter, utterance_limit=args.utteranceLimit, supervised=args.supervisedFor,
-                 wait_until_utterance=args.waitUntilUtterance, wait_for_stable_phoneme_dist=args.waitForStablePhonemeDist, output_channel=sys.stdout,
-                 semi_supervised_updating=args.supervisedUpdating, uniform_phonotactics=args.uniformPhonotactics, display_line_numbers=args.lineNumbers,
-                 print_utterance_delimiter=args.printUtteranceDelimiter, utterance_delimiter=args.utteranceDelimiter)
+    segmenter = Segmenter(cues, partial(backoff_combiner if not args.weightedSum else weighted_sum_combiner, verbose=args.verbose, witten_bell=args.wittenBell), feature_chart,
+                 word_delimiter=args.wordDelimiter, utterance_limit=args.utteranceLimit, supervised=args.supervisedFor, wait_until_utterance=args.waitUntilUtterance,
+                 wait_for_stable_phoneme_dist=args.waitForStablePhonemeDist, output_channel=sys.stdout, semi_supervised_updating=args.supervisedUpdating,
+                 uniform_phonotactics=args.uniformPhonotactics, display_line_numbers=args.lineNumbers, print_utterance_delimiter=args.printUtteranceDelimiter,
+                 utterance_delimiter=args.utteranceDelimiter)
 
     segmenter.incremental_processor(args.corpus)
 
     if args.interactive:
+        import readline  # pylint: disable=W0611
         segmenter.cmdloop()
+
+
+# Main Program
+if __name__ == '__main__':
+    main()

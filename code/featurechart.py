@@ -1,9 +1,11 @@
-# Natural Language Toolkit: Phonological Feature Chart Reader
-#
-# Copyright (C) 2001-2012 NLTK Project
-# Author: Dan Blanchard <dblanchard@ets.org>
-# URL: <http://www.nltk.org/>
-# For license information, see LICENSE.txt
+'''
+Natural Language Toolkit: Phonological Feature Chart Reader
+
+Copyright (C) 2001-2012 NLTK Project
+Author: Dan Blanchard <dblanchard@ets.org>
+URL: <http://www.nltk.org/>
+For license information, see LICENSE.txt
+'''
 
 from __future__ import with_statement
 
@@ -81,6 +83,13 @@ class PhonologicalFeatureChartReader(CorpusReader):
                                 feat_val = value + feature
                                 self._phones_to_features[phone].add(feat_val)
                                 self._features_to_phones[feat_val].add(phone)
+
+    @property
+    def phones_to_features(self):
+        '''
+        Dictionary with mapping from phones to features.
+        '''
+        return self._phones_to_features
 
     def features_for_phone(self, phone):
         '''

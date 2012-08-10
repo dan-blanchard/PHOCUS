@@ -73,6 +73,7 @@ class FreqDist(dict):
     following code will produce a frequency distribution that encodes
     how often each word occurs in a text:
 
+
         >>> fdist = FreqDist()
         >>> for word in tokenize.whitespace(sent):
         ...    fdist.inc(word.lower())
@@ -802,6 +803,10 @@ class MLEProbDist(ProbDistI):
     def samples(self):
         return self._freqdist.keys()
 
+    def update(self, samples, inc_amount=1):
+        # inherit documentation
+        self._freqdist.update(samples, inc_amount)
+
     def __repr__(self):
         """
         @rtype: C{string}
@@ -862,7 +867,8 @@ class LidstoneProbDist(ProbDistI):
             self._gamma = freqdist._type(gamma)
         self._N = self._freqdist.N()
 
-        if bins is None: bins = freqdist.B()
+        if bins is None:
+            bins = freqdist.B()
         self._bins = bins
 
         self._divisor = self._N + bins * gamma
@@ -882,6 +888,7 @@ class LidstoneProbDist(ProbDistI):
 
     def prob(self, sample):
         c = self._freqdist[sample]
+        # print "Numerator: {}\tDenominator: {}".format(c + self._gamma, self._divisor)
         return (c + self._gamma) / self._divisor
 
     def max(self):
@@ -900,6 +907,9 @@ class LidstoneProbDist(ProbDistI):
     def update(self, samples, inc_amount=1):
         # inherit documentation
         self._freqdist.update(samples, inc_amount)
+        self._N = self._freqdist.N()
+        # print "N: {}\tBins: {}\tGamma: {}".format(self._N, self._bins, self._gamma)
+        self._divisor = self._N + self._bins * self._gamma
 
     def __repr__(self):
         """
@@ -1260,6 +1270,7 @@ class WittenBellProbDist(ProbDistI):
         """
         assert bins == None or bins >= freqdist.B(),\
                'Bins parameter must not be less than freqdist.B()'
+        self._bins = bins
         if bins == None:
             bins = freqdist.B()
         self._freqdist = freqdist
@@ -1271,7 +1282,7 @@ class WittenBellProbDist(ProbDistI):
         self._type = float if freqdist._type is int else freqdist._type
 
         # self._P0 is P(0), precalculated for efficiency:
-        if self._N==0:
+        if self._N == 0:
             # if freqdist is empty, we approximate P(0) by a UniformProbDist:
             self._P0 = self._type(1) / self._Z
         else:
@@ -1296,6 +1307,21 @@ class WittenBellProbDist(ProbDistI):
 
     def discount(self):
         raise NotImplementedError()
+
+    def update(self, samples, inc_amount=1):
+        # inherit documentation
+        self._freqdist.update(samples, inc_amount)
+        self._N = self._freqdist.N()
+        bins = self._freqdist.B() if self._bins is None else self._bins
+        self._T = self._freqdist.B()
+        self._Z = bins - self._freqdist.B()
+
+        # self._P0 is P(0), precalculated for efficiency:
+        if self._N == 0:
+            # if freqdist is empty, we approximate P(0) by a UniformProbDist:
+            self._P0 = self._type(1) / self._Z
+        else:
+            self._P0 = self._T / float(self._Z * (self._N + self._T))
 
     def __repr__(self):
         """
@@ -2128,8 +2154,8 @@ class ConditionalProbDist(ConditionalProbDistI):
 
     def update(self, cond_samples, inc_amount=1):
         for (cond, sample) in cond_samples:
-            if cond in self._pdists:
-                self._pdists[cond].update([sample], inc_amount)
+            # print "Condition: {}\tSample:{}".format(cond, sample)
+            self[cond].update([sample], inc_amount)
 
     def __len__(self):
         return len(self._pdists)
