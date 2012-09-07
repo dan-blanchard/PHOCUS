@@ -20,7 +20,7 @@
     along with PHOCUS.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import argparse
 import copy
@@ -31,13 +31,18 @@ from abc import ABCMeta, abstractmethod
 from fractions import Fraction
 from functools import partial
 from itertools import chain, imap, ifilter
-from operator import mul
+from operator import mul, itemgetter
+from collections import namedtuple
 
 import regex as re
 from probability import FreqDist, LidstoneProbDist, ConditionalFreqDist, ConditionalProbDist
 from ngram import NgramModel
 from nltk.util import ingrams
 from featurechart import PhonologicalFeatureChartReader
+
+
+# Support class used for searching
+PointerProductPair = namedtuple('PointerProductPair', ['pointer', 'product'])
 
 
 class PartialCountNgramModel(NgramModel):
@@ -374,7 +379,7 @@ class SyllableNgramCue(NgramCue):
                 prev_list = syllables[:]
                 # Onsets
                 num_removed = 0
-                for i in range(1, len(syllables)):
+                for i in xrange(1, len(syllables)):
                     adjusted_index = i - num_removed
                     if self._vowel_re.search(syllables[adjusted_index]) and not self._vowel_re.search(syllables[adjusted_index - 1]):
                         syllables[adjusted_index] = ''.join(syllables[adjusted_index - 1: adjusted_index + 1])
@@ -382,7 +387,7 @@ class SyllableNgramCue(NgramCue):
                         num_removed += 1
                 # Codas
                 num_inserted = 0
-                for i in range(0, len(syllables) - 1):
+                for i in xrange(0, len(syllables) - 1):
                     adjusted_index = i + num_inserted
                     if adjusted_index < len(syllables) - 1:
                         if self._vowel_re.search(syllables[adjusted_index]) and not self._vowel_re.search(syllables[adjusted_index + 1]):
@@ -461,18 +466,18 @@ class Segmenter(cmd.Cmd, object):
             @type sentence: L{basestring}
 
             @return: Pairs of weights and segmentations (in this case all weights will be 1).
-            @rtype: 2-L{tuple} of L{Fraction}s and L{int} L{list}s
+            @rtype: L{list} containing a single 2-L{tuple} of L{Fraction}s and L{int} L{list}s
         '''
         sentence = sentence.replace(self.word_delimiter, '')
         best_products = []
         best_starts = []
         # Fill best_starts list
-        for last_char in range(len(sentence)):
+        for last_char in xrange(len(sentence)):
             best_products.append(self.eval_word(sentence[0:last_char + 1]))
             best_starts.append(0)
             # After loop, best_starts[last_char] points to beginning of the optimal word ending with last_char
             # best_products[last_char] contains the actual score for the optimal word
-            for first_char in range(1, last_char + 1):
+            for first_char in xrange(1, last_char + 1):
                 word_score = self.eval_word(sentence[first_char:last_char + 1])
                 # print "Score for {1}: {0}".format(word_score, sentence[first_char:last_char + 1])
                 new_score_product = word_score * best_products[first_char - 1]
@@ -492,6 +497,49 @@ class Segmenter(cmd.Cmd, object):
             first_char = best_starts[first_char - 1]
 
         return [(Fraction(1), segmentation)]
+
+    def nbest_search(self, sentence, n=1):
+        '''
+            Backtracking N-best algorithm (adapted from http://www.cs.jhu.edu/~hajic/courses/cs465/cs46514/ppframe.htm)
+            and Viterbi search, as outlined by Brent (1999), for finding the best segmentation of a given sentence.
+
+            @param sentence: The sentence to segment
+            @type sentence: L{basestring}
+
+            @return: Pairs of weights and segmentations (in this case all weights will be 1).
+            @rtype: L{list} of 2-L{tuple}s of L{Fraction}s and L{int} L{list}s
+        '''
+        sentence = sentence.replace(self.word_delimiter, '')
+        best_pairs = []  # list to store list of tuples of best products and starting positions (i.e., back pointers)
+        # Fill best_pairs list
+        for last_char in xrange(len(sentence)):
+            best_pairs.append([PointerProductPair(pointer=0, product=self.eval_word(sentence[0:last_char + 1]))])
+            # After loop, best_pairs[last_char] contains a list of scored tuples for all
+            for first_char in xrange(1, last_char + 1):
+                word_score = self.eval_word(sentence[first_char:last_char + 1])
+                new_score_product = word_score * best_pairs[first_char - 1][0].product
+                best_pairs[-1].append(PointerProductPair(pointer=first_char, product=new_score_product))
+
+            # Sort the best_pairs list by score products
+            best_pairs[-1].sort(reverse=True, key=itemgetter(1))
+
+            # Delete all but the top N from the list
+            del best_pairs[-1][n:]
+
+        # print "Best products: {}\t Best starts: {}".format(best_products, best_starts)
+
+        # Extract N-best segmentations from best_pairs list
+        scored_segmentations = []
+        for last_pair in best_pairs[-1]:
+            segmentation = [False] * len(sentence)
+            segmentation[-1] = True
+            first_char = last_pair.pointer
+            while first_char > 0:
+                segmentation[first_char - 1] = True
+                first_char = best_pairs[first_char - 1][0].pointer
+            scored_segmentations.append((last_pair.product / best_pairs[-1][0].product, segmentation))
+
+        return scored_segmentations
 
     def evidence_updater(self, increment_amount, segmentation, sentence, cue_selector=lambda cue: True, print_only=False):
         '''
@@ -797,6 +845,9 @@ def main():
                  wait_for_stable_phoneme_dist=args.waitForStablePhonemeDist, output_channel=sys.stdout, semi_supervised_updating=args.supervisedUpdating,
                  uniform_phonotactics=args.uniformPhonotactics, display_line_numbers=args.lineNumbers, print_utterance_delimiter=args.printUtteranceDelimiter,
                  utterance_delimiter=args.utteranceDelimiter)
+    # Switch to nbest segmentation if asked
+    if args.nBest:
+        segmenter.search_func = segmenter.nbest_search
 
     segmenter.incremental_processor(args.corpus)
 
