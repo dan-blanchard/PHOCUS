@@ -416,7 +416,8 @@ class Segmenter(cmd.Cmd, object):
 
     def __init__(self, cues, evidence_combiner, feature_chart, search_func=None, word_delimiter=' ', utterance_limit=0, supervised=0,
                  wait_until_utterance=0, wait_for_stable_phoneme_dist=False, output_channel=sys.stdout, semi_supervised_updating=False,
-                 uniform_phonotactics=False, display_line_numbers=False, print_utterance_delimiter=False, utterance_delimiter='$'):
+                 uniform_phonotactics=False, display_line_numbers=False, print_utterance_delimiter=False, utterance_delimiter='$',
+                 nbest_window=1):
         '''
         Initializes a PHOCUS word segmentation model.
 
@@ -436,7 +437,7 @@ class Segmenter(cmd.Cmd, object):
         self.word_delimiter = word_delimiter
         self.eval_word = partial(evidence_combiner, self.cues)
         self.feature_chart = feature_chart
-        self.search_func = self.viterbi_segmentation_search if not search_func else search_func
+        self.nbest_window = nbest_window
         self.utterance_limit = utterance_limit
         self.supervised = supervised
         self.wait_until_utterance = wait_until_utterance
@@ -458,47 +459,7 @@ class Segmenter(cmd.Cmd, object):
         for cue in self.cues:
             cue.dump(prefix + type(cue).__name__)
 
-    def viterbi_segmentation_search(self, sentence):
-        '''
-            Viterbi-style search, as outlined by Brent (1999), for finding the best segmentation of a given sentence.
-
-            @param sentence: The sentence to segment
-            @type sentence: L{basestring}
-
-            @return: Pairs of weights and segmentations (in this case all weights will be 1).
-            @rtype: L{list} containing a single 2-L{tuple} of L{Fraction}s and L{int} L{list}s
-        '''
-        sentence = sentence.replace(self.word_delimiter, '')
-        best_products = []
-        best_starts = []
-        # Fill best_starts list
-        for last_char in xrange(len(sentence)):
-            best_products.append(self.eval_word(sentence[0:last_char + 1]))
-            best_starts.append(0)
-            # After loop, best_starts[last_char] points to beginning of the optimal word ending with last_char
-            # best_products[last_char] contains the actual score for the optimal word
-            for first_char in xrange(1, last_char + 1):
-                word_score = self.eval_word(sentence[first_char:last_char + 1])
-                # print "Score for {1}: {0}".format(word_score, sentence[first_char:last_char + 1])
-                new_score_product = word_score * best_products[first_char - 1]
-                # print("scoreProduct: {}\tlastCharBestProduct: {}".format(float(new_score_product), float(best_products[last_char])), file=sys.stderr)
-                if new_score_product > best_products[last_char]:
-                    best_products[last_char] = new_score_product
-                    best_starts[last_char] = first_char
-
-        # print "Best products: {}\t Best starts: {}".format(best_products, best_starts)
-
-        # Extract segmentation from best_starts list
-        segmentation = [False] * len(sentence)
-        segmentation[-1] = True
-        first_char = best_starts[-1]
-        while first_char > 0:
-            segmentation[first_char - 1] = True
-            first_char = best_starts[first_char - 1]
-
-        return [(Fraction(1), segmentation)]
-
-    def nbest_search(self, sentence, n=1):
+    def nbest_search(self, sentence):
         '''
             Backtracking N-best algorithm (adapted from http://www.cs.jhu.edu/~hajic/courses/cs465/cs46514/ppframe.htm)
             and Viterbi search, as outlined by Brent (1999), for finding the best segmentation of a given sentence.
@@ -524,9 +485,7 @@ class Segmenter(cmd.Cmd, object):
             best_pairs[-1].sort(reverse=True, key=itemgetter(1))
 
             # Delete all but the top N from the list
-            del best_pairs[-1][n:]
-
-        # print "Best products: {}\t Best starts: {}".format(best_products, best_starts)
+            del best_pairs[-1][self.nbest_window:]
 
         # Extract N-best segmentations from best_pairs list
         scored_segmentations = []
@@ -572,7 +531,7 @@ class Segmenter(cmd.Cmd, object):
             if not self.utterance_limit or i < self.utterance_limit:
                 sentence = segmented_sentence.replace(self.word_delimiter, '').rstrip('\n')
                 if self.supervised <= i and i + 1 > self.wait_until_utterance:  # and (not self.wait_for_stable_phoneme_dist or PhonemeNgramCue.use_score(sentence)):
-                    scored_segmentations = self.search_func(sentence)
+                    scored_segmentations = self.nbest_search(sentence)
                 else:
                     scored_segmentations = [(Fraction(1), seg_list_for_segmented_sentence(segmented_sentence))]
                 if self.display_line_numbers:
@@ -743,9 +702,7 @@ def main():
                              "also enable --hypotheticalPhonotactics for true MBDP-1.",
                         action="store_true")
     parser.add_argument("-nb", "--nBest",
-                        help="Store scores for N-best segmentations instead of just the best. Should help lessen impact of " +
-                             "early errors.",
-                        action="store_true")
+                        help="Number of segmentations to update evidence for for each sentence.", type=int, default=1)
     parser.add_argument("-nl", "--noLexicon",
                         help="Only score words based on the phonotactics, and don't do 'familiar word' spotting.  Does NOT entail " +
                              "--tokenPhonotactics.",
@@ -844,11 +801,7 @@ def main():
                  word_delimiter=args.wordDelimiter, utterance_limit=args.utteranceLimit, supervised=args.supervisedFor, wait_until_utterance=args.waitUntilUtterance,
                  wait_for_stable_phoneme_dist=args.waitForStablePhonemeDist, output_channel=sys.stdout, semi_supervised_updating=args.supervisedUpdating,
                  uniform_phonotactics=args.uniformPhonotactics, display_line_numbers=args.lineNumbers, print_utterance_delimiter=args.printUtteranceDelimiter,
-                 utterance_delimiter=args.utteranceDelimiter)
-    # Switch to nbest segmentation if asked
-    if args.nBest:
-        segmenter.search_func = segmenter.nbest_search
-
+                 utterance_delimiter=args.utteranceDelimiter, nbest_window=args.nBest)
     segmenter.incremental_processor(args.corpus)
 
     if args.interactive:
