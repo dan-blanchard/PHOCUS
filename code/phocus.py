@@ -414,7 +414,7 @@ class PhonemeNgramCue(NgramCue):
 class Segmenter(cmd.Cmd, object):
     """ A PHOCUS word segmentation model"""
 
-    def __init__(self, cues, evidence_combiner, feature_chart, search_func=None, word_delimiter=' ', utterance_limit=0, supervised=0,
+    def __init__(self, cues, evidence_combiner, feature_chart, word_delimiter=' ', utterance_limit=0, supervised=0,
                  wait_until_utterance=0, wait_for_stable_phoneme_dist=False, output_channel=sys.stdout, semi_supervised_updating=False,
                  uniform_phonotactics=False, display_line_numbers=False, print_utterance_delimiter=False, utterance_delimiter='$',
                  nbest_window=1):
