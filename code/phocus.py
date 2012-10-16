@@ -424,21 +424,42 @@ class NBestNode(object):
         ''' Add a child to this node '''
         self._children.add(child_node)
 
-    def iter_tree(self):
+    def iter_descendants(self):
         ''' Depth-first iteration through all node in subtree starting with the current node. '''
         for child_node in self._children:
-            yield child_node.iter_tree()
+            yield child_node
+            for grand_child in child_node.iter_descendants():
+                yield grand_child
+        else:
+            yield self
+
+    def iter_tree(self):
+        ''' Depth-first iteration through all node in subtree starting with the current node. '''
         yield self
+        for child_node in self._children:
+            for grand_child in child_node.iter_tree():
+                yield grand_child
 
     def has_edge(self, child_index):
         ''' Check if one of the children of this node has the index child_index. '''
         return NBestNode(0, child_index) in self._children
+
+    @property
+    def num_children(self):
+        ''' Number of child nodes for the current node. '''
+        return len(self._children)
 
     def __eq__(self, other):
         return self.graph_index == other.graph_index
 
     def __hash__(self):
         return self.graph_index.__hash__()
+
+    def __repr__(self):
+        return "{{{}, {}: {}}}".format(self.graph_index, self.back_score, list(self._children))
+
+    def __len__(self):
+        return len(list(self.iter_tree()))
 
 
 class Segmenter(cmd.Cmd, object):
@@ -513,12 +534,15 @@ class Segmenter(cmd.Cmd, object):
             # Sort the best_pairs list by score products
             best_pairs[-1].sort(reverse=True, key=itemgetter(1))
 
+            # Prune lists, since we'll never need more than the top n edges
+            del best_pairs[-1][self.nbest_window:]
+
         # Build n-best tree
-        nbest_root = NBestNode(best_pairs[-1][0].word_score, -1)
+        nbest_root = NBestNode(best_pairs[-1][0].word_score, len(sentence) - 1)
         scored_segmentations = []
-        # Repeat as n-times for n-best
+        # Repeat n-times for n-best
         for _ in xrange(self.nbest_window):
-            best_edge = ScoredEdge(score=Fraction(0), graph_index=-1, pointer_list_index=0)
+            best_edge = ScoredEdge(score=Fraction(-1), graph_index=-1, pointer_list_index=0)
             best_nbest_node = nbest_root
             # Loop through nodes in n-best tree
             for nbest_node in nbest_root.iter_tree():
@@ -537,35 +561,38 @@ class Segmenter(cmd.Cmd, object):
             best_score_pointer = best_pairs[best_edge.graph_index][best_edge.pointer_list_index]
             first_char = best_score_pointer.prev_index
             back_score = best_score_pointer.word_score
+            prev_tree_node = best_nbest_node
             while first_char > 0:
                 # Add new node to n-best tree for each
-                best_nbest_node.add_child(NBestNode(back_score, first_char))
+                new_node = NBestNode(back_score, first_char - 1)
+                prev_tree_node.add_child(new_node)
+                prev_tree_node = new_node
                 prev_pointer = best_pairs[first_char - 1][0]
                 first_char = prev_pointer.prev_index
                 back_score *= prev_pointer.word_score
-
-        print(best_pairs)
+            if prev_tree_node.graph_index != 0:
+                prev_tree_node.add_child(NBestNode(back_score, 0))
+        # if len(nbest_root) > 2:
+        #     print(nbest_root)
 
         # Loop through all paths in n-best tree and add to list of scored segmentations
         scored_segmentations = []
-        for _ in xrange(self.nbest_window):
-            segmentation = [False] * len(sentence)
-            segmentation[-1] = True
-            prev_split = len(sentence)
-            for nbest_node in nbest_root.iter_tree():
-                # Add segmentation to list if we've reached the beginning of the sentence.
-                if nbest_node.graph_index == 0:
-                    scored_segmentations.append((best_score_pointer.product / best_pairs[-1][0].product, segmentation))
-                    segmentation[:prev_split] = [False] * prev_split
-                # Otherwise check if we're at a split point right before the ned.
-                elif len(nbest_node._children) > 1:
-                    prev_split = nbest_node.graph_index
-                else:
-                    segmentation[nbest_node.graph_index - 1] = True
+        segmentation = [False] * len(sentence)
+        segmentation[-1] = True
+        prev_split = len(sentence)
+        for nbest_node in nbest_root.iter_tree():
+            # Add segmentation to list if we've reached the beginning of the sentence.
+            if nbest_node.graph_index == 0:
+                scored_segmentations.append((best_score_pointer.product / best_pairs[-1][0].product, segmentation))
+                segmentation = segmentation[:]  # Make copy of list so that we don't change the version in the scored_segmentations list
+                segmentation[:prev_split] = [False] * prev_split
+            # Otherwise check if we're at a split point right before the ned.
+            elif nbest_node.num_children > 1:
+                prev_split = nbest_node.graph_index
+            else:
+                segmentation[nbest_node.graph_index] = True
 
-        print(scored_segmentations)
-
-
+        print("Num segmentations: {}".format(len(scored_segmentations)))
 
         # Extract N-best segmentations from best_pairs list (assumes we kept only the n-best in each list of ScorePointers)
         # scored_segmentations = []
