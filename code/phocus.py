@@ -28,17 +28,19 @@ import cmd
 import os
 import sys
 from abc import ABCMeta, abstractmethod
+from collections import namedtuple
+from decimal import Decimal
 from fractions import Fraction
 from functools import partial
 from itertools import chain, imap, ifilter
 from operator import mul, itemgetter
-from collections import namedtuple
 
 import regex as re
-from probability import FreqDist, LidstoneProbDist, ConditionalFreqDist, ConditionalProbDist
+from featurechart import PhonologicalFeatureChartReader
 from ngram import NgramModel
 from nltk.util import ingrams
-from featurechart import PhonologicalFeatureChartReader
+from probability import FreqDist, LidstoneProbDist, ConditionalFreqDist, ConditionalProbDist
+from pyfst import fst
 
 
 # Support class used for searching
@@ -520,91 +522,45 @@ class Segmenter(cmd.Cmd, object):
 
             @return: Pairs of weights and segmentations (in this case all weights will be 1).
             @rtype: L{list} of 2-L{tuple}s of L{Fraction}s and L{int} L{list}s
+
+            @todo: Properly handle ties
         '''
         sentence = sentence.replace(self.word_delimiter, '')
-        best_pairs = []  # list to store list of tuples of best products and starting positions (i.e., back pointers)
-        # Fill best_pairs list (i.e., word graph)
-        for last_char in xrange(len(sentence)):
-            word_score = self.eval_word(sentence[0:last_char + 1])
-            best_pairs.append([ScorePointer(prev_index=0, product=word_score, word_score=word_score)])
-            for first_char in xrange(1, last_char + 1):
-                word_score = self.eval_word(sentence[first_char:last_char + 1])
-                new_score_product = word_score * best_pairs[first_char - 1][0].product
-                best_pairs[-1].append(ScorePointer(prev_index=first_char, product=new_score_product, word_score=word_score))
-            # Sort the best_pairs list by score products
-            best_pairs[-1].sort(reverse=True, key=itemgetter(1))
+        sentence_length = len(sentence)
 
-            # Prune lists, since we'll never need more than the top n edges
-            del best_pairs[-1][self.nbest_window:]
+        # Build word graph
+        symbol_table = fst.SymbolTable()
+        word_graph = fst.LogVectorFst()
+        word_graph.add_state()
+        for last_char in xrange(1, sentence_length + 1):
+            word_graph.add_state()
+            word = sentence[0:last_char]
+            word_score = -Decimal(float(self.eval_word(word))).ln()  # Use negative log probabilities because OpenFST just adds path weights together
+            word_graph.add_arc(0, last_char, symbol_table[word], symbol_table[word], weight=word_score)
+            for first_char in xrange(1, last_char):
+                word = sentence[first_char:last_char]
+                word_score = -Decimal(float(self.eval_word(word))).ln()
+                word_graph.add_arc(first_char, last_char, symbol_table[word], symbol_table[word], weight=word_score)
+        word_graph[sentence_length].final = True
 
-        # Build n-best tree
-        nbest_root = NBestNode(best_pairs[-1][0].word_score, len(sentence) - 1)
+        # Loop through n-best paths
         scored_segmentations = []
-        # Repeat n-times for n-best
-        for _ in xrange(self.nbest_window):
-            best_edge = ScoredEdge(score=Fraction(-1), graph_index=-1, pointer_list_index=0)
-            best_nbest_node = nbest_root
-            # Loop through nodes in n-best tree
-            for nbest_node in nbest_root.iter_tree():
-                # Loop through pointers in word graph node that corresponds to current n-best node
-                for p_index, pointer in enumerate(best_pairs[nbest_node.graph_index]):
-                    # If this is a new edge that we might want to expand, check if it's the best one we've seen so far.
-                    if not nbest_node.has_edge(pointer.prev_index):
-                        curr_scored_edge = ScoredEdge(score=(nbest_node.back_score * pointer.product), graph_index=nbest_node.graph_index, pointer_list_index=p_index)
-                        # See if we beat current best edge (don't use max so that insertion order wins out in case of ties)
-                        if curr_scored_edge > best_edge:
-                            best_edge = curr_scored_edge
-                            best_nbest_node = nbest_node
+        print("Shortest distance: {}".format(word_graph.shortest_distance()))
+        best_score = Decimal(-word_graph.shortest_distance()[0]).exp()
+        nbest_path_fst = word_graph.shortest_path(self.nbest_window)
+        # Iterate through n-best paths
+        for path in nbest_path_fst.paths(noeps=True):
+            segmentation = [False] * len(sentence)
+            segmentation[-1] = True
+            seg_score = Decimal('0.0')
+            for arc in path:
+                seg_score += Decimal(arc.weight)
+                segmentation[arc.nextstate - 1] = True
+            seg_score = Decimal(-seg_score).exp()
+            scored_segmentations.append((seg_score / best_score, segmentation))
 
-            # Expand tree from best_edge of best_nbest_node...
-            # Trace back from best_edge to start of sentence in word graph
-            best_score_pointer = best_pairs[best_edge.graph_index][best_edge.pointer_list_index]
-            first_char = best_score_pointer.prev_index
-            back_score = best_score_pointer.word_score
-            prev_tree_node = best_nbest_node
-            while first_char > 0:
-                # Add new node to n-best tree for each
-                new_node = NBestNode(back_score, first_char - 1)
-                prev_tree_node.add_child(new_node)
-                prev_tree_node = new_node
-                prev_pointer = best_pairs[first_char - 1][0]
-                first_char = prev_pointer.prev_index
-                back_score *= prev_pointer.word_score
-            if prev_tree_node.graph_index != 0:
-                prev_tree_node.add_child(NBestNode(back_score, 0))
-        # if len(nbest_root) > 2:
-        #     print(nbest_root)
-
-        # Loop through all paths in n-best tree and add to list of scored segmentations
-        scored_segmentations = []
-        segmentation = [False] * len(sentence)
-        segmentation[-1] = True
-        prev_split = len(sentence)
-        for nbest_node in nbest_root.iter_tree():
-            # Add segmentation to list if we've reached the beginning of the sentence.
-            if nbest_node.graph_index == 0:
-                scored_segmentations.append((best_score_pointer.product / best_pairs[-1][0].product, segmentation))
-                segmentation = segmentation[:]  # Make copy of list so that we don't change the version in the scored_segmentations list
-                segmentation[:prev_split] = [False] * prev_split
-            # Otherwise check if we're at a split point right before the ned.
-            elif nbest_node.num_children > 1:
-                prev_split = nbest_node.graph_index
-            else:
-                segmentation[nbest_node.graph_index] = True
-
-        print("Num segmentations: {}".format(len(scored_segmentations)))
-
-        # Extract N-best segmentations from best_pairs list (assumes we kept only the n-best in each list of ScorePointers)
-        # scored_segmentations = []
-        # for last_pair in best_pairs[-1]:
-        #     segmentation = [False] * len(sentence)
-        #     segmentation[-1] = True
-        #     first_char = last_pair.prev_index
-        #     while first_char > 0:
-        #         segmentation[first_char - 1] = True
-        #         first_char = best_pairs[first_char - 1][0].prev_index
-        #     scored_segmentations.append((last_pair.product / best_pairs[-1][0].product, segmentation))
-
+        # print("Num segmentations: {}".format(len(scored_segmentations)))
+        print("Segmentations: {}".format(scored_segmentations))
         return scored_segmentations
 
     def evidence_updater(self, increment_amount, segmentation, sentence, cue_selector=lambda cue: True, print_only=False):
