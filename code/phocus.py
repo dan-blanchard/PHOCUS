@@ -529,24 +529,22 @@ class Segmenter(cmd.Cmd, object):
         sentence_length = len(sentence)
 
         # Build word graph
-        symbol_table = fst.SymbolTable()
-        word_graph = fst.LogVectorFst()
-        word_graph.add_state()
+        word_graph = fst.Acceptor()
         for last_char in xrange(1, sentence_length + 1):
             word_graph.add_state()
             word = sentence[0:last_char]
             word_score = -Decimal(float(self.eval_word(word))).ln()  # Use negative log probabilities because OpenFST just adds path weights together
-            word_graph.add_arc(0, last_char, symbol_table[word], symbol_table[word], weight=word_score)
+            word_graph.add_arc(0, last_char, word, weight=word_score)
             for first_char in xrange(1, last_char):
                 word = sentence[first_char:last_char]
                 word_score = -Decimal(float(self.eval_word(word))).ln()
-                word_graph.add_arc(first_char, last_char, symbol_table[word], symbol_table[word], weight=word_score)
+                word_graph.add_arc(first_char, last_char, word, weight=word_score)
         word_graph[sentence_length].final = True
 
         # Loop through n-best paths
         scored_segmentations = []
-        print("Shortest distance: {}".format(word_graph.shortest_distance()))
-        best_score = Decimal(-word_graph.shortest_distance()[0]).exp()
+        # print("Shortest distance: {}".format(word_graph.shortest_distance()))
+        best_score = Decimal(-float(word_graph.shortest_distance(reverse=True)[0])).exp()
         nbest_path_fst = word_graph.shortest_path(self.nbest_window)
         # Iterate through n-best paths
         for path in nbest_path_fst.paths(noeps=True):
@@ -554,13 +552,13 @@ class Segmenter(cmd.Cmd, object):
             segmentation[-1] = True
             seg_score = Decimal('0.0')
             for arc in path:
-                seg_score += Decimal(arc.weight)
+                seg_score += Decimal(float(arc.weight))
                 segmentation[arc.nextstate - 1] = True
             seg_score = Decimal(-seg_score).exp()
-            scored_segmentations.append((seg_score / best_score, segmentation))
+            scored_segmentations.append((Fraction(seg_score / best_score) if scored_segmentations else Fraction(1), segmentation))
 
         # print("Num segmentations: {}".format(len(scored_segmentations)))
-        print("Segmentations: {}".format(scored_segmentations))
+        # print("Segmentations: {}".format(scored_segmentations))
         return scored_segmentations
 
     def evidence_updater(self, increment_amount, segmentation, sentence, cue_selector=lambda cue: True, print_only=False):
